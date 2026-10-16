@@ -46,6 +46,59 @@ node tests/smoke.mjs     # 13 项：面板 HTTP 层，无需网络/凭据
 node scripts/check-syntax.mjs   # 全量语法 + 凭据泄漏扫描
 ```
 
+### 🐳 Docker 部署
+
+镜像发布在 **ghcr.io**（linux/amd64 + linux/arm64），也可以自己构建。
+
+**方式 A：compose（推荐）**
+
+```bash
+cd opencode-free-gateway
+
+# 默认模式：只跑面板
+PANEL_PASSWORD=换成你的密码 \
+  docker compose -f 09-服务端部署/docker-compose.yml up -d --build
+
+# 带代理节点池：额外起一个 mihomo sidecar，只有模型请求走它
+mkdir -p 09-服务端部署/mihomo-config
+cp 09-服务端部署/mihomo-docker.yaml.example 09-服务端部署/mihomo-config/config.yaml
+# 编辑 config.yaml 填你自己的订阅
+PANEL_PASSWORD=换成你的密码 PANEL_NODE_POOL=1 \
+  docker compose -f 09-服务端部署/docker-compose.yml --profile pool up -d --build
+```
+
+> 宿主端口默认绑 `127.0.0.1:8790`。本机已有面板占着 8790 时，用
+> `PANEL_PUBLISH=127.0.0.1:18791` 覆盖。
+
+**方式 B：直接跑镜像**
+
+```bash
+docker run -d --name ocgw \
+  -p 127.0.0.1:8790:8790 \
+  -e PANEL_PASSWORD=换成你的密码 \
+  -v ocgw-data:/app/data \
+  ghcr.io/suimi8/opencode-free-gateway:latest
+```
+
+**方式 C：自己构建**
+
+```bash
+# ⚠️ 构建上下文必须是项目根（Dockerfile 要 COPY 上级目录，Docker 不允许 COPY ../）
+docker build -f 09-服务端部署/Dockerfile -t opencode-free-gateway:latest .
+```
+
+| 容器要点 | 说明 |
+|---|---|
+| 数据持久化 | `VOLUME /app/data` —— `panel.db` 与 `pool.db`（含 `-wal`/`-shm`）一起落盘。**别只挂单个文件**，WAL 模式下会丢数据 |
+| 健康检查 | 内置 `HEALTHCHECK`，用 node 内置 http 探 `GET /`，不依赖 curl |
+| 运行用户 | 非 root（`node`，uid 1000）。用 bind mount 时记得 `chown 1000:1000` |
+| 零依赖 | 不装任何 npm 包，没有 `npm install` 层 |
+| 节点池 | 内核**不打进镜像**（GPL-3.0 + 61 MB），用 compose 的 `mihomo` sidecar；面板通过 `MIHOMO_CONTROLLER_HOST` / `MIHOMO_PROXY_HOST` 指挥它 |
+| 网卡绑定 | 容器内自动关闭（`OCGW_NO_INTERFACE_BIND=1`）—— 容器网络已隔离，没有宿主 TUN 要绕过 |
+| 公网暴露 | 默认只绑回环。面板 cookie 无 `Secure`、登录无速率限制，**公网前必须**加反代 + HTTPS + `limit_req` |
+
+CI 每次都会**真构建镜像、真起容器**，验证健康检查 / 登录 / 模型列表 / **重启后数据仍在** / 镜像里没有凭据与内核。
+
 ### 可选：代理节点池
 
 节点池让**只有模型请求**走你自己的机场节点（浏览器/系统代理完全不受影响）。

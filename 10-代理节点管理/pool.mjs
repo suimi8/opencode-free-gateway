@@ -330,17 +330,18 @@ export async function testAll({ timeout = 5000 } = {}) {
 function httpGetViaProxy(url, proxyPort, timeout = 15000) {
   return new Promise((resolve, reject) => {
     const u = new URL(url);
+    const host = M.proxyHost();        // Docker / compose 里是 sidecar 服务名
     const timer = setTimeout(() => reject(new Error('timeout')), timeout);
     const done = (fn, v) => { clearTimeout(timer); fn(v); };
     if (u.protocol !== 'https:') {
-      const req = http.request({ host: '127.0.0.1', port: proxyPort, method: 'GET', path: url, headers: { host: u.host, 'user-agent': 'ocgw' } }, (res) => {
+      const req = http.request({ host, port: proxyPort, method: 'GET', path: url, headers: { host: u.host, 'user-agent': 'ocgw' } }, (res) => {
         let b = ''; res.on('data', (c) => (b += c)); res.on('end', () => done(resolve, b));
       });
       req.on('error', (e) => done(reject, e));
       req.end();
       return;
     }
-    const c = http.request({ host: '127.0.0.1', port: proxyPort, method: 'CONNECT', path: `${u.hostname}:${u.port || 443}` });
+    const c = http.request({ host, port: proxyPort, method: 'CONNECT', path: `${u.hostname}:${u.port || 443}` });
     c.on('connect', (_res, socket) => {
       const s = tls.connect({ socket, servername: u.hostname }, () => {
         s.write(`GET ${u.pathname}${u.search} HTTP/1.1\r\nHost: ${u.host}\r\nUser-Agent: ocgw\r\nConnection: close\r\n\r\n`);

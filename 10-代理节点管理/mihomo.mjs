@@ -98,7 +98,11 @@ export function params() {
  */
 export function detectInterface() {
   const explicit = (loadSubs()._参数 || {}).interfaceName;
+  // "none" / "-" = 明确不绑定（**容器里必须这样**：容器网络已是独立的，
+  // 没有宿主的 TUN 需要绕过，绑 eth0 反而可能出问题）
+  if (explicit === 'none' || explicit === '-') return null;
   if (explicit) return explicit;
+  if (process.env.OCGW_NO_INTERFACE_BIND === '1') return null;
   const skip = /(meta|tun|wsl|hyper-v|vethernet|loopback|虚拟|tap|clash|mihomo)/i;
   const cands = [];
   for (const [name, addrs] of Object.entries(os.networkInterfaces())) {
@@ -278,11 +282,18 @@ export async function refreshProviders() {
   return results;
 }
 
-/* ══════════════════════════════════════════════════ 控制器 API */
+/* ══════════════════════════════════════════════════ 控制器 API
+ *
+ * 主机名可配置：本机跑是 127.0.0.1；Docker / compose 里 mihomo 是**另一个容器**，
+ * 得用服务名（MIHOMO_CONTROLLER_HOST=mihomo）。
+ */
+export function controllerHost() { return process.env.MIHOMO_CONTROLLER_HOST || '127.0.0.1'; }
+/** 面板出站该连哪个代理（mixed-port 所在的 host） */
+export function proxyHost() { return process.env.MIHOMO_PROXY_HOST || '127.0.0.1'; }
+
 export async function api(p, { method = 'GET', body, timeout = 15000 } = {}) {
-  const { controllerPort } = params();
   const secret = readSecret();
-  const url = `http://127.0.0.1:${controllerPort}${p}`;
+  const url = `http://${controllerHost()}:${params().controllerPort}${p}`;
   const r = await fetch(url, {
     method,
     headers: { authorization: `Bearer ${secret}`, 'content-type': 'application/json' },
@@ -399,7 +410,7 @@ export function probeTunnel({ url = 'http://www.gstatic.com/generate_204', timeo
   const t0 = Date.now();
   return new Promise((resolve) => {
     const req = http.request(
-      { host: '127.0.0.1', port: mixedPort, method: 'GET', path: url, headers: { host: u.host, 'user-agent': 'ocgw-probe' } },
+      { host: proxyHost(), port: mixedPort, method: 'GET', path: url, headers: { host: u.host, 'user-agent': 'ocgw-probe' } },
       (res) => {
         const status = res.statusCode;
         res.resume();

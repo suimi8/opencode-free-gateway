@@ -1,0 +1,79 @@
+# ══════════════════════════════════════════════════════════════════════
+# 代理节点池的 mihomo sidecar 配置（Docker 专用）
+#
+# 用法：
+#   mkdir -p 09-服务端部署/mihomo-config
+#   cp 09-服务端部署/mihomo-docker.yaml.example 09-服务端部署/mihomo-config/config.yaml
+#   # 编辑 config.yaml，把下面 proxy-providers 的 url 换成你自己的 Clash 订阅
+#   PANEL_NODE_POOL=1 docker compose -f 09-服务端部署/docker-compose.yml --profile pool up -d
+#
+# 与宿主机版的区别（见 10-代理节点管理/config.template.yaml）：
+#   * external-controller 必须绑 0.0.0.0，面板容器才连得上
+#   * 端口用 17897 / 19097，与面板 mihomo.mjs 的默认值一致
+#   * **不需要** interface-name（容器网络已隔离，没有宿主 TUN 要绕过）
+#   * dns.proxy-server-nameserver 仍要保留：机场节点域名必须解析成真实 IP，
+#     绝不能走 fake-ip
+# ══════════════════════════════════════════════════════════════════════
+
+mixed-port: 17897
+allow-lan: false
+bind-address: '*'
+mode: rule
+log-level: warning
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+find-process-mode: 'off'
+
+# 面板用 http://mihomo:19097 调这个控制器切节点 / 测延迟
+external-controller: 0.0.0.0:19097
+# ⚠️ 只在内网暴露（compose 里没有 ports 映射），所以这里留空。
+#    如果你改了 compose 把端口映射出去，务必设一个强 secret。
+secret: ''
+
+profile:
+  store-selected: true
+  store-fake-ip: false
+
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  # 用 IP 字面量的 DoH，无需 bootstrap，也不会被 fake-ip 污染
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  proxy-server-nameserver:
+    - https://223.5.5.5/dns-query
+    - https://1.1.1.1/dns-query
+  nameserver:
+    - https://223.5.5.5/dns-query
+    - https://1.1.1.1/dns-query
+
+proxy-providers:
+  # 把 url 换成你自己的订阅；可以加多个 provider
+  airport-a:
+    type: http
+    url: "https://example.com/api/v1/client/subscribe?token=PUT_YOUR_TOKEN_HERE"
+    path: ./providers/airport-a.yaml
+    interval: 86400
+    health-check: { enable: false }
+  # airport-b:
+  #   type: http
+  #   url: "https://example.net/link/YOUR_SUB_ID?clashmeta=geo"
+  #   path: ./providers/airport-b.yaml
+  #   interval: 86400
+  #   health-check: { enable: false }
+
+proxy-groups:
+  # 面板只认这一个组，用控制器 API 在里面切节点
+  - name: OCGW
+    type: select
+    use:
+      - airport-a
+      # - airport-b
+
+rules:
+  # 本实例只给面板用，全部流量走选定节点
+  - MATCH,OCGW

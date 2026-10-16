@@ -1,0 +1,50 @@
+# Docker 构建上下文过滤（放在项目根，Docker 只认上下文根的 .dockerignore）
+#
+# 目的：镜像里只留运行必需的东西 —— 更小的上下文、更小的镜像、更少泄漏面。
+
+# ── 版本控制与 CI ──
+.git
+.gitignore
+.gitattributes
+.github
+
+# ── 构建产物 ──
+dist
+node_modules
+
+# ── 第三方内容（本仓库不含，但本地可能有，绝不能进镜像）──
+08-上游源码快照
+99-解包产物与运行时残留
+
+# ── 运行时状态与凭据 🔴 ──
+**/runtime
+10-代理节点管理/subscriptions.json
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/.secret
+**/.testkey
+**/*.log
+*.pid
+
+# ── 内核二进制（GPL-3.0，不进镜像；要节点池用 compose 的 mihomo sidecar）──
+mihomo
+mihomo.exe
+verge-mihomo.exe
+verge-mihomo-alpha.exe
+
+# ── 开发/文档/平台脚本（镜像里用不到）──
+tests
+scripts
+*.md
+**/*.md
+*.cmd
+*.ps1
+自检全部.ps1
+一键自检.cmd
+02-直连客户端
+03-分析报告
+04-门禁判别实验
+05-引擎与运行时探针
+06-源码审计脚本
+07-原始证据

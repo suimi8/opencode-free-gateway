@@ -1,70 +1,120 @@
 # ══════════════════════════════════════════════════════════════════════
-# OpenCode 免费层网关 · 管理面板 —— docker compose
+# OpenCode 免费层网关 —— docker compose
 #
-# ⚠️ 构建上下文必须是【项目根目录】（含 01-管理面板/ 和 09-服务端部署/ 的那层）。
-#    本文件写的是 context: .. —— 相对本文件所在目录（09-服务端部署/）的上一级，
-#    正好是项目根。所以：
+# 构建上下文必须是【项目根目录】（含 01-管理面板/ 与 10-代理节点管理/ 的那层）。
+# 本文件写的是 context: .. —— 相对本文件所在目录（09-服务端部署/）的上一级，
+# 正好是项目根。所以：
 #
-#        cd "<项目根>"
+#     cd "<项目根>"
+#     docker compose -f 09-服务端部署/docker-compose.yml up -d --build
+#
+# 两种模式
+#   ① 默认（只跑面板）—— 不启节点池，上游走直连或你在面板里配的代理
 #        docker compose -f 09-服务端部署/docker-compose.yml up -d --build
 #
-#    或者先 cd 进 09-服务端部署/ 再 `docker compose up -d`（compose 会自动
-#    以该文件所在目录为基准解析 context: ..）。
+#   ② 带代理节点池 —— 额外起一个 mihomo sidecar，只有模型请求走它
+#        cp 09-服务端部署/mihomo-docker.yaml.example 09-服务端部署/mihomo-config/config.yaml
+#        # 编辑 config.yaml 填你自己的订阅
+#        PANEL_NODE_POOL=1 docker compose -f 09-服务端部署/docker-compose.yml --profile pool up -d --build
 #
-#    注意 Docker 不允许 COPY ../xxx，所以 dockerfile 路径写成
-#    09-服务端部署/Dockerfile 而 context 是项目根 —— 这是唯一合法组合。
+# 注意：Docker 不允许 COPY ../xxx，所以 dockerfile 路径写成
+#       09-服务端部署/Dockerfile 而 context 是项目根 —— 这是唯一合法组合。
 # ══════════════════════════════════════════════════════════════════════
 
+name: opencode-free-gateway
+
 services:
-  opencode-gateway:
+  panel:
     build:
       context: ..
       dockerfile: 09-服务端部署/Dockerfile
-    image: opencode-gateway:latest
-    container_name: opencode-gateway
-
+    image: opencode-free-gateway:latest
+    container_name: ocgw-panel
     restart: unless-stopped
 
-    # ⚠️ 默认只绑回环：宿主机 nginx 反代 + HTTPS 时用这个。
-    #    要直接对外暴露可改成 "8790:8790"，但那会让面板明文可达 ——
-    #    面板登录 cookie 没有 Secure 标志、登录接口没有速率限制，
-    #    公网暴露前必须在反代层加 limit_req 与 HSTS。
+    # ⚠️ 默认只绑回环：配合宿主机 nginx 反代 + HTTPS。
+    #    改成 "8790:8790" 会让面板明文可达 —— 面板登录 cookie 无 Secure、
+    #    登录接口无速率限制，公网暴露前**必须**在反代层加 limit_req 与 HSTS。
+    #    宿主端口可用 PANEL_PUBLISH 覆盖（例如本机已有面板在 8790 时）：
+    #      PANEL_PUBLISH=127.0.0.1:18791 docker compose ... up -d
     ports:
-      - "127.0.0.1:8790:8790"
+      - "${PANEL_PUBLISH:-127.0.0.1:8790}:8790"
 
     environment:
-      PANEL_HOST: "0.0.0.0"      # 容器内必须监听 0.0.0.0，否则宿主机映射不进来
+      PANEL_HOST: "0.0.0.0"            # 容器内必须监听 0.0.0.0，否则端口映射进不来
       PANEL_PORT: "8790"
-      PANEL_DB: "/app/data/panel.db"   # 数据落在命名卷里（面板原生支持，无需软链）
+      PANEL_DB: "/app/data/panel.db"   # 落在命名卷里（面板原生支持，无需软链）
+      POOL_DB: "/app/data/pool.db"     # 节点池状态库，跟数据一起持久化
+      PANEL_PASSWORD: "${PANEL_PASSWORD:-admin123}"   # 仅首次创建生效，之后在面板里改
+      PANEL_NODE_POOL: "${PANEL_NODE_POOL:-0}"        # 1 = 启用节点池（需 --profile pool）
       TZ: "Asia/Shanghai"
-
-    # 也可改用文件: env_file: ["../09-服务端部署/.env"]（模板见 .env.example）
+      # 节点池模式下指向 mihomo sidecar（默认值就是这两个，显式写出来更清楚）
+      MIHOMO_CONTROLLER_HOST: "mihomo"
+      MIHOMO_PROXY_HOST: "mihomo"
 
     volumes:
-      # 命名卷持久化 panel.db(-wal/-shm)。
-      # 为什么不直接挂单文件匿名卷: WAL 模式还需要 panel.db-wal / panel.db-shm,
-      # 只挂 panel.db 会让 SQLite 在容器层写 -wal，重建容器即丢数据甚至锁不一致。
-      # 挂【目录】才能把三者一起持久化。
+      # 命名卷持久化 panel.db(-wal/-shm) 与 pool.db。
+      # 为什么不挂单文件：WAL 模式还要 panel.db-wal / -shm，
+      # 只挂 panel.db 会让 SQLite 把 -wal 写在容器层，重建容器即丢数据。
       - panel-data:/app/data
 
       # 想直接看到文件（便于用 snapshot-db.mjs 备份）可换成 bind mount：
-      #   - ./data:/app/data
-      # 宿主机目录需先 chown 给容器内 uid（默认 1000, node）: sudo chown -R 1000:1000 ./data
+      #   - ../data:/app/data
+      # 宿主机目录需先 chown 给容器内 uid（node 用户，通常 1000）：
+      #   sudo chown -R 1000:1000 ../data
 
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get({host:'127.0.0.1',port:8790,path:'/',timeout:4000},r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "require('http').get({host:'127.0.0.1',port:8790,path:'/',timeout:4000},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
-      start_period: 10s
+      start_period: 15s
       retries: 3
 
-    # 面板要连上游 HTTPS 并使用渠道里配置的代理（如 socks5/http 代理）时，
-    # 通常需要 --add-host 或自定义网络；默认 bridge 已可出网。
-    # 若上游代理跑在宿主机上，用 host.docker.internal（Linux 需加：
-    #   extra_hosts: ["host.docker.internal:host-gateway"] ），
-    # 并注意渠道里填 127.0.0.1 在容器内指向容器自身，不是宿主机。
+    depends_on:
+      mihomo:
+        condition: service_started
+        required: false       # 默认模式（不启 mihomo）下 compose 不会报错
 
-    # 日志不要涨到天上去
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── 可选：代理节点池的出口。只有 --profile pool 时才会启动 ──
+  #
+  # 用官方 mihomo 镜像（GPL-3.0），**不把内核打进面板镜像**。
+  # 面板不直接管这个容器的进程，只通过它的 RESTful 控制器切节点 / 测延迟。
+  mihomo:
+    image: metacubex/mihomo:latest
+    container_name: ocgw-mihomo
+    profiles: ["pool"]
+    restart: unless-stopped
+
+    # 控制器（切节点、测延迟）与 mixed-port 都只走 compose 内网，
+    # 不映射到宿主 —— 避免变成开放代理。
+    expose:
+      - "17897"   # mixed-port（HTTP + SOCKS5）
+      - "19097"   # external-controller
+
+    volumes:
+      # 配置见 mihomo-docker.yaml.example（里面填你的订阅链接）
+      - ./mihomo-config:/root/.config/mihomo
+
+    # 容器里没有宿主 TUN 需要绕过，mihomo 直接出网即可。
+    # 若你的订阅节点需要走另一个代理才能连上，在这里加：
+    #   environment:
+    #     - CLASH_OVERRIDE_...
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:19097/version"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
     logging:
       driver: json-file
       options:

@@ -55,16 +55,48 @@ systemctl status opencode-gateway
 
 ### C. Docker
 
-Docker 的构建上下文必须是**项目根目录**（因为 `01-管理面板/` 在 `09-服务端部署/` 的上一级，
-Docker 不允许 `COPY ../`）：
+镜像发布在 **ghcr.io**（linux/amd64 + linux/arm64），也可以自己构建。
+Docker 的构建上下文必须是**项目根目录**（`01-管理面板/` 与 `10-代理节点管理/`
+都在 `09-服务端部署/` 的上一级，Docker 不允许 `COPY ../`）：
 
 ```bash
-cd "<项目根>"          # 含 01-管理面板/ 与 09-服务端部署/ 的那层
-docker build -f 09-服务端部署/Dockerfile -t opencode-gateway:latest .
+# 方式 A：compose（推荐）
+cd "<项目根>"
+PANEL_PASSWORD=换成你的密码 docker compose -f 09-服务端部署/docker-compose.yml up -d --build
 
-# 或直接用 compose
-docker compose -f 09-服务端部署/docker-compose.yml up -d --build
+# 方式 B：直接跑已发布镜像
+docker run -d --name ocgw -p 127.0.0.1:8790:8790 \
+  -e PANEL_PASSWORD=换成你的密码 -v ocgw-data:/app/data \
+  ghcr.io/suimi8/opencode-free-gateway:latest
+
+# 方式 C：自己构建
+docker build -f 09-服务端部署/Dockerfile -t opencode-free-gateway:latest .
 ```
+
+**带代理节点池**（额外起一个 mihomo sidecar，只有模型请求走它）：
+
+```bash
+mkdir -p 09-服务端部署/mihomo-config
+cp 09-服务端部署/mihomo-docker.yaml.example 09-服务端部署/mihomo-config/config.yaml
+# 编辑 config.yaml，填你自己的 Clash 订阅
+PANEL_PASSWORD=换成你的密码 PANEL_NODE_POOL=1 \
+  docker compose -f 09-服务端部署/docker-compose.yml --profile pool up -d --build
+```
+
+| 要点 | 说明 |
+|---|---|
+| 数据持久化 | `VOLUME /app/data`；`PANEL_DB` 与 `POOL_DB` 都指到这里。**挂目录而不是单文件** —— WAL 模式还有 `-wal`/`-shm` |
+| 健康检查 | 镜像内置 `HEALTHCHECK`（node 内置 http 探 `GET /`），`docker ps` 会显示 `healthy` |
+| 运行用户 | 非 root（`node`，uid 1000）。bind mount 时 `sudo chown -R 1000:1000 <目录>` |
+| 宿主端口 | 默认 `127.0.0.1:8790`。被占用时用 `PANEL_PUBLISH=127.0.0.1:18791` 覆盖 |
+| 初始密码 | `PANEL_PASSWORD` **仅在首次创建数据库时生效**，之后要在面板里改 |
+| 网卡绑定 | 容器内自动关闭（`OCGW_NO_INTERFACE_BIND=1`）—— 容器网络已隔离，没有宿主那种 TUN 要绕过 |
+| 内核 | 不打进镜像（GPL-3.0 + 61 MB）。节点池用 compose 的 `mihomo` profile，面板通过 `MIHOMO_CONTROLLER_HOST` / `MIHOMO_PROXY_HOST` 指挥 sidecar |
+| 公网暴露 | 默认只绑回环。面板 cookie 无 `Secure`、登录无速率限制，**公网前必须**加反代 + HTTPS + `limit_req` |
+
+> CI 每次都会真的 build 镜像、起容器，验证：健康检查转 `healthy`、登录、
+> 默认渠道种子、模型列表、**重启后数据仍在**、镜像里没有凭据与内核、
+> compose 默认配置与 `pool` profile 都合法。
 
 ---
 
@@ -75,6 +107,15 @@ docker compose -f 09-服务端部署/docker-compose.yml up -d --build
 | `PANEL_HOST` | `127.0.0.1`（面板自身）；`start.sh` 里默认 `0.0.0.0` | 监听地址 |
 | `PANEL_PORT` | `8790` | 监听端口 |
 | `PANEL_DB` | 与 `server.mjs` 同目录的 `panel.db` | 数据库位置。容器/数据盘部署时指到这里，**不需要符号链接** |
+| `PANEL_PASSWORD` | `admin123` | **仅首次创建数据库时生效**，之后要在面板里改 |
+| `PANEL_SITE_NAME` | `OpenCode 免费层网关` | 同上，仅首次生效 |
+| `POOL_DB` | `10-代理节点管理/runtime/pool.db` | 节点池状态库位置（容器里指到数据卷） |
+| `PANEL_NODE_POOL` | `1` | `0` 关闭代理节点池，退回渠道里手填的代理 |
+| `PANEL_NODE_POOL_PROXY` | 池子实例的 mixed-port | 直接指定出口代理串 |
+| `PANEL_MODEL_DISCOVERY` | `1` | `0` 关闭上游 free 模型动态发现 |
+| `MIHOMO_CONTROLLER_HOST` | `127.0.0.1` | mihomo 控制器主机。compose 里是 sidecar 服务名 `mihomo` |
+| `MIHOMO_PROXY_HOST` | `127.0.0.1` | mixed-port 所在主机，同上 |
+| `OCGW_NO_INTERFACE_BIND` | 空 | `1` = 不绑定物理网卡（容器里必须） |
 | `NODE_EXE` | 自动三级查找 | 仅 `start.sh`/`status.sh`/`selftest.sh` 读取 |
 | `OCGW_READY_TIMEOUT` | `30` | `start.sh --daemon` 等待就绪秒数 |
 | `OCGW_STOP_GRACE` | `10` | `stop.sh` SIGTERM 后等待秒数 |
