@@ -228,22 +228,32 @@ export function catalogState() {
     rows,
   };
 }
-/** 供 /v1/models 用：把动态结果映射成 OpenAI 格式（默认只给可用的） */
+/** 供 /v1/models 用：把动态结果映射成 OpenAI 格式（默认只给可用的）
+ *
+ * ⚠️ 必须区分「还没探测」与「探测过确认不可用」：
+ *    refreshCatalog 是**先插入全部 free 候选（usable=0）再逐个探测**的。
+ *    若把未探测的也当不可用，探测期间下游模型列表会从 11 个掉到 2~3 个
+ *    （实测就是这个现象）。判据用 last_probe_at：为 0 表示本轮还没轮到它，
+ *    不能据此下否定结论。
+ */
 export function downstreamModels({ includeUnusable = false } = {}) {
   const proto = DB.getProtocolMap();
   const where = includeUnusable
     ? 'is_free = 1 AND enabled = 1'
-    : 'is_free = 1 AND enabled = 1 AND usable = 1';
+    : 'is_free = 1 AND enabled = 1 AND (usable = 1 OR last_probe_at = 0)';
   return DB.db.prepare(`SELECT * FROM model_catalog WHERE ${where} ORDER BY usable DESC, id`).all()
     .map((r) => {
       const p = proto[r.id];
+      const probed = (r.last_probe_at || 0) > 0;
       return {
         id: r.id,
         object: 'model',
         created: Math.floor((r.last_seen_at || r.last_probe_at || Date.now()) / 1000),
         owned_by: 'opencode-free',
-        available: !!r.usable,
-        status: r.status,
+        probed,
+        // 没探测过 → 不下否定结论（true），避免异步探测期间把下游列表截断
+        available: probed ? !!r.usable : true,
+        status: probed ? r.status : 'pending',
         in_upstream: !!r.in_upstream,
         protocols: r.protocol ? [r.protocol] : (p ? p.protocols : null),
       };

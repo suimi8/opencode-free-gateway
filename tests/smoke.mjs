@@ -109,6 +109,9 @@ await check('GET /v1/models (OpenAI 兼容)', async () => {
   const j = await r.json();
   if (!Array.isArray(j.data)) throw new Error('data 不是数组');
   if (j.data.length < 1) throw new Error('模型列表为空');
+  // 默认渠道种子有 11 个模型；少于 10 个说明「动态发现结果替换了手配清单」的
+  // 截断问题回归了（探测异步跑，跑到一半时列表会变短）
+  if (j.data.length < 10) throw new Error(`模型被截断，只有 ${j.data.length} 个（预期 >= 10）`);
   return `${j.data.length} 个模型`;
 });
 

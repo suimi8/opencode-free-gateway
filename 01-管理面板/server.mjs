@@ -742,10 +742,26 @@ async function handle(req, res) {
   if (p === '/v1/models' || p === '/v1/models/') {
     const auth = tokenAuth(req);
     if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
-    /* 有动态发现结果时以它为准（上游增删 free 模型会自动反映），否则退回渠道手配 */
+    /* 合并「渠道手配」与「动态发现」—— 不能二选一。
+     * 动态探测是**异步**的：启动 5 秒后才开始，第一轮跑完要几十秒。
+     * 早期写法是「有动态结果就替换手配清单」，于是探测跑到一半时
+     * /v1/models 只返回那几个已探测完的模型，列表被截断。 */
     const includeUnusable = u.searchParams.get('all') === '1';
-    const dyn = REG.enabled() ? REG.downstreamModels({ includeUnusable }) : [];
-    const data = (dyn.length ? dyn : allModels()).map((m) => ({
+    const rows = new Map();
+    for (const m of allModels()) {
+      rows.set(m.id, { id: m.id, owned_by: m.owned_by, protocols: m.protocols || null, available: true, status: 'configured' });
+    }
+    if (REG.enabled()) {
+      for (const m of REG.downstreamModels({ includeUnusable: true })) {
+        rows.set(m.id, { ...(rows.get(m.id) || {}), ...m });
+      }
+    }
+    // 剔除「上游已下架且探测确认不可用」的；下架但仍可用的要留着（实测有这种）
+    const gone = new Set(REG.enabled() ? REG.goneModelIds() : []);
+    const data = [...rows.values()]
+      .filter((m) => !gone.has(m.id) || m.available)
+      .filter((m) => includeUnusable || m.available !== false)
+      .map((m) => ({
       id: m.id,
       object: 'model',
       created: m.created || Math.floor(Date.now() / 1000),
