@@ -1,0 +1,2 @@
+{"t":1792127273025,"kind":"fetch","url":"https://models.opencode.ai/api.json","method":"GET","headers":{"user-agent":"opencode/prod/1.19.2/desktop","b3":"24e7a2169baf70963529556c048c954c-ecea2674babca273-1-cf9c0691fd7eb78c","traceparent":"00-24e7a2169baf70963529556c048c954c-ecea2674babca273-01"}}
+{"t":1792127273637,"kind":"response","url":"https://models.opencode.ai/api.json","status":200}

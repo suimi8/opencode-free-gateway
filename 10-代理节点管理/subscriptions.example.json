@@ -1,0 +1,29 @@
+{
+  "_说明": "复制成 subscriptions.json 再填你自己的机场订阅。mihomo 会用 proxy-providers 直接拉取并解析 Clash YAML；这里只放订阅本身，不要把节点抄进来。",
+  "_安全": "subscriptions.json 已在 .gitignore 里，不会被提交。",
+  "providers": [
+    {
+      "name": "airport-a",
+      "url": "https://example.com/api/v1/client/subscribe?token=PUT_YOUR_TOKEN_HERE",
+      "enabled": true
+    },
+    {
+      "name": "airport-b",
+      "url": "https://example.net/link/YOUR_SUB_ID?clashmeta=geo",
+      "enabled": false
+    }
+  ],
+  "_参数": {
+    "mixedPort": 17897,
+    "controllerPort": 19097,
+    "groupName": "OCGW",
+    "logLevel": "warning",
+    "interfaceName": ""
+  },
+  "_参数说明": {
+    "mixedPort": "本实例的 HTTP/SOCKS5 混合端口，Clash Verge 默认用 7897，别撞",
+    "controllerPort": "RESTful 控制器端口，用于切节点/测延迟",
+    "groupName": "面板只操作这一个 select 分组",
+    "interfaceName": "留空则自动探测物理网卡（用于绕过 Clash Verge 的 TUN）。换网络后网卡名变了可在这里写死，如 WLAN / Ethernet"
+  }
+}

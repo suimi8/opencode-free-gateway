@@ -1,0 +1,100 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Intro documentation for OpenCode."><meta name="theme-color" content="#000000"><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="swap"><script type="module" src="/v2/_astro/ClientRouter.astro_astro_type_script_index_0_lang.QXqYV-0P.js"></script><link rel="canonical" href="https://opencode.ai/v2/docs/console/"><link rel="icon" type="image/svg+xml" href="/v2/favicon.svg"><title>Intro | OpenCode</title><link rel="stylesheet" href="/v2/_astro/_..CwgjG4PU.css"></head><body><a class="skip-link" href="#docs-content">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/v2/" aria-label="OpenCode home"><img src="/v2/assets/logo-dark.svg" alt="OpenCode"></a><nav aria-label="Documentation sections"><a href="/v2/docs/">Docs</a><a href="/v2/docs/cli/">CLI</a><a href="/v2/docs/build/">Build</a><a href="/v2/docs/api/">API</a><a href="/v2/docs/console/" aria-current="page">Console</a><a href="/docs">V1</a></nav><div class="header-spacer"></div><button class="search-trigger" type="button" data-search-open aria-label="Search documentation"><span>Search</span><kbd>⌘K</kbd></button><a class="github-link" href="https://github.com/anomalyco/opencode" aria-label="OpenCode on GitHub">GitHub</a></div></header><dialog class="search-dialog" data-search-dialog data-pagefind-path="/v2/docs/pagefind/pagefind.js" data-base-url="/v2/docs/" aria-label="Search documentation"><form method="dialog" class="search-bar"><span aria-hidden="true">&gt;</span><input data-search-input type="search" placeholder="Search docs" autocomplete="off"><button type="submit" aria-label="Close search">Esc</button></form><div class="search-results" data-search-results><p>Start typing to search the documentation.</p></div></dialog><script>
+  let pagefind
+
+  document.addEventListener("keydown", (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault()
+      const dialog = document.querySelector("[data-search-dialog]")
+      dialog?.showModal()
+      dialog?.querySelector("[data-search-input]")?.focus()
+    }
+  })
+
+  const setupSearch = () => {
+    const dialog = document.querySelector("[data-search-dialog]")
+    const input = document.querySelector("[data-search-input]")
+    const results = document.querySelector("[data-search-results]")
+    const trigger = document.querySelector("[data-search-open]")
+    if (trigger && !trigger.dataset.searchReady) {
+      trigger.dataset.searchReady = "true"
+      trigger.addEventListener("click", () => {
+        dialog?.showModal()
+        input?.focus()
+      })
+    }
+
+    if (input && results && !input.dataset.searchReady) input.addEventListener("input", async () => {
+      input.dataset.searchReady = "true"
+      const query = input.value.trim()
+      if (!query) {
+        results.innerHTML = "<p>Start typing to search the documentation.</p>"
+        return
+      }
+
+      const pagefindPath = dialog?.dataset.pagefindPath
+      if (!pagefindPath) return
+      const api = pagefind ?? (pagefind = await import(pagefindPath))
+      const search = await api.search(query)
+      const pages = await Promise.all(search.results.slice(0, 8).map((result) => result.data()))
+      results.replaceChildren(
+        ...pages.map((page) => {
+          const link = document.createElement("a")
+          const base = dialog.dataset.baseUrl ?? "/"
+          link.href = page.url.startsWith(base)
+            ? page.url
+            : `${dialog.dataset.baseUrl?.replace(/\/$/, "")}${page.url}`
+          const title = document.createElement("strong")
+          title.textContent = page.meta.title
+          const excerpt = document.createElement("span")
+          excerpt.innerHTML = page.excerpt
+          link.append(title, excerpt)
+          return link
+        }),
+      )
+      if (!pages.length) results.innerHTML = "<p>No results found.</p>"
+    })
+  }
+
+  setupSearch()
+  document.addEventListener("astro:page-load", setupSearch)
+</script><details class="mobile-navigation"><summary>Console navigation</summary><nav class="docs-sidebar" aria-label="Documentation"><section><ul><li><a href="/v2/docs/console/" aria-current="page">Intro</a></li><li><a href="/v2/docs/console/models/">Models</a></li><li><a href="/v2/docs/console/providers/">Providers</a></li><li><a href="/v2/docs/console/websearch/">Web Search</a></li><li><a href="/v2/docs/console/go/">Go</a></li></ul></section><section><h2>Workspace</h2><ul><li><a href="/v2/docs/console/workspaces/">Basics</a></li><li><a href="/v2/docs/console/members/">Members</a></li><li><a href="/v2/docs/console/sso/">SSO</a></li><li><a href="/v2/docs/console/scim/">SCIM</a></li><li><a href="/v2/docs/console/budgets/">Budgets</a></li><li><a href="/v2/docs/console/billing/">Billing</a></li></ul></section><section><h2>API</h2><ul><li><a href="/v2/docs/console/api/">Overview</a></li><li><a href="/v2/docs/console/api/inference/">Inference</a></li><li><a href="/v2/docs/console/api/providers/">Providers</a></li><li><a href="/v2/docs/console/api/budgets/">Budgets</a></li></ul></section></nav></details><div class="docs-frame"><aside class="sidebar-column"><nav class="docs-sidebar" aria-label="Documentation"><section><ul><li><a href="/v2/docs/console/" aria-current="page">Intro</a></li><li><a href="/v2/docs/console/models/">Models</a></li><li><a href="/v2/docs/console/providers/">Providers</a></li><li><a href="/v2/docs/console/websearch/">Web Search</a></li><li><a href="/v2/docs/console/go/">Go</a></li></ul></section><section><h2>Workspace</h2><ul><li><a href="/v2/docs/console/workspaces/">Basics</a></li><li><a href="/v2/docs/console/members/">Members</a></li><li><a href="/v2/docs/console/sso/">SSO</a></li><li><a href="/v2/docs/console/scim/">SCIM</a></li><li><a href="/v2/docs/console/budgets/">Budgets</a></li><li><a href="/v2/docs/console/billing/">Billing</a></li></ul></section><section><h2>API</h2><ul><li><a href="/v2/docs/console/api/">Overview</a></li><li><a href="/v2/docs/console/api/inference/">Inference</a></li><li><a href="/v2/docs/console/api/providers/">Providers</a></li><li><a href="/v2/docs/console/api/budgets/">Budgets</a></li></ul></section></nav></aside><main id="docs-content"><article class="prose" data-pagefind-body data-pagefind-meta="title:Intro"><h1>Intro<button type="button" aria-label="Copy page as Markdown" data-copy-markdown data-pagefind-ignore><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg></button></h1><p>The <a href="https://opencode.ai/console">OpenCode Console</a> is an optional service that provides additional benefits to
+using OpenCode, on your own or as a team.</p>
+<ul>
+<li><a href="/v2/docs/console/workspaces">Workspaces</a> for sharing access with your <a href="/v2/docs/console/members">team</a></li>
+<li><a href="/v2/docs/console/models">Inference</a> for both proprietary and open source models</li>
+<li><a href="/v2/docs/console/providers">Providers</a> for connecting your own provider accounts through the Console gateway</li>
+<li>Usage tracking and <a href="/v2/docs/console/budgets">budget</a> controls</li>
+<li>Deploy team wide policies to control OpenCode behavior</li>
+<li><a href="/v2/docs/console/websearch">Web search</a></li>
+<li><a href="/v2/docs/console/go">OpenCode Go and Go Plus</a>, $10 and $40 monthly subscriptions for open source model access</li>
+</ul>
+<h2 id="get-started">Get started</h2>
+<p>You don’t need a team to use the Console. Every account starts with a <strong>Personal</strong> workspace where you are the only
+member.</p>
+<ol>
+<li>Sign in to the <a href="https://opencode.ai/console">Console</a>.</li>
+<li>Subscribe to <a href="/v2/docs/console/go">Go</a>, add <a href="/v2/docs/console/billing#add-credits">credits</a>, or connect a <a href="/v2/docs/console/providers">provider</a>.</li>
+<li>Run <code>/connect</code> in OpenCode and choose the workspace.</li>
+<li>Optionally, <a href="/v2/docs/console/members#invite-members">invite</a> your team.</li>
+</ol>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="text"><code><span class="line"><span>/connect</span></span></code></pre>
+<h2 id="policies">Policies</h2>
+<p>Providers and Tools rules from the Policies page apply to every OpenCode V2 client
+connected to the workspace. They are delivered as <a href="/v2/docs/policies#console">policy</a>
+statements with final authority over the member’s own configuration and take effect
+within about a minute.</p></article></main><aside class="toc-column"><nav class="docs-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#get-started">Get started</a></li><li><a href="#policies">Policies</a></li></ul></nav></aside></div><script>
+      const addHeadingAnchors = () => {
+        for (const heading of document.querySelectorAll(".prose :is(h2, h3)[id]")) {
+          if (heading.querySelector(".heading-anchor")) continue
+          const anchor = document.createElement("a")
+          anchor.className = "heading-anchor"
+          anchor.href = `#${heading.id}`
+          anchor.setAttribute("aria-label", `Link to ${heading.textContent ?? "section"}`)
+          anchor.textContent = "#"
+          heading.append(anchor)
+        }
+      }
+
+      addHeadingAnchors()
+      document.addEventListener("astro:page-load", addHeadingAnchors)
+    </script><script type="module">globalThis.process??={},globalThis.process.env??={},document.addEventListener(`click`,async e=>{if(!(e.target instanceof Element))return;let t=e.target.closest(`[data-copy-markdown]`);if(!t)return;t.dataset.copied=`true`,t.setAttribute(`aria-label`,`Copied`),window.setTimeout(()=>{delete t.dataset.copied,t.setAttribute(`aria-label`,`Copy page as Markdown`)},1500);let n=await fetch(window.location.href,{headers:{Accept:`text/markdown`}});n.ok&&await navigator.clipboard.writeText(await n.text())});</script></body></html>

@@ -1,0 +1,118 @@
+# ══════════════════════════════════════════════════════════════════════
+# OpenCode 免费层网关 · 管理面板 —— systemd 单元
+#
+# ── 安装步骤 ────────────────────────────────────────────────────────
+#   1) 建立专用低权限用户（不带 shell、无家目录登录能力）:
+#        sudo useradd --system --create-home --home-dir /var/lib/ocgw \
+#             --shell /usr/sbin/nologin ocgw
+#
+#   2) 把面板放到 /opt（root 拥有，只读；仅数据目录给 ocgw 可写）:
+#        sudo mkdir -p /opt/opencode-gateway
+#        sudo cp -r "<项目根>/01-管理面板" /opt/opencode-gateway/panel
+#        sudo mkdir -p /var/lib/ocgw/panel
+#        # panel.db 及其 -wal/-shm 属于数据，放可写目录
+#        # 首次部署可直接把现有库拷过去（务必先 VACUUM INTO 快照，不要只 cp panel.db）:
+#        #   node 09-服务端部署/snapshot-db.mjs /path/to/panel.db /var/lib/ocgw/panel/panel.db
+#        sudo chown -R root:root /opt/opencode-gateway
+#        sudo chown -R ocgw:ocgw /var/lib/ocgw
+#
+#   3) 让面板把数据库写到可写目录（面板按 import.meta.dirname 找 panel.db）:
+#        sudo -u ocgw ln -sfn /var/lib/ocgw/panel/panel.db /opt/opencode-gateway/panel/panel.db
+#        sudo -u ocgw ln -sfn /var/lib/ocgw/panel/panel.db-wal /opt/opencode-gateway/panel/panel.db-wal
+#        sudo -u ocgw ln -sfn /var/lib/ocgw/panel/panel.db-shm /opt/opencode-gateway/panel/panel.db-shm
+#      （SQLite 会跟随符号链接写真实文件；只建 panel.db 的软链即可，
+#        -wal/-shm 由 SQLite 在真实文件旁自动创建，上面两条是为兼容旧残留。）
+#
+#   4) 安装并启动:
+#        sudo cp 09-服务端部署/opencode-gateway.service /etc/systemd/system/
+#        sudo systemctl daemon-reload
+#        sudo systemctl enable --now opencode-gateway
+#        systemctl status opencode-gateway
+#        journalctl -u opencode-gateway -f
+#
+#   5) 验证健康检查:
+#        curl -i http://127.0.0.1:8790/
+#
+# ── 安全取舍（重要）────────────────────────────────────────────────
+#   ProtectHome=read-only 会禁止服务读 $HOME。而 install-node.sh 默认把 Node
+#   装到 $HOME/node22 —— 两者直接冲突（服务会因找不到 node 而启动失败，
+#   报 status=203/EXEC）。两种取舍：
+#
+#   A) 推荐：Node 装到 /opt（与 ProtectHome=read-only 共存，最安全）
+#        sudo mkdir -p /opt/node22
+#        curl -fsSL https://nodejs.org/dist/v22.22.3/node-v22.22.3-linux-x64.tar.xz \
+#          | sudo tar -xJ --strip-components=1 -C /opt/node22
+#        # 然后 ExecStart 用 /opt/node22/bin/node（本文件已按此写）
+#        # 需要 Node >= 22.5（node:sqlite 内置模块），22.22.3 满足。
+#
+#   B) 妥协：沿用 $HOME 下的便携 Node，则必须放开家目录保护
+#        ProtectHome=false            # 或 no
+#        并把 ExecStart 改成 /home/<你的用户>/node22/bin/node
+#        同时 WorkingDirectory 指向面板实际路径。
+#        代价：服务进程能看到该用户家目录里的所有文件，隔离性下降。
+#        若坚持要隔离，也可只读挂载：ProtectHome=read-only 会把 /home 整个
+#        变成只读（仍可见但不可写）——对只读执行的 node 二进制来说其实够用，
+#        真正的障碍是权限：other 用户 ocgw 需要有 x 位能穿过家目录链。
+#        实测更省事的做法仍是 A)。
+#
+# ── 其它注意 ────────────────────────────────────────────────────────
+#   * 面板登录 cookie 目前 **没有 Secure 标志**，也没有登录限速。
+#     因此本单元只监听 0.0.0.0 供内网/反代使用，**不要直连公网**；
+#     公网入口必须是 nginx HTTPS + limit_req（见同目录 nginx.conf.example）。
+#   * 改默认密码：登录面板后立刻修改，或先在临时实例上改完再上线。
+# ══════════════════════════════════════════════════════════════════════
+
+[Unit]
+Description=OpenCode 免费层网关 管理面板 (HTTP 8790)
+Documentation=file:/opt/opencode-gateway/panel/README.md
+After=network-online.target
+Wants=network-online.target
+# 反复崩溃时不要无限快速重启（systemd v230+ 要求这两项位于 [Unit]）
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=ocgw
+Group=ocgw
+
+WorkingDirectory=/opt/opencode-gateway/panel
+# 使用绝对路径的 node（方案 A：Node 装在 /opt，与 ProtectHome 加固兼容）
+ExecStart=/opt/node22/bin/node /opt/opencode-gateway/panel/server.mjs
+
+Environment=PANEL_HOST=0.0.0.0
+Environment=PANEL_PORT=8790
+# 如需读同目录 .env.example 里的自定义值，用下面这行替代上面两行 Environment=
+# EnvironmentFile=-/etc/opencode-gateway.env
+# 固定时区与日志即时刷新，便于 journalctl 观察
+Environment=NODE_ENV=production
+Environment=TZ=Asia/Shanghai
+
+Restart=always
+RestartSec=3
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=opencode-gateway
+
+# ── 加固 ────────────────────────────────────────────────────────────
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+# 允许写入数据库目录（ProtectSystem=full 下 /var/lib 仍可写，这里再显式声明）
+ReadWritePaths=/var/lib/ocgw
+# 只允许 IPv4/IPv6/Unix 套接字，屏蔽其它地址族
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+# 面板要连上游 HTTPS（默认还会走渠道里配置的代理），因此不启用 PrivateNetwork
+# 若你的部署明确不需要本地套接字，可在确认后追加: PrivateNetwork=false
+
+[Install]
+WantedBy=multi-user.target

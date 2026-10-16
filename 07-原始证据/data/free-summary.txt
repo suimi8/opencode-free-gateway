@@ -1,0 +1,163 @@
+﻿=== opencode: total=124 free(cost0)=41 freeActive=10
+-- FREE ACTIVE --
+longcat-2.5-preview-free | ctx=1000000 out=131072 in=- | cost={"input":0,"output":0,"cache_read":0} | tool_call=true attach=true reasoning=true | status=active | updated=2026-09-25
+cat-jam-free | ctx=1048576 out=131072 in=- | cost={"input":0,"output":0,"cache_read":0} | tool_call=true attach=false reasoning=true | status=active | updated=2026-10-12
+space-bunny-free | ctx=1048576 out=524288 in=524288 | cost={"input":0,"output":0,"cache_read":0,"cache_write":0} | tool_call=true attach=true reasoning=true | status=active | updated=2026-09-23
+mimo-v2.6-flash-free | ctx=200000 out=32000 in=- | cost={"input":0,"output":0,"cache_read":0} | tool_call=true attach=true reasoning=true | status=active | updated=2026-09-22
+nemotron-3-ultra-free | ctx=1000000 out=128000 in=- | cost={"input":0,"output":0,"cache_read":0} | tool_call=true attach=false reasoning=true | status=active | updated=2026-06-04
+nemotron-3.5-lightning-free | ctx=262144 out=262144 in=- | cost={"input":0,"output":0,"cache_read":0} | tool_call=true attach=false reasoning=true | status=active | updated=2026-08-11
+nemotron-3.5-super-vl-free | ctx=1048576 out=131072 in=1048576 | cost={"input":0,"output":0,"cache_read":0} | tool_call=true attach=true reasoning=true | status=active | updated=2026-10-15
+deepseek-v4.1-flash-free | ctx=200000 out=32000 in=- | cost={"input":0,"output":0,"cache_read":0} | tool_call=true attach=true reasoning=true | status=active | updated=2026-09-10
+big-pickle | ctx=200000 out=32000 in=160000 | cost={"input":0,"output":0,"cache_read":0,"cache_write":0} | tool_call=true attach=false reasoning=true | status=active | updated=2025-10-17
+muse-spark-1.3-contributor-free | ctx=1048576 out=131072 in=- | cost={"input":0,"output":0,"cache_read":0} | tool_call=true attach=true reasoning=true | status=active | updated=2026-09-02
+-- FREE DEPRECATED (count 31) --
+ling-3.0-flash-fin-free | ctx=262144 out=32768 | tool_call=true
+fledge-alpha-free | ctx=1048576 out=131072 | tool_call=true
+qwen3.6-plus-free | ctx=262144 out=65536 | tool_call=true
+mimo-v2-pro-free | ctx=1048576 out=64000 | tool_call=true
+muse-spark-1.2-contributor-free | ctx=1048576 out=131072 | tool_call=true
+ling-3.1-flash-free | ctx=262144 out=32768 | tool_call=true
+glm-5-free | ctx=204800 out=131072 | tool_call=true
+trinity-large-preview-free | ctx=131072 out=131072 | tool_call=true
+ling-3.0-tiny-free | ctx=262144 out=32768 | tool_call=true
+kimi-k2.5-free | ctx=262144 out=262144 | tool_call=true
+glm-4.7-free | ctx=204800 out=131072 | tool_call=true
+laguna-s-2.1-free | ctx=256000 out=32000 | tool_call=true
+minimax-m3-free | ctx=200000 out=32000 | tool_call=true
+exo-free | ctx=1048576 out=131072 | tool_call=true
+minimax-m2.5-free | ctx=204800 out=131072 | tool_call=true
+ring-2.6-1t-free | ctx=262000 out=66000 | tool_call=true
+longcat-2.0-free | ctx=1000000 out=131072 | tool_call=true
+hy3-preview-free | ctx=256000 out=64000 | tool_call=true
+nemotron-3-super-free | ctx=204800 out=128000 | tool_call=true
+minimax-m2.1-free | ctx=204800 out=131072 | tool_call=true
+mimo-v2.5-free | ctx=200000 out=32000 | tool_call=true
+grok-code | ctx=256000 out=256000 | tool_call=true
+ling-2.6-flash-free | ctx=262100 out=32800 | tool_call=true
+deepseek-v4-flash-free | ctx=200000 out=128000 | tool_call=true
+hy3-free | ctx=190000 out=64000 | tool_call=true
+mimo-v2-omni-free | ctx=262144 out=64000 | tool_call=true
+ling-3.0-flash-free | ctx=262144 out=32768 | tool_call=true
+north-mini-code-free | ctx=256000 out=64000 | tool_call=true
+mimo-v2-flash-free | ctx=262144 out=65536 | tool_call=true
+step-5-preview-free | ctx=1000000 out=65536 | tool_call=true
+x-preview-f-free | ctx=1000000 out=131072 | tool_call=true
+-- PAID (non-zero cost) count 83 --
+gpt-5.4 | ctx=1050000 out=128000 | cost_in=2.5 cost_out=15 | tool_call=true
+claude-haiku-4-5 | ctx=200000 out=64000 | cost_in=1 cost_out=5 | tool_call=true
+gpt-5.4-pro | ctx=1050000 out=128000 | cost_in=30 cost_out=180 | tool_call=true
+muse-spark-1.3 | ctx=1048576 out=131072 | cost_in=1.25 cost_out=4.25 | tool_call=true
+gpt-5.5-pro | ctx=1050000 out=128000 | cost_in=30 cost_out=180 | tool_call=true
+grok-4.7 | ctx=500000 out=500000 | cost_in=2 cost_out=6 | tool_call=true
+gpt-5.4-nano | ctx=400000 out=128000 | cost_in=0.2 cost_out=1.25 | tool_call=true
+gpt-5.2-codex | ctx=400000 out=128000 | cost_in=1.75 cost_out=14 | tool_call=true
+gpt-5.1-codex | ctx=400000 out=128000 | cost_in=1.07 cost_out=8.5 | tool_call=true
+glm-5.3-flash | ctx=1000000 out=131072 | cost_in=0.15 cost_out=0.5 | tool_call=true
+glm-4.6 | ctx=204800 out=131072 | cost_in=0.6 cost_out=2.2 | tool_call=true
+qwen3.8-max | ctx=262144 out=131072 | cost_in=2 cost_out=6 | tool_call=true
+kimi-k3 | ctx=1048576 out=131072 | cost_in=3 cost_out=15 | tool_call=true
+gpt-5-codex | ctx=400000 out=128000 | cost_in=1.07 cost_out=8.5 | tool_call=true
+qwen3-coder | ctx=262144 out=65536 | cost_in=0.45 cost_out=1.8 | tool_call=true
+mistral-large-4 | ctx=524288 out=262144 | cost_in=0.68 cost_out=2.09 | tool_call=true
+qwen3.5-plus | ctx=262144 out=65536 | cost_in=0.2 cost_out=1.2 | tool_call=true
+claude-opus-4-5 | ctx=200000 out=64000 | cost_in=5 cost_out=25 | tool_call=true
+glm-5 | ctx=204800 out=131072 | cost_in=1 cost_out=3.2 | tool_call=true
+deepseek-v4.1-flash | ctx=1000000 out=384000 | cost_in=0.3 cost_out=1.2 | tool_call=true
+gpt-5.3-codex | ctx=400000 out=128000 | cost_in=1.75 cost_out=14 | tool_call=true
+minimax-m2.5 | ctx=204800 out=131072 | cost_in=0.3 cost_out=1.2 | tool_call=true
+gpt-5-nano | ctx=400000 out=128000 | cost_in=0.05 cost_out=0.4 | tool_call=true
+deepseek-v4-flash-vision-exp | ctx=1000000 out=384000 | cost_in=0.14 cost_out=0.28 | tool_call=true
+kimi-k2.6 | ctx=262144 out=65536 | cost_in=0.95 cost_out=4 | tool_call=true
+claude-sonnet-4-5 | ctx=1000000 out=64000 | cost_in=3 cost_out=15 | tool_call=true
+claude-opus-5-5 | ctx=1000000 out=128000 | cost_in=4 cost_out=20 | tool_call=true
+claude-fable-5-1 | ctx=1000000 out=128000 | cost_in=10 cost_out=50 | tool_call=true
+gemini-3.6-flash | ctx=1048576 out=65536 | cost_in=1.5 cost_out=7.5 | tool_call=true
+kimi-k2-thinking | ctx=262144 out=262144 | cost_in=0.4 cost_out=2.5 | tool_call=true
+gpt-5.3-codex-spark | ctx=128000 out=128000 | cost_in=1.75 cost_out=14 | tool_call=true
+gpt-6.1-sol | ctx=1050000 out=128000 | cost_in=2 cost_out=10 | tool_call=true
+gemini-3.5-flash-lite | ctx=1048576 out=65536 | cost_in=0.3 cost_out=2.5 | tool_call=true
+claude-opus-4-1 | ctx=200000 out=32000 | cost_in=15 cost_out=75 | tool_call=true
+gpt-6-astra | ctx=1050000 out=128000 | cost_in=10 cost_out=50 | tool_call=true
+grok-4.5 | ctx=500000 out=500000 | cost_in=2 cost_out=6 | tool_call=true
+kimi-k2.5 | ctx=262144 out=65536 | cost_in=0.6 cost_out=3 | tool_call=true
+gpt-5.1 | ctx=400000 out=128000 | cost_in=1.07 cost_out=8.5 | tool_call=true
+claude-opus-5 | ctx=1000000 out=128000 | cost_in=5 cost_out=25 | tool_call=true
+claude-3-5-haiku | ctx=200000 out=8192 | cost_in=0.8 cost_out=4 | tool_call=true
+gemini-3-flash | ctx=1048576 out=65536 | cost_in=0.5 cost_out=3 | tool_call=true
+minimax-m2.7 | ctx=204800 out=131072 | cost_in=0.3 cost_out=1.2 | tool_call=true
+gemini-3.5-flash | ctx=1048576 out=65536 | cost_in=1.5 cost_out=9 | tool_call=true
+claude-fable-5 | ctx=1000000 out=128000 | cost_in=10 cost_out=50 | tool_call=true
+gemini-3-pro | ctx=1048576 out=65536 | cost_in=2 cost_out=12 | tool_call=true
+claude-sonnet-4 | ctx=1000000 out=64000 | cost_in=3 cost_out=15 | tool_call=true
+muse-spark-1.2 | ctx=1048576 out=131072 | cost_in=1.25 cost_out=4.25 | tool_call=true
+gpt-5.4-mini | ctx=400000 out=128000 | cost_in=0.75 cost_out=4.5 | tool_call=true
+glm-4.7 | ctx=204800 out=131072 | cost_in=0.6 cost_out=2.2 | tool_call=true
+minimax-m3 | ctx=512000 out=128000 | cost_in=0.3 cost_out=1.2 | tool_call=true
+gpt-5.6-luna | ctx=1050000 out=128000 | cost_in=0.2 cost_out=1.2 | tool_call=true
+qwen3.8-flash | ctx=1000000 out=131072 | cost_in=0.15 cost_out=0.47 | tool_call=true
+gpt-5.1-codex-max | ctx=400000 out=128000 | cost_in=1.25 cost_out=10 | tool_call=true
+gpt-5.2 | ctx=400000 out=128000 | cost_in=1.75 cost_out=14 | tool_call=true
+claude-opus-4-8 | ctx=1000000 out=128000 | cost_in=5 cost_out=25 | tool_call=true
+gpt-5.5 | ctx=1050000 out=128000 | cost_in=5 cost_out=30 | tool_call=true
+claude-sonnet-5 | ctx=1000000 out=128000 | cost_in=2 cost_out=10 | tool_call=true
+claude-opus-4-6 | ctx=1000000 out=128000 | cost_in=5 cost_out=25 | tool_call=true
+gemini-3.7-flash | ctx=1048576 out=65536 | cost_in=1.5 cost_out=7.5 | tool_call=true
+glm-5.2 | ctx=1000000 out=131072 | cost_in=1.4 cost_out=4.4 | tool_call=true
+kimi-k2 | ctx=262144 out=262144 | cost_in=0.4 cost_out=2.5 | tool_call=true
+glm-5.1 | ctx=204800 out=131072 | cost_in=1.4 cost_out=4.4 | tool_call=true
+grok-build-0.1 | ctx=256000 out=256000 | cost_in=1 cost_out=2 | tool_call=true
+claude-haiku-5-5 | ctx=1000000 out=128000 | cost_in=0.1 cost_out=0.5 | tool_call=true
+gemini-3.8-flash | ctx=1048576 out=65536 | cost_in=1.5 cost_out=7.5 | tool_call=true
+gpt-6-luna | ctx=1050000 out=128000 | cost_in=0.1 cost_out=0.5 | tool_call=true
+deepseek-v4-pro | ctx=1000000 out=384000 | cost_in=1.74 cost_out=3.84 | tool_call=true
+claude-sonnet-4-6 | ctx=1000000 out=64000 | cost_in=3 cost_out=15 | tool_call=true
+claude-sonnet-5-5 | ctx=1000000 out=128000 | cost_in=2 cost_out=10 | tool_call=true
+qwen3.6-plus | ctx=262144 out=65536 | cost_in=0.5 cost_out=3 | tool_call=true
+gpt-5.6-terra | ctx=1050000 out=128000 | cost_in=2.5 cost_out=15 | tool_call=true
+gpt-5.1-codex-mini | ctx=400000 out=128000 | cost_in=0.25 cost_out=2 | tool_call=true
+glm-5.3 | ctx=1000000 out=131072 | cost_in=1.4 cost_out=4.4 | tool_call=true
+claude-opus-4-7 | ctx=1000000 out=128000 | cost_in=5 cost_out=25 | tool_call=true
+kimi-k2.7-code | ctx=262144 out=262144 | cost_in=0.95 cost_out=4 | tool_call=true
+gpt-5 | ctx=400000 out=128000 | cost_in=1.07 cost_out=8.5 | tool_call=true
+grok-4.6 | ctx=500000 out=500000 | cost_in=2 cost_out=6 | tool_call=true
+gemini-3.1-pro | ctx=1048576 out=65536 | cost_in=2 cost_out=12 | tool_call=true
+minimax-m2.1 | ctx=204800 out=131072 | cost_in=0.3 cost_out=1.2 | tool_call=true
+gpt-5.6-sol | ctx=1050000 out=128000 | cost_in=4 cost_out=20 | tool_call=true
+gemini-4-argon | ctx=1048576 out=65536 | cost_in=2 cost_out=10 | tool_call=true
+deepseek-v4-flash | ctx=1000000 out=384000 | cost_in=0.14 cost_out=0.28 | tool_call=true
+gpt-6-sol | ctx=1050000 out=128000 | cost_in=2 cost_out=10 | tool_call=true
+=== opencode-go: total=31 free(cost0)=3 freeActive=2
+-- FREE ACTIVE --
+longcat-2.5-preview-free | ctx=1000000 out=131072 in=- | cost={"input":0,"output":0,"cache_read":0} | tool_call=true attach=true reasoning=true | status=active | updated=2026-09-25
+cat-jam-free | ctx=1048576 out=131072 in=- | cost={"input":0,"output":0,"cache_read":0} | tool_call=true attach=false reasoning=true | status=active | updated=2026-10-12
+-- FREE DEPRECATED (count 1) --
+step-5-preview-free | ctx=1000000 out=65536 | tool_call=true
+-- PAID (non-zero cost) count 28 --
+mimo-v2.6-pro | ctx=1048576 out=131072 | cost_in=0.435 cost_out=0.87 | tool_call=true
+mimo-v2.5 | ctx=1000000 out=128000 | cost_in=0.14 cost_out=0.28 | tool_call=true
+grok-4.7 | ctx=500000 out=500000 | cost_in=2 cost_out=6 | tool_call=true
+gemini-4-argon-contributor | ctx=1048576 out=65536 | cost_in=4 cost_out=20 | tool_call=true
+glm-5.3-flash | ctx=1000000 out=131072 | cost_in=0.15 cost_out=0.5 | tool_call=true
+qwen3.8-max | ctx=1000000 out=131072 | cost_in=2 cost_out=6 | tool_call=true
+kimi-k3 | ctx=1048576 out=131072 | cost_in=3 cost_out=15 | tool_call=true
+deepseek-v4.1-flash | ctx=1000000 out=384000 | cost_in=0.15 cost_out=0.6 | tool_call=true
+step-5-preview | ctx=1000000 out=65536 | cost_in=1 cost_out=2.7 | tool_call=true
+longcat-2.0 | ctx=1000000 out=131072 | cost_in=0.3 cost_out=1.2 | tool_call=true
+space-bunny | ctx=1048576 out=524288 | cost_in=0.15 cost_out=0.6 | tool_call=true
+minimax-m2.7 | ctx=204800 out=131072 | cost_in=0.3 cost_out=1.2 | tool_call=true
+mimo-v2.5-pro | ctx=1048576 out=128000 | cost_in=0.435 cost_out=0.87 | tool_call=true
+mimo-v2.6-flash | ctx=1048576 out=131072 | cost_in=0.14 cost_out=0.28 | tool_call=true
+minimax-m3 | ctx=1000000 out=131072 | cost_in=0.3 cost_out=1.2 | tool_call=true
+gpt-5.6-luna | ctx=1050000 out=128000 | cost_in=0.2 cost_out=1.2 | tool_call=true
+qwen3.8-flash | ctx=1000000 out=131072 | cost_in=0.15 cost_out=0.47 | tool_call=true
+glm-5.2 | ctx=1000000 out=131072 | cost_in=1.4 cost_out=4.4 | tool_call=true
+hy3 | ctx=256000 out=128000 | cost_in=0.14 cost_out=0.58 | tool_call=true
+muse-spark-1.2-contributor | ctx=1048576 out=131072 | cost_in=0.1 cost_out=0.2 | tool_call=true
+claude-haiku-5-5 | ctx=1000000 out=128000 | cost_in=0.1 cost_out=0.5 | tool_call=true
+gpt-6-luna | ctx=1050000 out=128000 | cost_in=0.1 cost_out=0.5 | tool_call=true
+deepseek-v4-pro | ctx=1000000 out=384000 | cost_in=0.66 cost_out=1.98 | tool_call=true
+hy4-preview | ctx=1024000 out=64000 | cost_in=0.834 cost_out=2.501 | tool_call=true
+muse-spark-1.3-contributor | ctx=1048576 out=131072 | cost_in=0.1 cost_out=0.2 | tool_call=true
+glm-5.3 | ctx=1000000 out=131072 | cost_in=1.4 cost_out=4.4 | tool_call=true
+kimi-k2.7-code | ctx=262144 out=262144 | cost_in=0.95 cost_out=4 | tool_call=true
+qwen3.7-plus | ctx=1000000 out=65536 | cost_in=0.4 cost_out=1.6 | tool_call=true

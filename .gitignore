@@ -1,0 +1,45 @@
+# ── 凭据与运行时状态（绝不入库）──
+*.db
+*.db-wal
+*.db-shm
+.secret
+.testkey
+*.log
+subscriptions.json
+panel.db*
+pool.db*
+
+# 10-代理节点管理 的运行时目录：含订阅缓存（节点凭据）、生成的配置、内核
+10-代理节点管理/runtime/
+
+# 内核二进制（GPL-3.0，用 install-core.mjs 运行时下载，不再分发）
+mihomo
+mihomo.exe
+verge-mihomo.exe
+verge-mihomo-alpha.exe
+
+# ── 第三方内容（本仓库不包含）──
+08-上游源码快照/
+99-解包产物与运行时残留/
+
+# ── Node / 构建产物 ──
+node_modules/
+dist/
+*.tgz
+*.zip
+!package.json
+
+# ── 编辑器 / 系统 ──
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# ── 本地临时 ──
+tmp/
+temp/
+.cache/
+_sanitize.mjs

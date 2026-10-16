@@ -1,0 +1,101 @@
+﻿
+Intro | OpenCode
+Skip to content
+Docs
+CLI
+Build
+API
+Console
+V1
+Search
+⌘K
+GitHub
+>
+Esc
+Start typing to search the documentation.
+Console navigation
+Intro
+Models
+Providers
+Web Search
+Go
+Workspace
+Basics
+Members
+SSO
+SCIM
+Budgets
+Billing
+API
+Overview
+Inference
+Providers
+Budgets
+Intro
+Models
+Providers
+Web Search
+Go
+Workspace
+Basics
+Members
+SSO
+SCIM
+Budgets
+Billing
+API
+Overview
+Inference
+Providers
+Budgets
+Intro
+The 
+OpenCode Console
+ is an optional service that provides additional benefits to
+using OpenCode, on your own or as a team.
+Workspaces
+ for sharing access with your 
+team
+Inference
+ for both proprietary and open source models
+Providers
+ for connecting your own provider accounts through the Console gateway
+Usage tracking and 
+budget
+ controls
+Deploy team wide policies to control OpenCode behavior
+Web search
+OpenCode Go and Go Plus
+, $10 and $40 monthly subscriptions for open source model access
+Get started
+You don’t need a team to use the Console. Every account starts with a 
+Personal
+ workspace where you are the only
+member.
+Sign in to the 
+Console
+.
+Subscribe to 
+Go
+, add 
+credits
+, or connect a 
+provider
+.
+Run 
+/connect
+ in OpenCode and choose the workspace.
+Optionally, 
+invite
+ your team.
+/connect
+Policies
+Providers and Tools rules from the Policies page apply to every OpenCode V2 client
+connected to the workspace. They are delivered as 
+policy
+statements with final authority over the member’s own configuration and take effect
+within about a minute.
+On this page
+Get started
+Policies
+

@@ -1,0 +1,120 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Intro documentation for OpenCode."><meta name="theme-color" content="#000000"><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="swap"><script type="module" src="/v2/_astro/ClientRouter.astro_astro_type_script_index_0_lang.QXqYV-0P.js"></script><link rel="canonical" href="https://opencode.ai/v2/docs"><link rel="icon" type="image/svg+xml" href="/v2/favicon.svg"><title>Intro | OpenCode</title><link rel="stylesheet" href="/v2/_astro/_..CwgjG4PU.css"></head><body><a class="skip-link" href="#docs-content">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/v2/" aria-label="OpenCode home"><img src="/v2/assets/logo-dark.svg" alt="OpenCode"></a><nav aria-label="Documentation sections"><a href="/v2/docs/" aria-current="page">Docs</a><a href="/v2/docs/cli/">CLI</a><a href="/v2/docs/build/">Build</a><a href="/v2/docs/api/">API</a><a href="/v2/docs/console/">Console</a><a href="/docs">V1</a></nav><div class="header-spacer"></div><button class="search-trigger" type="button" data-search-open aria-label="Search documentation"><span>Search</span><kbd>⌘K</kbd></button><a class="github-link" href="https://github.com/anomalyco/opencode" aria-label="OpenCode on GitHub">GitHub</a></div></header><dialog class="search-dialog" data-search-dialog data-pagefind-path="/v2/docs/pagefind/pagefind.js" data-base-url="/v2/docs/" aria-label="Search documentation"><form method="dialog" class="search-bar"><span aria-hidden="true">&gt;</span><input data-search-input type="search" placeholder="Search docs" autocomplete="off"><button type="submit" aria-label="Close search">Esc</button></form><div class="search-results" data-search-results><p>Start typing to search the documentation.</p></div></dialog><script>
+  let pagefind
+
+  document.addEventListener("keydown", (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault()
+      const dialog = document.querySelector("[data-search-dialog]")
+      dialog?.showModal()
+      dialog?.querySelector("[data-search-input]")?.focus()
+    }
+  })
+
+  const setupSearch = () => {
+    const dialog = document.querySelector("[data-search-dialog]")
+    const input = document.querySelector("[data-search-input]")
+    const results = document.querySelector("[data-search-results]")
+    const trigger = document.querySelector("[data-search-open]")
+    if (trigger && !trigger.dataset.searchReady) {
+      trigger.dataset.searchReady = "true"
+      trigger.addEventListener("click", () => {
+        dialog?.showModal()
+        input?.focus()
+      })
+    }
+
+    if (input && results && !input.dataset.searchReady) input.addEventListener("input", async () => {
+      input.dataset.searchReady = "true"
+      const query = input.value.trim()
+      if (!query) {
+        results.innerHTML = "<p>Start typing to search the documentation.</p>"
+        return
+      }
+
+      const pagefindPath = dialog?.dataset.pagefindPath
+      if (!pagefindPath) return
+      const api = pagefind ?? (pagefind = await import(pagefindPath))
+      const search = await api.search(query)
+      const pages = await Promise.all(search.results.slice(0, 8).map((result) => result.data()))
+      results.replaceChildren(
+        ...pages.map((page) => {
+          const link = document.createElement("a")
+          const base = dialog.dataset.baseUrl ?? "/"
+          link.href = page.url.startsWith(base)
+            ? page.url
+            : `${dialog.dataset.baseUrl?.replace(/\/$/, "")}${page.url}`
+          const title = document.createElement("strong")
+          title.textContent = page.meta.title
+          const excerpt = document.createElement("span")
+          excerpt.innerHTML = page.excerpt
+          link.append(title, excerpt)
+          return link
+        }),
+      )
+      if (!pages.length) results.innerHTML = "<p>No results found.</p>"
+    })
+  }
+
+  setupSearch()
+  document.addEventListener("astro:page-load", setupSearch)
+</script><details class="mobile-navigation"><summary>Docs navigation</summary><nav class="docs-sidebar" aria-label="Documentation"><section><ul><li><a href="/v2/docs/" aria-current="page">Intro</a></li><li><a href="/v2/docs/config/">Config</a></li><li><a href="/v2/docs/migrate-v1/">Migrate from V1</a></li><li><a href="/v2/docs/troubleshooting/">Troubleshooting</a></li></ul></section><section><h2>Configure</h2><ul><li><a href="/v2/docs/agents/">Agents</a></li><li><a href="/v2/docs/models/">Models</a></li><li><a href="/v2/docs/skills/">Skills</a></li><li><a href="/v2/docs/themes/">Themes</a></li><li><a href="/v2/docs/commands/">Commands</a></li><li><a href="/v2/docs/plugins/">Plugins</a></li><li><a href="/v2/docs/providers/">Providers</a></li><li><a href="/v2/docs/websearch/">Websearch</a></li><li><a href="/v2/docs/network/">Network</a></li><li><a href="/v2/docs/snapshots/">Snapshots</a></li><li><a href="/v2/docs/compaction/">Compaction</a></li><li><a href="/v2/docs/formatters/">Formatters</a></li><li><a href="/v2/docs/references/">References</a></li><li><a href="/v2/docs/attachments/">Attachments</a></li><li><a href="/v2/docs/tools/">Tools</a></li><li><a href="/v2/docs/mcp-servers/">MCP servers</a></li><li><a href="/v2/docs/permissions/">Permissions</a></li><li><a href="/v2/docs/policies/">Policies</a></li><li><a href="/v2/docs/instructions/">Instructions</a></li><li><a href="/v2/docs/warming/">Warming</a></li></ul></section></nav></details><div class="docs-frame"><aside class="sidebar-column"><nav class="docs-sidebar" aria-label="Documentation"><section><ul><li><a href="/v2/docs/" aria-current="page">Intro</a></li><li><a href="/v2/docs/config/">Config</a></li><li><a href="/v2/docs/migrate-v1/">Migrate from V1</a></li><li><a href="/v2/docs/troubleshooting/">Troubleshooting</a></li></ul></section><section><h2>Configure</h2><ul><li><a href="/v2/docs/agents/">Agents</a></li><li><a href="/v2/docs/models/">Models</a></li><li><a href="/v2/docs/skills/">Skills</a></li><li><a href="/v2/docs/themes/">Themes</a></li><li><a href="/v2/docs/commands/">Commands</a></li><li><a href="/v2/docs/plugins/">Plugins</a></li><li><a href="/v2/docs/providers/">Providers</a></li><li><a href="/v2/docs/websearch/">Websearch</a></li><li><a href="/v2/docs/network/">Network</a></li><li><a href="/v2/docs/snapshots/">Snapshots</a></li><li><a href="/v2/docs/compaction/">Compaction</a></li><li><a href="/v2/docs/formatters/">Formatters</a></li><li><a href="/v2/docs/references/">References</a></li><li><a href="/v2/docs/attachments/">Attachments</a></li><li><a href="/v2/docs/tools/">Tools</a></li><li><a href="/v2/docs/mcp-servers/">MCP servers</a></li><li><a href="/v2/docs/permissions/">Permissions</a></li><li><a href="/v2/docs/policies/">Policies</a></li><li><a href="/v2/docs/instructions/">Instructions</a></li><li><a href="/v2/docs/warming/">Warming</a></li></ul></section></nav></aside><main id="docs-content"><article class="prose" data-pagefind-body data-pagefind-meta="title:Intro"><h1>Intro<button type="button" aria-label="Copy page as Markdown" data-copy-markdown data-pagefind-ignore><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg></button></h1><p>OpenCode is an open source AI coding agent. It’s available as a terminal-based interface, desktop app, or web app.</p>
+<h2 id="cli">CLI</h2>
+<div class="docs-code-tabs" data-code-tabs><div class="docs-code-tabs-list" role="tablist" aria-label="Install method"><button type="button" role="tab" id="install-tab-0" aria-controls="install-panel-0" aria-selected="true" tabindex="0" data-code-tab>curl</button><button type="button" role="tab" id="install-tab-1" aria-controls="install-panel-1" aria-selected="false" tabindex="-1" data-code-tab>homebrew</button><button type="button" role="tab" id="install-tab-2" aria-controls="install-panel-2" aria-selected="false" tabindex="-1" data-code-tab>npm</button><button type="button" role="tab" id="install-tab-3" aria-controls="install-panel-3" aria-selected="false" tabindex="-1" data-code-tab>bun</button><button type="button" role="tab" id="install-tab-4" aria-controls="install-panel-4" aria-selected="false" tabindex="-1" data-code-tab>pnpm</button><button type="button" role="tab" id="install-tab-5" aria-controls="install-panel-5" aria-selected="false" tabindex="-1" data-code-tab>yarn</button><button type="button" role="tab" id="install-tab-6" aria-controls="install-panel-6" aria-selected="false" tabindex="-1" data-code-tab>vite+</button><button type="button" role="tab" id="install-tab-7" aria-controls="install-panel-7" aria-selected="false" tabindex="-1" data-code-tab>aur</button><button type="button" role="tab" id="install-tab-8" aria-controls="install-panel-8" aria-selected="false" tabindex="-1" data-code-tab>mise</button></div><div role="tabpanel" id="install-panel-0" aria-labelledby="install-tab-0" data-code-panel><div class="docs-code-block"><pre><code>curl -fsSL https://opencode.ai/v2/install | bash</code></pre><button type="button" data-copy-code data-code="curl -fsSL https://opencode.ai/v2/install | bash">Copy</button></div><script type="module">globalThis.process??={},globalThis.process.env??={},document.addEventListener(`click`,async e=>{let t=e.target;!(t instanceof HTMLButtonElement)||!t.matches(`[data-copy-code]`)||(await navigator.clipboard.writeText(t.dataset.code??``),t.textContent=`Copied`,window.setTimeout(()=>t.textContent=`Copy`,1500))});</script></div><div role="tabpanel" id="install-panel-1" aria-labelledby="install-tab-1" hidden data-code-panel><div class="docs-code-block"><pre><code>brew install anomalyco/tap/opencode-v2</code></pre><button type="button" data-copy-code data-code="brew install anomalyco/tap/opencode-v2">Copy</button></div></div><div role="tabpanel" id="install-panel-2" aria-labelledby="install-tab-2" hidden data-code-panel><div class="docs-code-block"><pre><code>npm install -g @opencode/cli</code></pre><button type="button" data-copy-code data-code="npm install -g @opencode/cli">Copy</button></div></div><div role="tabpanel" id="install-panel-3" aria-labelledby="install-tab-3" hidden data-code-panel><div class="docs-code-block"><pre><code>bun install -g --trust @opencode/cli</code></pre><button type="button" data-copy-code data-code="bun install -g --trust @opencode/cli">Copy</button></div></div><div role="tabpanel" id="install-panel-4" aria-labelledby="install-tab-4" hidden data-code-panel><div class="docs-code-block"><pre><code>pnpm add -g --allow-build=@opencode/cli @opencode/cli</code></pre><button type="button" data-copy-code data-code="pnpm add -g --allow-build=@opencode/cli @opencode/cli">Copy</button></div></div><div role="tabpanel" id="install-panel-5" aria-labelledby="install-tab-5" hidden data-code-panel><div class="docs-code-block"><pre><code>yarn global add @opencode/cli</code></pre><button type="button" data-copy-code data-code="yarn global add @opencode/cli">Copy</button></div></div><div role="tabpanel" id="install-panel-6" aria-labelledby="install-tab-6" hidden data-code-panel><div class="docs-code-block"><pre><code>vp install -g @opencode/cli</code></pre><button type="button" data-copy-code data-code="vp install -g @opencode/cli">Copy</button></div></div><div role="tabpanel" id="install-panel-7" aria-labelledby="install-tab-7" hidden data-code-panel><div class="docs-code-block"><pre><code>paru -S opencode-beta</code></pre><button type="button" data-copy-code data-code="paru -S opencode-beta">Copy</button></div></div><div role="tabpanel" id="install-panel-8" aria-labelledby="install-tab-8" hidden data-code-panel><div class="docs-code-block"><pre><code>mise use -g opencode</code></pre><button type="button" data-copy-code data-code="mise use -g opencode">Copy</button></div></div></div><script type="module">globalThis.process??={},globalThis.process.env??={};var e=e=>{let t=e.closest(`[data-code-tabs]`);if(!t)return;let n=[...t.querySelectorAll(`[data-code-tab]`)],r=[...t.querySelectorAll(`[data-code-panel]`)],i=n.indexOf(e);n.forEach((e,t)=>{e.setAttribute(`aria-selected`,String(t===i)),e.tabIndex=t===i?0:-1}),r.forEach((e,t)=>e.hidden=t!==i)};document.addEventListener(`click`,t=>{if(!(t.target instanceof Element))return;let n=t.target.closest(`[data-code-tab]`);n&&e(n)}),document.addEventListener(`keydown`,t=>{if(!(t.target instanceof HTMLButtonElement)||!t.target.matches(`[data-code-tab]`))return;let n=t.target.closest(`[data-code-tabs]`);if(!n)return;let r=[...n.querySelectorAll(`[data-code-tab]`)],i=r.indexOf(t.target),a=t.key===`Home`?r[0]:t.key===`End`?r.at(-1):t.key===`ArrowRight`?r[(i+1)%r.length]:t.key===`ArrowLeft`?r[(i-1+r.length)%r.length]:void 0;a&&(t.preventDefault(),e(a),a.focus())});</script>
+<p>The npm package uses a postinstall script to select the native <code>opencode</code> binary for your platform. The Bun and pnpm commands
+explicitly allow the required script; Vite+ requires no additional flag. The mise command requires mise 2026.10.9 or later;
+older versions install OpenCode 1.</p>
+<p>Windows package managers are not supported.</p>
+<p>Download a standalone CLI binary for your platform.</p>
+<ul>
+<li><strong>macOS:</strong> <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-darwin-arm64.zip">Apple silicon</a> · <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-darwin-x64.zip">Intel</a> · <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-darwin-x64-baseline.zip">Intel (baseline)</a></li>
+<li><strong>Windows:</strong> <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-windows-arm64.zip">ARM64</a> · <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-windows-x64.zip">x64</a> · <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-windows-x64-baseline.zip">x64 (baseline)</a></li>
+<li><strong>Linux (glibc):</strong> <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-linux-arm64.tar.gz">ARM64</a> · <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-linux-x64.tar.gz">x64</a> · <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-linux-x64-baseline.tar.gz">x64 (baseline)</a></li>
+<li><strong>Linux (musl):</strong> <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-linux-arm64-musl.tar.gz">ARM64</a> · <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-linux-x64-musl.tar.gz">x64</a> · <a href="https://opencode.ai/update/api/latest/cli/opencode/opencode-linux-x64-baseline-musl.tar.gz">x64 (baseline)</a></li>
+</ul>
+<h2 id="desktop">Desktop</h2>
+<p>Download the latest OpenCode Desktop build for your platform.</p>
+<ul>
+<li><strong>macOS:</strong> <a href="https://opencode.ai/update/api/latest/desktop/opencode/opencode-desktop-mac-arm64.dmg">Apple silicon</a> · <a href="https://opencode.ai/update/api/latest/desktop/opencode/opencode-desktop-mac-x64.dmg">Intel</a></li>
+<li><strong>Windows:</strong> <a href="https://opencode.ai/update/api/latest/desktop/opencode/opencode-desktop-win-x64.exe">x64</a> · <a href="https://opencode.ai/update/api/latest/desktop/opencode/opencode-desktop-win-arm64.exe">ARM64</a></li>
+<li><strong>Linux (.deb):</strong> <a href="https://opencode.ai/update/api/latest/desktop/opencode/opencode-desktop-linux-amd64.deb">x64</a> · <a href="https://opencode.ai/update/api/latest/desktop/opencode/opencode-desktop-linux-arm64.deb">ARM64</a></li>
+<li><strong>Linux (.rpm):</strong> <a href="https://opencode.ai/update/api/latest/desktop/opencode/opencode-desktop-linux-x86_64.rpm">x64</a> · <a href="https://opencode.ai/update/api/latest/desktop/opencode/opencode-desktop-linux-aarch64.rpm">ARM64</a></li>
+<li><strong>Linux (AppImage):</strong> <a href="https://opencode.ai/update/api/latest/desktop/opencode/opencode-desktop-linux-x86_64.AppImage">x64</a> · <a href="https://opencode.ai/update/api/latest/desktop/opencode/opencode-desktop-linux-arm64.AppImage">ARM64</a></li>
+</ul>
+<h2 id="web">Web</h2>
+<p>Access the OpenCode web interface with the <code>opencode pair</code> command.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">$</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> opencode</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pair</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  URLs</span><span style="color:#032F62;--shiki-dark:#9ECBFF">      http://127.0.0.1:49374</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  Username</span><span style="color:#032F62;--shiki-dark:#9ECBFF">  opencode</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  Password</span><span style="color:#005CC5;--shiki-dark:#79B8FF">  ********</span></span></code></pre>
+<h2 id="docker">Docker</h2>
+<p>Docker images use versioned tags, for example <code>ghcr.io/anomalyco/opencode:2.0.0</code>.</p>
+<hr/>
+<h2 id="connect">Connect</h2>
+<p>OpenCode has built in support for many LLM providers - you can connect to them
+directly <a href="/v2/docs/cli/providers">in the TUI</a> with <code>/connect</code>.</p>
+<p>See <a href="/v2/docs/providers">Providers</a> to configure custom providers.</p>
+<p>If you’d like easy access to all the best coding models you can try out
+<a href="/v2/docs/console">OpenCode Console</a>.</p>
+<p>You can also try <a href="/v2/docs/console/go">OpenCode Go</a> a $10/month subscription
+plan that grants you access to the best open source models.</p>
+<hr/>
+<h2 id="customize">Customize</h2>
+<p>Make OpenCode your own by editing the <a href="/v2/docs/config">OpenCode config</a>, <a href="/v2/docs/plugins">loading plugins</a>, <a href="/v2/docs/mcp-servers">connecting MCP
+servers</a>, or <a href="/v2/docs/commands">creating commands</a>. For terminal interface themes and keybindings, see <a href="/v2/docs/cli/config">CLI
+settings</a>.</p></article></main><aside class="toc-column"><nav class="docs-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#cli">CLI</a></li><li><a href="#desktop">Desktop</a></li><li><a href="#web">Web</a></li><li><a href="#docker">Docker</a></li><li><a href="#connect">Connect</a></li><li><a href="#customize">Customize</a></li></ul></nav></aside></div><script>
+      const addHeadingAnchors = () => {
+        for (const heading of document.querySelectorAll(".prose :is(h2, h3)[id]")) {
+          if (heading.querySelector(".heading-anchor")) continue
+          const anchor = document.createElement("a")
+          anchor.className = "heading-anchor"
+          anchor.href = `#${heading.id}`
+          anchor.setAttribute("aria-label", `Link to ${heading.textContent ?? "section"}`)
+          anchor.textContent = "#"
+          heading.append(anchor)
+        }
+      }
+
+      addHeadingAnchors()
+      document.addEventListener("astro:page-load", addHeadingAnchors)
+    </script><script type="module">globalThis.process??={},globalThis.process.env??={},document.addEventListener(`click`,async e=>{if(!(e.target instanceof Element))return;let t=e.target.closest(`[data-copy-markdown]`);if(!t)return;t.dataset.copied=`true`,t.setAttribute(`aria-label`,`Copied`),window.setTimeout(()=>{delete t.dataset.copied,t.setAttribute(`aria-label`,`Copy page as Markdown`)},1500);let n=await fetch(window.location.href,{headers:{Accept:`text/markdown`}});n.ok&&await navigator.clipboard.writeText(await n.text())});</script></body></html>

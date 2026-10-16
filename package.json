@@ -1,0 +1,35 @@
+{
+  "name": "opencode-free-gateway",
+  "version": "1.0.0",
+  "description": "把 OpenCode 免费层整理成本地 OpenAI / Responses 兼容网关：协议互转、模型动态发现、代理节点池、可部署管理面板",
+  "type": "module",
+  "license": "MIT",
+  "author": "suimi8",
+  "private": false,
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "keywords": [
+    "opencode",
+    "openai-compatible",
+    "responses-api",
+    "gateway",
+    "proxy-pool",
+    "clash",
+    "mihomo",
+    "codex"
+  ],
+  "scripts": {
+    "start": "node 01-管理面板/server.mjs",
+    "start:client": "node 02-直连客户端/client.mjs",
+    "install-core": "node 10-代理节点管理/install-core.mjs",
+    "pool": "node 10-代理节点管理/manage.mjs",
+    "test": "node tests/unit.mjs && node tests/smoke.mjs",
+    "test:unit": "node tests/unit.mjs",
+    "test:smoke": "node tests/smoke.mjs",
+    "check": "node scripts/check-syntax.mjs",
+    "package": "node scripts/package.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

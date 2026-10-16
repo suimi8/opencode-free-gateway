@@ -1,0 +1,266 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Authenticate with the OpenCode Console API using service account keys or user tokens."><meta name="theme-color" content="#000000"><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="swap"><script type="module" src="/v2/_astro/ClientRouter.astro_astro_type_script_index_0_lang.QXqYV-0P.js"></script><link rel="canonical" href="https://opencode.ai/v2/docs/console/api/"><link rel="icon" type="image/svg+xml" href="/v2/favicon.svg"><title>API Overview | OpenCode</title><link rel="stylesheet" href="/v2/_astro/_..CwgjG4PU.css"></head><body><a class="skip-link" href="#docs-content">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/v2/" aria-label="OpenCode home"><img src="/v2/assets/logo-dark.svg" alt="OpenCode"></a><nav aria-label="Documentation sections"><a href="/v2/docs/">Docs</a><a href="/v2/docs/cli/">CLI</a><a href="/v2/docs/build/">Build</a><a href="/v2/docs/api/">API</a><a href="/v2/docs/console/" aria-current="page">Console</a><a href="/docs">V1</a></nav><div class="header-spacer"></div><button class="search-trigger" type="button" data-search-open aria-label="Search documentation"><span>Search</span><kbd>⌘K</kbd></button><a class="github-link" href="https://github.com/anomalyco/opencode" aria-label="OpenCode on GitHub">GitHub</a></div></header><dialog class="search-dialog" data-search-dialog data-pagefind-path="/v2/docs/pagefind/pagefind.js" data-base-url="/v2/docs/" aria-label="Search documentation"><form method="dialog" class="search-bar"><span aria-hidden="true">&gt;</span><input data-search-input type="search" placeholder="Search docs" autocomplete="off"><button type="submit" aria-label="Close search">Esc</button></form><div class="search-results" data-search-results><p>Start typing to search the documentation.</p></div></dialog><script>
+  let pagefind
+
+  document.addEventListener("keydown", (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault()
+      const dialog = document.querySelector("[data-search-dialog]")
+      dialog?.showModal()
+      dialog?.querySelector("[data-search-input]")?.focus()
+    }
+  })
+
+  const setupSearch = () => {
+    const dialog = document.querySelector("[data-search-dialog]")
+    const input = document.querySelector("[data-search-input]")
+    const results = document.querySelector("[data-search-results]")
+    const trigger = document.querySelector("[data-search-open]")
+    if (trigger && !trigger.dataset.searchReady) {
+      trigger.dataset.searchReady = "true"
+      trigger.addEventListener("click", () => {
+        dialog?.showModal()
+        input?.focus()
+      })
+    }
+
+    if (input && results && !input.dataset.searchReady) input.addEventListener("input", async () => {
+      input.dataset.searchReady = "true"
+      const query = input.value.trim()
+      if (!query) {
+        results.innerHTML = "<p>Start typing to search the documentation.</p>"
+        return
+      }
+
+      const pagefindPath = dialog?.dataset.pagefindPath
+      if (!pagefindPath) return
+      const api = pagefind ?? (pagefind = await import(pagefindPath))
+      const search = await api.search(query)
+      const pages = await Promise.all(search.results.slice(0, 8).map((result) => result.data()))
+      results.replaceChildren(
+        ...pages.map((page) => {
+          const link = document.createElement("a")
+          const base = dialog.dataset.baseUrl ?? "/"
+          link.href = page.url.startsWith(base)
+            ? page.url
+            : `${dialog.dataset.baseUrl?.replace(/\/$/, "")}${page.url}`
+          const title = document.createElement("strong")
+          title.textContent = page.meta.title
+          const excerpt = document.createElement("span")
+          excerpt.innerHTML = page.excerpt
+          link.append(title, excerpt)
+          return link
+        }),
+      )
+      if (!pages.length) results.innerHTML = "<p>No results found.</p>"
+    })
+  }
+
+  setupSearch()
+  document.addEventListener("astro:page-load", setupSearch)
+</script><details class="mobile-navigation"><summary>Console navigation</summary><nav class="docs-sidebar" aria-label="Documentation"><section><ul><li><a href="/v2/docs/console/">Intro</a></li><li><a href="/v2/docs/console/models/">Models</a></li><li><a href="/v2/docs/console/providers/">Providers</a></li><li><a href="/v2/docs/console/websearch/">Web Search</a></li><li><a href="/v2/docs/console/go/">Go</a></li></ul></section><section><h2>Workspace</h2><ul><li><a href="/v2/docs/console/workspaces/">Basics</a></li><li><a href="/v2/docs/console/members/">Members</a></li><li><a href="/v2/docs/console/sso/">SSO</a></li><li><a href="/v2/docs/console/scim/">SCIM</a></li><li><a href="/v2/docs/console/budgets/">Budgets</a></li><li><a href="/v2/docs/console/billing/">Billing</a></li></ul></section><section><h2>API</h2><ul><li><a href="/v2/docs/console/api/" aria-current="page">Overview</a></li><li><a href="/v2/docs/console/api/inference/">Inference</a></li><li><a href="/v2/docs/console/api/providers/">Providers</a></li><li><a href="/v2/docs/console/api/budgets/">Budgets</a></li></ul></section></nav></details><div class="docs-frame"><aside class="sidebar-column"><nav class="docs-sidebar" aria-label="Documentation"><section><ul><li><a href="/v2/docs/console/">Intro</a></li><li><a href="/v2/docs/console/models/">Models</a></li><li><a href="/v2/docs/console/providers/">Providers</a></li><li><a href="/v2/docs/console/websearch/">Web Search</a></li><li><a href="/v2/docs/console/go/">Go</a></li></ul></section><section><h2>Workspace</h2><ul><li><a href="/v2/docs/console/workspaces/">Basics</a></li><li><a href="/v2/docs/console/members/">Members</a></li><li><a href="/v2/docs/console/sso/">SSO</a></li><li><a href="/v2/docs/console/scim/">SCIM</a></li><li><a href="/v2/docs/console/budgets/">Budgets</a></li><li><a href="/v2/docs/console/billing/">Billing</a></li></ul></section><section><h2>API</h2><ul><li><a href="/v2/docs/console/api/" aria-current="page">Overview</a></li><li><a href="/v2/docs/console/api/inference/">Inference</a></li><li><a href="/v2/docs/console/api/providers/">Providers</a></li><li><a href="/v2/docs/console/api/budgets/">Budgets</a></li></ul></section></nav></aside><main id="docs-content"><article class="prose" data-pagefind-body data-pagefind-meta="title:API Overview"><h1>API Overview<button type="button" aria-label="Copy page as Markdown" data-copy-markdown data-pagefind-ignore><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg></button></h1><p>The Console API lets integrations read workspace configuration and manage budgets. Paths are relative
+to the Console base URL.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> CONSOLE_URL</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;https://opencode.ai/console&quot;</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> SERVICE_API_KEY</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;oc_sk_...&quot;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --fail-with-body</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;${</span><span style="color:#24292E;--shiki-dark:#E1E4E8">CONSOLE_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}/api/v2/config&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --header</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Authorization: Bearer ${</span><span style="color:#24292E;--shiki-dark:#E1E4E8">SERVICE_API_KEY</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}&quot;</span></span></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>API</th><th>Endpoints</th></tr></thead><tbody><tr><td><a href="/v2/docs/console/api/inference">Inference</a></td><td><code>https://opencode.ai/inference/...</code></td></tr><tr><td><a href="/v2/docs/console/api/providers">Providers</a></td><td><code>https://opencode.ai/inference/custom/...</code></td></tr><tr><td><a href="/v2/docs/console/api/budgets">Budgets</a></td><td><code>/api/v1/budgets/members</code></td></tr><tr><td><a href="#workspace-config">Config</a></td><td><code>GET /api/v2/config</code></td></tr></tbody></table>
+<h2 id="service-accounts">Service accounts</h2>
+<p>Integrations authenticate with a service account: a non-human member of the workspace with its own API keys, usage,
+and <a href="/v2/docs/console/budgets#service-account-budgets">budget</a>. Owners and admins manage them from <strong>Keys</strong>.</p>
+<ol>
+<li>Open <strong>Keys</strong> and click <strong>Add Service Account</strong>, then name it, for example <code>CI Pipeline</code>.</li>
+<li>Open the service account and click <strong>Add API Key</strong>.</li>
+<li>Choose a <strong>Key name</strong>, <strong>Permissions</strong>, and an optional <strong>Expiry date</strong>, then click <strong>Create key</strong>.</li>
+<li>Copy the key. It is shown only once.</li>
+</ol>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="text"><code><span class="line"><span>oc_sk_1a2b3c4d5e6f_...</span></span></code></pre>
+<p>Send the key as a bearer token. It is bound to one workspace, so no workspace header is needed.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="text"><code><span class="line"><span>Authorization: Bearer oc_sk_...</span></span></code></pre>
+<h3 id="permissions">Permissions</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Permission</th><th>Allows</th></tr></thead><tbody><tr><td>Inference only</td><td><a href="/v2/docs/console/api/inference">Inference</a> and <a href="/v2/docs/console/api/providers">Providers</a> requests, and <code>GET /api/v2/config</code>.</td></tr><tr><td>All</td><td>Everything above, plus the Console API with admin access, except managing models.</td></tr></tbody></table>
+<p>Some actions always require a person signed in to the Console, even with an <strong>All</strong> key: inviting members, changing
+roles, removing members, and creating or revoking keys.</p>
+<h3 id="revoke-keys">Revoke keys</h3>
+<p>Open the service account and revoke a key from <strong>API Keys</strong>. Removing the service account revokes all its keys.
+Automations using a revoked or expired key get HTTP <code>401</code> immediately.</p>
+<h2 id="user-tokens">User tokens</h2>
+<p>User tokens act as a signed-in person with their workspace role. Send the token with an <code>x-org-id</code> header naming the
+workspace.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --fail-with-body</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;${</span><span style="color:#24292E;--shiki-dark:#E1E4E8">CONSOLE_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}/api/v2/config&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --header</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Authorization: Bearer ${</span><span style="color:#24292E;--shiki-dark:#E1E4E8">USER_TOKEN</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --header</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;x-org-id: org_...&quot;</span></span></code></pre>
+<p>Tokens from the <a href="#device-flow">device flow</a> are bound to the workspace chosen during sign-in and do not need the
+header. A different <code>x-org-id</code> returns <code>403</code>.</p>
+<h2 id="device-flow">Device flow</h2>
+<p>OpenCode signs in with the OAuth device authorization grant (RFC 8628). Other CLIs can use the same flow.</p>
+<ol>
+<li>
+<p>Request a device code. Send <code>supports_org_scope=true</code> to bind the token to a workspace.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --fail-with-body</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;${</span><span style="color:#24292E;--shiki-dark:#E1E4E8">CONSOLE_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}/auth/device/code&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --data</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;client_id=my-cli&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --data</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;supports_org_scope=true&quot;</span></span></code></pre>
+<p>The response includes <code>device_code</code>, <code>user_code</code>, <code>verification_uri_complete</code>, <code>expires_in</code> (600 seconds), and
+<code>interval</code> (5 seconds).</p>
+</li>
+<li>
+<p>Open <code>verification_uri_complete</code> in a browser. It is a path such as <code>/console/device?user_code=...</code>, relative to
+<code>https://opencode.ai</code>. The person signs in, picks a workspace, and approves.</p>
+</li>
+<li>
+<p>Poll for the token every <code>interval</code> seconds with the same <code>client_id</code>.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --fail-with-body</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;${</span><span style="color:#24292E;--shiki-dark:#E1E4E8">CONSOLE_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}/auth/device/token&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --data</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;grant_type=urn:ietf:params:oauth:grant-type:device_code&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --data</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;device_code=...&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --data</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;client_id=my-cli&quot;</span></span></code></pre>
+<p>Until approval the response is <code>400</code> with <code>authorization_pending</code>. On success it returns <code>access_token</code>,
+<code>refresh_token</code>, <code>expires_in</code>, and <code>org_id</code>.</p>
+</li>
+<li>
+<p>Refresh before the access token expires. The workspace binding is preserved.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --fail-with-body</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;${</span><span style="color:#24292E;--shiki-dark:#E1E4E8">CONSOLE_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}/auth/device/token&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --data</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;grant_type=refresh_token&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --data</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;refresh_token=...&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --data</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;client_id=my-cli&quot;</span></span></code></pre>
+</li>
+</ol>
+<p>Each refresh token can be used once. Reusing an old refresh token revokes the whole session.</p>
+<h2 id="workspace-config">Workspace config</h2>
+<p><code>GET /api/v2/config</code> returns the providers and models available to the workspace in the OpenCode V2
+<a href="/v2/docs/config">config</a> format. OpenCode loads it after <code>/connect</code>.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --fail-with-body</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;${</span><span style="color:#24292E;--shiki-dark:#E1E4E8">CONSOLE_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}/api/v2/config&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --header</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Authorization: Bearer ${</span><span style="color:#24292E;--shiki-dark:#E1E4E8">SERVICE_API_KEY</span><span style="color:#032F62;--shiki-dark:#9ECBFF">}&quot;</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="json"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  &quot;providers&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    &quot;opencode&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">      &quot;name&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;OpenCode&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">      &quot;env&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;OPENCODE_CONSOLE_TOKEN&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">],</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">      &quot;package&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;aisdk:@ai-sdk/openai-compatible&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">      &quot;settings&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        &quot;baseURL&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;https://opencode.ai/inference/openai/v1&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        &quot;apiKey&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;{env:OPENCODE_CONSOLE_TOKEN}&quot;</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      },</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">      &quot;headers&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">&quot;x-opencode-org-id&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;org_...&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> },</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">      &quot;models&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">        &quot;kimi-k2.6&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">&quot;name&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;Kimi K2.6&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Field</th><th>Description</th></tr></thead><tbody><tr><td><code>providers</code></td><td>Console, Go, and connected providers, each with its gateway settings and models.</td></tr><tr><td><code>websearch</code></td><td>Hosted <a href="/v2/docs/console/websearch">web search</a>, for members when enabled.</td></tr><tr><td><code>mcp</code></td><td>The Console MCP server, for members.</td></tr><tr><td><code>policies</code></td><td>Workspace <a href="/v2/docs/policies#console">policy</a> statements.</td></tr><tr><td><code>experimental.policies</code></td><td>Deprecated name for <code>policies</code>, still accepted.</td></tr></tbody></table>
+<p>Every key permission level and member role can read the config.</p>
+<h2 id="errors">Errors</h2>
+<p>Errors return JSON with a <code>_tag</code> naming the error.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="json"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{ </span><span style="color:#005CC5;--shiki-dark:#79B8FF">&quot;_tag&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">&quot;Forbidden&quot;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }</span></span></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Status</th><th>Meaning</th></tr></thead><tbody><tr><td><code>400</code></td><td><code>OrgRequired</code>: a user token was sent without <code>x-org-id</code>.</td></tr><tr><td><code>401</code></td><td>Missing, invalid, expired, or revoked credential.</td></tr><tr><td><code>403</code></td><td>Wrong workspace, missing permission, or an <strong>Inference only</strong> key on a Console endpoint.</td></tr><tr><td><code>404</code></td><td>The workspace does not exist or was deleted.</td></tr></tbody></table></article></main><aside class="toc-column"><nav class="docs-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#service-accounts">Service accounts</a></li><li class="nested"><a href="#permissions">Permissions</a></li><li class="nested"><a href="#revoke-keys">Revoke keys</a></li><li><a href="#user-tokens">User tokens</a></li><li><a href="#device-flow">Device flow</a></li><li><a href="#workspace-config">Workspace config</a></li><li><a href="#errors">Errors</a></li></ul></nav></aside></div><script>
+      const addHeadingAnchors = () => {
+        for (const heading of document.querySelectorAll(".prose :is(h2, h3)[id]")) {
+          if (heading.querySelector(".heading-anchor")) continue
+          const anchor = document.createElement("a")
+          anchor.className = "heading-anchor"
+          anchor.href = `#${heading.id}`
+          anchor.setAttribute("aria-label", `Link to ${heading.textContent ?? "section"}`)
+          anchor.textContent = "#"
+          heading.append(anchor)
+        }
+      }
+
+      addHeadingAnchors()
+      document.addEventListener("astro:page-load", addHeadingAnchors)
+    </script><script type="module">globalThis.process??={},globalThis.process.env??={},document.addEventListener(`click`,async e=>{if(!(e.target instanceof Element))return;let t=e.target.closest(`[data-copy-markdown]`);if(!t)return;t.dataset.copied=`true`,t.setAttribute(`aria-label`,`Copied`),window.setTimeout(()=>{delete t.dataset.copied,t.setAttribute(`aria-label`,`Copy page as Markdown`)},1500);let n=await fetch(window.location.href,{headers:{Accept:`text/markdown`}});n.ok&&await navigator.clipboard.writeText(await n.text())});</script></body></html>

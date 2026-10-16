@@ -1,0 +1,7841 @@
+﻿
+Models.dev - An open-source database of AI models
+Models.dev
+An open-source database of AI models
+Models
+Providers
+Labs
+Search
+Ctrl K
+How to use
+Canonical Models
+Model
+Lab
+Providers
+Context
+Output
+Input
+Reasoning
+Tool Call
+Structured
+Temperature
+Weights
+Price
+Release
+Updated
+↓
+Muse Spark Open
+meta/muse-spark-open
+Meta
+9
+1,048,576
+131,072
+Yes
+Yes
+Yes
+Yes
+Open
+$1.25 / $4.25
+2026-10-15
+2026-10-15
+Nemotron 3.5 Super VL 120B A12B
+nvidia/nemotron-3.5-super-vl-120b-a12b
+Nvidia
+5
+1,048,576
+8,192
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-10-15
+2026-10-15
+Gemini 4 Argon
+google/gemini-4-argon
+Google
+26
+1,048,576
+65,536
+Yes
+Yes
+Yes
+No
+Closed
+$2.00 / $10.00
+2026-10-13
+2026-10-13
+Muse Wonder
+meta/muse-wonder-1.0
+Meta
+6
+1,048,576
+131,072
+Yes
+Yes
+Yes
+Yes
+Closed
+$4.00 / $20.00
+2026-10-12
+2026-10-12
+Muse Wonder Full
+meta/muse-wonder-full
+Meta
+0
+1,048,576
+-
+Yes
+Yes
+-
+-
+Closed
+-
+2026-10-12
+2026-10-12
+Drex 2.0
+nace-ai/drex-v2.0
+Nace Ai
+1
+131,072
+0
+No
+No
+Yes
+No
+Open
+$0.06 / $0.00
+2026-10-06
+2026-10-12
+Phocinae Largha 150M v1
+phocinae/phocinae-largha-150m-v1
+Phocinae
+0
+8,192
+0
+No
+No
+Yes
+No
+Open
+-
+2026-10-08
+2026-10-09
+Claude Haiku 5.5
+anthropic/claude-haiku-5-5
+Anthropic
+39
+1,000,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.10 / $0.50
+2026-10-07
+2026-10-07
+Mistral Large 4
+mistral/mistral-large-4
+Mistral
+11
+1,048,576
+262,144
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.68 / $2.09
+2026-10-06
+2026-10-06
+Nano Banana 2.1
+google/gemini-nano-banana-2.1
+Google
+6
+131,072
+32,768
+Yes
+No
+No
+No
+Closed
+$1.50 / $7.50
+2026-10-06
+2026-10-06
+MiniMax H3
+minimax/MiniMax-H3
+MiniMax
+1
+0
+0
+No
+No
+-
+-
+Open
+-
+2026-07-31
+2026-10-04
+Seedance 2.5
+bytedance-seed/seedance-2.5
+Bytedance Seed
+0
+0
+0
+No
+No
+-
+-
+Closed
+-
+2026-07-31
+2026-10-04
+Seedance 2.0
+bytedance-seed/seedance-2.0
+Bytedance Seed
+0
+0
+0
+No
+No
+-
+-
+Closed
+-
+2026-02-12
+2026-10-04
+Grok Imagine Video 1.5 Lite
+xai/grok-imagine-video-1.5-lite
+xAI
+2
+1,024
+0
+No
+No
+-
+No
+Closed
+-
+2026-10-01
+2026-10-01
+GPT-6.1 Sol
+openai/gpt-6.1-sol
+OpenAI
+37
+1,050,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.00 / $0.00
+2026-09-29
+2026-09-29
+Ling 3.1 Flash
+inclusionai/ling-3.1-flash
+Inclusionai
+8
+262,144
+32,768
+Yes
+Yes
+-
+-
+Closed
+$0.00 / $0.00
+2026-09-29
+2026-09-29
+Liquid d1
+liquid/d1
+Liquid
+3
+65,536
+0
+No
+No
+Yes
+-
+Closed
+$0.02 / $0.00
+2026-09-29
+2026-09-29
+Claude Sonnet 5.5
+anthropic/claude-sonnet-5-5
+Anthropic
+40
+1,000,000
+128,000
+Yes
+Yes
+-
+No
+Closed
+$0.00 / $0.00
+2026-09-28
+2026-09-28
+Drex 1.5
+nace-ai/drex-v1.5
+Nace Ai
+1
+139,264
+0
+No
+No
+Yes
+No
+Open
+$0.04 / $0.00
+2026-09-28
+2026-09-28
+MiniMax-M3.1-Flash-Preview
+minimax/MiniMax-M3.1-Flash-Preview
+MiniMax
+2
+1,000,000
+512,000
+Yes
+Yes
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-09-27
+2026-09-27
+LongCat-2.5-Preview
+meituan/longcat-2.5-preview
+Meituan
+4
+1,000,000
+131,072
+Yes
+Yes
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-09-25
+2026-09-25
+Qwen 3.8 Max Prime
+alibaba/qwen3.8-max-prime
+Alibaba
+5
+1,000,000
+131,072
+Yes
+Yes
+Yes
+Yes
+Closed
+$4.00 / $12.00
+2026-09-23
+2026-09-23
+Claude Opus 5.5
+anthropic/claude-opus-5-5
+Anthropic
+45
+1,000,000
+128,000
+Yes
+Yes
+-
+No
+Closed
+$0.00 / $0.00
+2026-09-22
+2026-09-22
+GPT-6 Luna
+openai/gpt-6-luna
+OpenAI
+39
+1,050,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.00 / $0.00
+2026-09-22
+2026-09-22
+GPT-6 Sol
+openai/gpt-6-sol
+OpenAI
+38
+1,050,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.00 / $0.00
+2026-09-22
+2026-09-22
+MiMo-V2.6-Flash
+xiaomi/mimo-v2.6-flash
+Xiaomi
+27
+1,048,576
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-09-22
+2026-09-22
+MiMo-V2.6-Pro
+xiaomi/mimo-v2.6-pro
+Xiaomi
+26
+1,048,576
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-09-22
+2026-09-22
+Grok 4.7
+xai/grok-4.7
+xAI
+26
+500,000
+500,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$1.60 / $4.80
+2026-09-21
+2026-09-21
+MiMo-V2.6-Pro-UltraSpeed
+xiaomi/mimo-v2.6-pro-ultraspeed
+Xiaomi
+9
+1,048,576
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$4.35 / $8.70
+2026-09-21
+2026-09-21
+Viv Fast
+vivgrid/viv-fast
+Vivgrid
+1
+1,000,000
+256,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.13 / $0.40
+2026-09-21
+2026-09-21
+Qwen-Image-2.1
+alibaba/qwen-image-2.1
+Alibaba
+1
+8,192
+0
+No
+No
+-
+Yes
+Open
+$0.00 / $0.00
+2026-09-14
+2026-09-21
+Step 5 Preview
+stepfun/step-5-preview
+StepFun
+17
+1,000,000
+1,000,000
+Yes
+Yes
+Yes
+-
+Closed
+$0.00 / $0.00
+2026-09-16
+2026-09-20
+Pareto
+unbiased/pareto
+Unbiased
+2
+262,144
+131,072
+No
+Yes
+No
+Yes
+Closed
+$2.50 / $7.50
+2026-09-17
+2026-09-17
+Qwen3.8 Omni Flash
+alibaba/qwen3.8-omni-flash
+Alibaba
+10
+1,000,000
+131,072
+Yes
+Yes
+Yes
+-
+Closed
+$0.11 / $0.38
+2026-09-17
+2026-09-17
+Arrow 2
+quiverai/arrow-2
+Quiverai
+1
+131,072
+65,536
+Yes
+Yes
+-
+-
+Closed
+$4.00 / $20.00
+2026-09-16
+2026-09-16
+Arrow 2 Telos
+quiverai/arrow-2-telos
+Quiverai
+1
+1,050,000
+65,536
+Yes
+Yes
+-
+-
+Closed
+$6.00 / $30.00
+2026-09-16
+2026-09-16
+Jev
+typesafe/jev-latest
+Typesafe
+9
+64,000
+0
+No
+No
+Yes
+No
+Closed
+$0.00 / $0.00
+2026-09-15
+2026-09-15
+Schematron V2 Small
+inference-net/schematron-v2-small
+Inference Net
+5
+128,000
+4,096
+No
+No
+Yes
+Yes
+Open
+$0.05 / $0.23
+2026-09-12
+2026-09-12
+Schematron V2 Turbo
+inference-net/schematron-v2-turbo
+Inference Net
+5
+128,000
+8,192
+No
+No
+Yes
+Yes
+Open
+$0.03 / $0.15
+2026-09-12
+2026-09-12
+MiniCPM5-2B
+openbmb/minicpm5-2b
+Openbmb
+1
+131,072
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.12 / $0.74
+2026-09-06
+2026-09-12
+Fugu Max
+sakana/fugu-max
+Sakana AI
+8
+1,000,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$2.00 / $6.00
+2026-09-11
+2026-09-11
+Fugu Ultra v2
+sakana/fugu-ultra-v2
+Sakana AI
+4
+1,000,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$5.00 / $30.00
+2026-09-11
+2026-09-11
+Kimi K2.8 Preview
+moonshotai/kimi-k2.8-preview
+Moonshot AI
+2
+1,048,576
+-
+Yes
+Yes
+-
+-
+Closed
+$0.00 / $0.00
+2026-09-11
+2026-09-11
+DeepSeek V4.1 Flash
+deepseek/deepseek-v4.1-flash
+DeepSeek
+101
+1,000,000
+384,000
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-09-10
+2026-09-10
+Ling 3.0 Flash VL
+inclusionai/ling-3.0-flash-vl
+Inclusionai
+5
+262,144
+32,768
+Yes
+Yes
+-
+Yes
+Open
+$0.06 / $0.18
+2026-09-10
+2026-09-10
+North Small Translate
+cohere/north-small-translate-1-0
+Cohere
+1
+16,000
+16,000
+No
+No
+-
+Yes
+Open
+$0.00 / $0.00
+2026-09-09
+2026-09-09
+GPT Image 2.5 Flare
+openai/gpt-image-2.5-flare
+OpenAI
+4
+0
+0
+No
+No
+-
+No
+Closed
+$5.00 / $30.00
+2026-09-08
+2026-09-08
+GPT Image 2.5 Sunburst
+openai/gpt-image-2.5-sunburst
+OpenAI
+4
+0
+0
+No
+No
+-
+No
+Closed
+$5.00 / $30.00
+2026-09-08
+2026-09-08
+Mercury 2.5
+inception/mercury-2.5
+Inception
+6
+260,000
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.04 / $0.15
+2026-09-08
+2026-09-08
+GPT-6 Astra
+openai/gpt-6-astra
+OpenAI
+38
+1,050,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.00 / $0.00
+2026-09-04
+2026-09-04
+GPT-6 Astra (Fast)
+openai/gpt-6-astra-fast
+OpenAI
+1
+1,050,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$20.00 / $100.00
+2026-09-04
+2026-09-04
+Ling 3.0 Flash Sante
+inclusionai/ling-3.0-flash-sante
+Inclusionai
+2
+262,144
+32,768
+Yes
+Yes
+-
+Yes
+Closed
+$0.07 / $0.22
+2026-09-04
+2026-09-04
+Ling 3.0 Flash Fin
+inclusionai/ling-3.0-flash-fin
+Inclusionai
+3
+262,144
+32,768
+Yes
+Yes
+-
+-
+Open
+$0.00 / $0.00
+2026-08-27
+2026-09-03
+Gemini 3.8 Flash
+google/gemini-3.8-flash
+Google
+34
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.75 / $3.75
+2026-09-02
+2026-09-02
+Muse Spark 1.3
+meta/muse-spark-1.3
+Meta
+17
+1,048,576
+131,072
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.10 / $0.20
+2026-09-02
+2026-09-02
+Qwen3.8 Max 0902
+alibaba/qwen3.8-max-0902
+Alibaba
+7
+1,000,000
+131,072
+Yes
+Yes
+-
+Yes
+Closed
+$1.71 / $5.14
+2026-09-02
+2026-09-02
+Claude Fable 5.1
+anthropic/claude-fable-5-1
+Anthropic
+41
+1,000,000
+128,000
+Yes
+Yes
+-
+No
+Closed
+$0.00 / $0.00
+2026-09-01
+2026-09-01
+DeepSeek V4 Flash Vision Exp
+deepseek/deepseek-v4-flash-vision-exp
+DeepSeek
+17
+1,000,000
+384,000
+Yes
+Yes
+Yes
+Yes
+Open
+$0.08 / $0.20
+2026-08-21
+2026-09-01
+Vision Large
+vispark/vision-large
+Vispark
+1
+1,000,000
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$7.37 / $22.11
+2024-05-15
+2026-09
+Vision Medium
+vispark/vision-medium
+Vispark
+1
+1,000,000
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$4.21 / $12.63
+2024-05-15
+2026-09
+Vision Small
+vispark/vision-small
+Vispark
+1
+1,000,000
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$1.05 / $3.16
+2024-05-15
+2026-09
+Granite 4.2 8B
+ibm/granite-4.2-8b
+Ibm
+0
+131,072
+117,964
+Yes
+Yes
+Yes
+Yes
+Open
+-
+2026-08-31
+2026-08-31
+Hy4 preview
+tencent/hy4-preview
+Tencent
+19
+1,024,000
+64,000
+Yes
+Yes
+-
+Yes
+Open
+$0.67 / $2.00
+2026-08-28
+2026-08-28
+Gemini Omni 1.1 Flash
+google/gemini-omni-1.1-flash
+Google
+1
+1,048,576
+57,920
+Yes
+No
+-
+No
+Closed
+$1.52 / $9.09
+2026-08-27
+2026-08-27
+Qwen3.8 Flash Next
+alibaba/qwen3.8-flash-next
+Alibaba
+6
+262,144
+131,072
+Yes
+Yes
+Yes
+Yes
+Open
+$0.10 / $0.20
+2026-08-27
+2026-08-27
+Gemini 3.5 Transcribe Live
+google/gemini-3.5-transcribe-live
+Google
+1
+0
+0
+No
+No
+-
+-
+Closed
+-
+2026-08-26
+2026-08-26
+GLM-5.3-Flash
+zhipuai/glm-5.3-flash
+Zhipu AI
+98
+1,000,000
+131,072
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-08-26
+2026-08-26
+Qwen3.8 Flash
+alibaba/qwen3.8-flash
+Alibaba
+32
+1,000,000
+131,072
+Yes
+Yes
+Yes
+-
+Closed
+$0.00 / $0.00
+2026-08-26
+2026-08-26
+MiniMax image-01
+minimax/image-01
+MiniMax
+0
+0
+0
+No
+No
+-
+No
+Closed
+-
+2025-02-15
+2026-08-25
+Apodex 1.1 Mini
+apodex/apodex-1.1-mini
+Apodex
+1
+262,144
+262,144
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-08-24
+2026-08-24
+Ornith 1.5 35B A3B
+deepreinforce/ornith-1.5-35b-a3b
+Deepreinforce
+1
+262,144
+-
+Yes
+Yes
+Yes
+Yes
+Open
+$0.10 / $0.40
+2026-08-18
+2026-08-23
+DeepSeek V4 Pro 0813
+deepseek/deepseek-v4-pro-0813
+DeepSeek
+52
+1,000,000
+384,000
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-08-12
+2026-08-22
+Hy-MT2-1.8B
+tencent/hy-mt2-1.8b
+Tencent
+3
+8,192
+4,096
+No
+No
+No
+Yes
+Open
+$0.04 / $0.18
+2026-08-20
+2026-08-20
+Hy-MT2-30B-A3B
+tencent/hy-mt2-30b-a3b
+Tencent
+3
+8,192
+4,096
+No
+No
+Yes
+Yes
+Open
+$0.07 / $0.29
+2026-08-20
+2026-08-20
+Hy-MT2-7B
+tencent/hy-mt2-7b
+Tencent
+3
+8,192
+4,096
+No
+No
+Yes
+Yes
+Open
+$0.07 / $0.29
+2026-08-19
+2026-08-19
+GLM-5.3
+zhipuai/glm-5.3
+Zhipu AI
+111
+1,000,000
+131,072
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-08-14
+2026-08-14
+Qwen3.8 27B
+alibaba/qwen3.8-27b
+Alibaba
+50
+262,144
+32,768
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-08-14
+2026-08-14
+Gemini 3.7 Flash
+google/gemini-3.7-flash
+Google
+33
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-08-13
+2026-08-13
+Gemini Flash Latest
+google/gemini-flash-latest
+Google
+6
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.50 / $3.00
+2026-08-13
+2026-08-13
+Toast 1
+mixedbread/toast-1
+Mixedbread
+1
+131,000
+4,000
+No
+Yes
+-
+-
+Closed
+$0.30 / $0.72
+2026-08-13
+2026-08-13
+Grok 4.6
+xai/grok-4.6
+xAI
+36
+500,000
+500,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-08-12
+2026-08-12
+Qwen3.8 2.4T A95B
+alibaba/qwen3.8-2.4t-a95b
+Alibaba
+25
+262,144
+131,072
+Yes
+Yes
+Yes
+Yes
+Open
+$1.95 / $5.70
+2026-08-12
+2026-08-12
+MAI-Code-1.1-Flash
+microsoft/mai-code-1.1-flash
+Microsoft
+1
+256,000
+128,000
+Yes
+Yes
+Yes
+-
+Closed
+$0.20 / $1.20
+2026-08-11
+2026-08-11
+Nemotron 3.5 Lightning 30B A3B
+nvidia/nemotron-3.5-lightning
+Nvidia
+18
+262,144
+262,144
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-08-11
+2026-08-11
+Muse Glimmer 30B
+meta/muse-glimmer-30b
+Meta
+17
+131,072
+131,072
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-08-10
+2026-08-10
+GPT-5.6 Cyber
+openai/gpt-5.6-cyber
+OpenAI
+1
+400,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$12.50 / $75.00
+2026-08-07
+2026-08-07
+Grok Imagine Image 2.0
+xai/grok-imagine-image-2.0
+xAI
+3
+8,000
+0
+No
+No
+-
+No
+Closed
+$0.00 / $0.00
+2026-08-07
+2026-08-07
+Motif 3
+motif-technologies/motif-3
+Motif Technologies
+1
+262,144
+262,144
+Yes
+Yes
+No
+Yes
+Open
+$0.50 / $2.00
+2026-08-07
+2026-08-07
+Solar Pro 4
+upstage/solar-pro4
+Upstage
+7
+524,288
+131,072
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.03 / $0.12
+2026-08-06
+2026-08-06
+Muse Spark 1.2
+meta/muse-spark-1.2
+Meta
+20
+1,048,576
+131,072
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-08-05
+2026-08-05
+Grok Voice STT 1.0
+xai/grok-voice-stt-1.0
+xAI
+1
+15,000
+15,000
+No
+No
+-
+No
+Closed
+-
+2026-08-04
+2026-08-04
+Qwen3.8 Max
+alibaba/qwen3.8-max
+Alibaba
+38
+1,000,000
+131,072
+Yes
+Yes
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-08-03
+2026-08-03
+Sakana Namazu
+sakana/sakana-namazu
+Sakana AI
+4
+262,144
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.95 / $4.00
+2026-08-03
+2026-08-03
+DeepSeek V4 Flash 0731
+deepseek/deepseek-v4-flash-0731
+DeepSeek
+71
+1,000,000
+384,000
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-07-31
+2026-07-31
+Grok Voice TTS 1.0
+xai/grok-voice-tts-1.0
+xAI
+1
+15,000
+15,000
+No
+No
+-
+No
+Closed
+-
+2026-07-31
+2026-07-31
+Inkling Small
+thinkingmachines/inkling-small
+Thinking Machines
+15
+1,048,576
+1,048,576
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-07-30
+2026-07-30
+Claude Opus 5
+anthropic/claude-opus-5
+Anthropic
+53
+1,000,000
+128,000
+Yes
+Yes
+-
+No
+Closed
+$0.00 / $0.00
+2026-07-24
+2026-07-24
+Ling 3.0 Flash
+inclusionai/ling-3.0-flash
+Inclusionai
+7
+262,144
+32,768
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-07-23
+2026-07-23
+Gemini 3.5 Flash Lite
+google/gemini-3.5-flash-lite
+Google
+32
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.15 / $1.25
+2026-07-21
+2026-07-21
+Gemini 3.6 Flash
+google/gemini-3.6-flash
+Google
+34
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-07-21
+2026-07-21
+Gemini Flash-Lite Latest
+google/gemini-flash-lite-latest
+Google
+5
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.25 / $1.50
+2026-07-21
+2026-07-21
+Laguna S 2.1
+poolside/laguna-s-2.1
+Poolside
+10
+1,048,576
+32,768
+Yes
+Yes
+No
+Yes
+Open
+$0.00 / $0.00
+2026-07-21
+2026-07-21
+Macaron V1 Tall
+mindlab/macaron-v1-tall
+Mindlab
+1
+262,144
+32,768
+Yes
+Yes
+-
+Yes
+Open
+$0.25 / $1.43
+2026-07-21
+2026-07-21
+Macaron V1 Venti
+mindlab/macaron-v1-venti
+Mindlab
+1
+1,048,576
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.82 / $2.48
+2026-07-21
+2026-07-21
+Qwen3.8 Max Preview
+alibaba/qwen3.8-max-preview
+Alibaba
+8
+1,000,000
+131,072
+Yes
+Yes
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-07-19
+2026-07-19
+Kimi K3
+moonshotai/kimi-k3
+Moonshot AI
+108
+1,048,576
+131,072
+Yes
+Yes
+Yes
+No
+Open
+$0.00 / $0.00
+2026-07-16
+2026-07-16
+Inkling
+thinkingmachines/inkling
+Thinking Machines
+30
+1,048,576
+1,048,576
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-07-15
+2026-07-15
+Qwen3.7 Flash
+alibaba/qwen3.7-flash
+Alibaba
+13
+1,000,000
+131,072
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.03 / $0.11
+2026-07-15
+2026-07-15
+DiffusionGemma 26B A4B IT
+google/diffusiongemma-26b-a4b-it
+Google
+1
+262,144
+32,768
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-06-09
+2026-07-15
+GPT-5.6 Luna
+openai/gpt-5.6-luna
+OpenAI
+61
+1,050,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.00 / $0.00
+2026-07-09
+2026-07-09
+GPT-5.6 Sol
+openai/gpt-5.6-sol
+OpenAI
+64
+1,050,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.00 / $0.00
+2026-07-09
+2026-07-09
+GPT-5.6 Terra
+openai/gpt-5.6-terra
+OpenAI
+57
+1,050,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.00 / $0.00
+2026-07-09
+2026-07-09
+Muse Spark 1.1
+meta/muse-spark-1.1
+Meta
+15
+1,048,576
+131,072
+Yes
+Yes
+Yes
+Yes
+Closed
+$1.25 / $4.25
+2026-04-08
+2026-07-09
+Grok 4.5
+xai/grok-4.5
+xAI
+25
+500,000
+500,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-07-08
+2026-07-08
+Aion-3.0
+aion-labs/aion-3.0
+Aion Labs
+4
+131,072
+32,768
+Yes
+Yes
+No
+Yes
+Closed
+$3.00 / $6.00
+2026-07-07
+2026-07-07
+Aion-3.0-Mini
+aion-labs/aion-3.0-mini
+Aion Labs
+4
+131,072
+32,768
+Yes
+Yes
+No
+Yes
+Closed
+$0.70 / $1.40
+2026-07-07
+2026-07-07
+GPT-Realtime-2.1
+openai/gpt-realtime-2.1
+OpenAI
+2
+128,000
+32,000
+Yes
+Yes
+No
+No
+Closed
+$4.00 / $24.00
+2026-07-06
+2026-07-06
+Hy3
+tencent/hy3
+Tencent
+26
+256,000
+128,000
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-07-06
+2026-07-06
+Laguna XS 2.1
+poolside/laguna-xs-2.1
+Poolside
+6
+262,144
+32,768
+Yes
+Yes
+No
+Yes
+Open
+$0.00 / $0.00
+2026-07-02
+2026-07-02
+Claude Sonnet 5
+anthropic/claude-sonnet-5
+Anthropic
+54
+1,000,000
+128,000
+Yes
+Yes
+-
+No
+Closed
+$0.00 / $0.00
+2026-06-30
+2026-06-30
+Gemini Omni Flash Preview
+google/gemini-omni-flash-preview
+Google
+2
+1,048,576
+57,920
+Yes
+No
+-
+-
+Closed
+$1.50 / $9.00
+2026-06-30
+2026-06-30
+LongCat-2.0
+meituan/longcat-2.0
+Meituan
+9
+1,000,000
+131,072
+Yes
+Yes
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-06-30
+2026-06-30
+Nano Banana 2 Lite
+google/gemini-3.1-flash-lite-image
+Google
+9
+65,536
+4,096
+Yes
+Yes
+No
+Yes
+Closed
+$0.00 / $0.00
+2026-06-30
+2026-06-30
+Ornith 1.0 31B
+deepreinforce/ornith-1.0-31b
+Deepreinforce
+0
+262,144
+-
+Yes
+Yes
+-
+Yes
+Open
+-
+2026-06-25
+2026-06-25
+Ornith 1.0 35B
+deepreinforce/ornith-1.0-35b
+Deepreinforce
+1
+262,144
+-
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-06-25
+2026-06-25
+Ornith 1.0 397B
+deepreinforce/ornith-1.0-397b
+Deepreinforce
+0
+262,144
+-
+Yes
+Yes
+-
+Yes
+Open
+-
+2026-06-25
+2026-06-25
+Ornith 1.0 9B
+deepreinforce/ornith-1.0-9b
+Deepreinforce
+0
+262,144
+-
+Yes
+Yes
+-
+Yes
+Open
+-
+2026-06-25
+2026-06-25
+Seed 2.1 Pro
+bytedance-seed/seed-2.1-pro
+Bytedance Seed
+2
+256,000
+256,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.71 / $3.54
+2026-06-23
+2026-06-23
+Seed 2.1 Turbo
+bytedance-seed/seed-2.1-turbo
+Bytedance Seed
+5
+256,000
+256,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-06-23
+2026-06-23
+Seed Character
+bytedance-seed/seed-character
+Bytedance Seed
+2
+256,000
+256,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.12 / $0.30
+2026-06-23
+2026-06-23
+Seed Evolving
+bytedance-seed/seed-evolving
+Bytedance Seed
+3
+256,000
+256,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-06-23
+2026-06-23
+Fugu
+sakana/fugu
+Sakana AI
+1
+1,000,000
+-
+Yes
+Yes
+Yes
+No
+Closed
+-
+2026-06-15
+2026-06-15
+Fugu Ultra
+sakana/fugu-ultra
+Sakana AI
+15
+1,000,000
+-
+Yes
+Yes
+Yes
+No
+Closed
+$5.00 / $30.00
+2026-06-15
+2026-06-15
+GLM-5.2
+zhipuai/glm-5.2
+Zhipu AI
+133
+1,000,000
+131,072
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-06-13
+2026-06-13
+Laguna M.1
+poolside/laguna-m.1
+Poolside
+2
+262,144
+32,768
+Yes
+Yes
+No
+Yes
+Open
+$0.00 / $0.00
+2026-04-28
+2026-06-13
+Laguna XS.2
+poolside/laguna-xs.2
+Poolside
+1
+262,144
+32,768
+Yes
+Yes
+No
+Yes
+Open
+$0.00 / $0.00
+2026-04-28
+2026-06-13
+Kimi K2.7 Code
+moonshotai/kimi-k2.7-code
+Moonshot AI
+72
+262,144
+262,144
+Yes
+Yes
+Yes
+No
+Open
+$0.00 / $0.00
+2026-06-12
+2026-06-12
+Kimi K2.7 Code Highspeed
+moonshotai/kimi-k2.7-code-highspeed
+Moonshot AI
+14
+262,144
+262,144
+Yes
+Yes
+Yes
+No
+Open
+$0.00 / $0.00
+2026-06-12
+2026-06-12
+Claude Fable 5
+anthropic/claude-fable-5
+Anthropic
+49
+1,000,000
+128,000
+Yes
+Yes
+-
+No
+Closed
+$0.00 / $0.00
+2026-06-09
+2026-06-09
+Claude Mythos 5
+anthropic/claude-mythos-5
+Anthropic
+2
+1,000,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$10.00 / $50.00
+2026-06-09
+2026-06-09
+Gemini 3.5 Live Translate Preview
+google/gemini-3.5-live-translate-preview
+Google
+1
+131,072
+65,536
+No
+No
+-
+No
+Closed
+$3.50 / $21.00
+2026-06-09
+2026-06-09
+Gemma 4 12B IT
+google/gemma-4-12b-it
+Google
+2
+262,144
+32,768
+Yes
+Yes
+Yes
+Yes
+Open
+$0.05 / $0.25
+2026-06-09
+2026-06-09
+North Mini Code
+cohere/north-mini-code-1-0
+Cohere
+2
+256,000
+64,000
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-06-09
+2026-06-09
+MiMo-V2.5-Pro-UltraSpeed
+xiaomi/mimo-v2.5-pro-ultraspeed
+Xiaomi
+1
+1,048,576
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$1.30 / $2.61
+2026-06-08
+2026-06-09
+Command A Plus
+cohere/command-a-plus-05-2026
+Cohere
+1
+128,000
+64,000
+Yes
+Yes
+Yes
+Yes
+Open
+$2.50 / $10.00
+2026-05-20
+2026-06-09
+MAI-Code-1-Flash
+microsoft/mai-code-1-flash
+Microsoft
+1
+256,000
+128,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.75 / $4.50
+2026-06-02
+2026-06-08
+Nemotron 3 Ultra 550B A55B
+nvidia/nemotron-3-ultra-550b-a55b
+Nvidia
+26
+1,000,000
+128,000
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-06-04
+2026-06-04
+Nemotron 3.5 Content Safety
+nvidia/nemotron-3.5-content-safety
+Nvidia
+9
+128,000
+8,192
+Yes
+No
+-
+Yes
+Open
+$0.00 / $0.00
+2026-06-04
+2026-06-04
+Nex-N2-Pro
+nex-agi/nex-n2-pro
+Nex Agi
+1
+262,144
+262,144
+Yes
+Yes
+Yes
+Yes
+Open
+$0.50 / $2.50
+2026-06-02
+2026-06-02
+Qwen3.7 Plus
+alibaba/qwen3.7-plus
+Alibaba
+32
+1,000,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-06-02
+2026-06-02
+MiniMax-M3
+minimax/MiniMax-M3
+MiniMax
+55
+1,048,576
+512,000
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-06-01
+2026-06-01
+Grok Imagine Video 1.5
+xai/grok-imagine-video-1.5
+xAI
+2
+1,024
+0
+No
+No
+-
+No
+Closed
+-
+2026-05-30
+2026-05-30
+Step 3.7 Flash
+stepfun/step-3.7-flash
+StepFun
+24
+256,000
+256,000
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-05-29
+2026-05-29
+Claude Opus 4.8
+anthropic/claude-opus-4-8
+Anthropic
+61
+1,000,000
+128,000
+Yes
+Yes
+-
+No
+Closed
+$0.00 / $0.00
+2026-05-28
+2026-05-28
+Nano Banana 2
+google/gemini-3.1-flash-image
+Google
+12
+131,072
+32,768
+Yes
+No
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-05-28
+2026-05-28
+Nano Banana Pro
+google/gemini-3-pro-image
+Google
+12
+65,536
+32,768
+Yes
+No
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-05-28
+2026-05-28
+GPT-5.5 Instant
+openai/gpt-5.5-instant
+OpenAI
+3
+400,000
+128,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$5.00 / $30.00
+2026-05-05
+2026-05-28
+Trinity Large Thinking
+arcee-ai/trinity-large-thinking
+Arcee Ai
+6
+524,288
+262,144
+Yes
+Yes
+-
+Yes
+Open
+$0.25 / $0.80
+2026-04-01
+2026-05-28
+Trinity Large Preview
+arcee-ai/trinity-large-preview
+Arcee Ai
+1
+524,288
+262,144
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-01-27
+2026-05-28
+Trinity Mini
+arcee-ai/trinity-mini
+Arcee Ai
+1
+131,072
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.04 / $0.15
+2025-12-01
+2026-05-28
+Trinity Nano Preview
+arcee-ai/trinity-nano-preview
+Arcee Ai
+0
+131,072
+131,072
+No
+Yes
+-
+Yes
+Open
+-
+2025-12-01
+2026-05-28
+Qwen3.7 Max
+alibaba/qwen3.7-max
+Alibaba
+35
+1,000,000
+65,536
+Yes
+Yes
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-05-21
+2026-05-21
+Gemini 3.5 Flash
+google/gemini-3.5-flash
+Google
+41
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-05-19
+2026-05-19
+MiniCPM5-1B
+openbmb/minicpm5-1b
+Openbmb
+0
+131,072
+131,072
+Yes
+Yes
+-
+Yes
+Open
+-
+2026-05-19
+2026-05-19
+Perceptron Mk1
+perceptron/perceptron-mk1
+Perceptron
+3
+32,768
+8,192
+Yes
+No
+Yes
+Yes
+Closed
+$0.15 / $1.50
+2026-05-12
+2026-05-12
+Gemini 3.1 Flash Lite
+google/gemini-3.1-flash-lite
+Google
+29
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-05-07
+2026-05-07
+GPT Realtime Whisper
+openai/gpt-realtime-whisper
+OpenAI
+1
+16,000
+2,000
+No
+No
+-
+Yes
+Closed
+-
+2026-05-07
+2026-05-07
+CoBuddy
+baidu/cobuddy
+Baidu
+1
+131,072
+65,536
+Yes
+Yes
+-
+Yes
+Closed
+$0.28 / $1.13
+2026-05-06
+2026-05-06
+Mistral Medium 3.5
+mistral/mistral-medium-3-5
+Mistral
+7
+262,144
+209,715
+Yes
+Yes
+Yes
+Yes
+Closed
+$1.50 / $7.50
+2026-04-30
+2026-04-30
+Mistral Medium (latest)
+mistral/mistral-medium-latest
+Mistral
+6
+262,144
+262,144
+Yes
+Yes
+Yes
+Yes
+Open
+$0.40 / $2.00
+2026-04-29
+2026-04-29
+Mistral Medium 3.5
+mistral/mistral-medium-2604
+Mistral
+11
+262,144
+262,144
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-04-29
+2026-04-29
+Nemotron 3 Nano Omni 30B A3B Reasoning
+nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
+Nvidia
+9
+256,000
+65,536
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-04-28
+2026-04-28
+Qwen3.6 Flash
+alibaba/qwen3.6-flash
+Alibaba
+20
+1,000,000
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-04-27
+2026-04-27
+DeepSeek V4 Flash
+deepseek/deepseek-v4-flash
+DeepSeek
+69
+1,000,000
+384,000
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-04-24
+2026-04-24
+DeepSeek V4 Pro
+deepseek/deepseek-v4-pro
+DeepSeek
+70
+1,000,000
+384,000
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-04-24
+2026-04-24
+DeepSeek V4 Flash 0423
+deepseek/deepseek-v4-flash-0423
+DeepSeek
+4
+1,000,000
+384,000
+Yes
+Yes
+Yes
+Yes
+Open
+$0.14 / $0.28
+2026-04-23
+2026-04-23
+DeepSeek V4 Pro 0423
+deepseek/deepseek-v4-pro-0423
+DeepSeek
+2
+1,000,000
+384,000
+Yes
+Yes
+Yes
+Yes
+Open
+$1.32 / $3.30
+2026-04-23
+2026-04-23
+GPT-5.5
+openai/gpt-5.5
+OpenAI
+52
+1,050,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.00 / $0.00
+2026-04-23
+2026-04-23
+GPT-5.5 Pro
+openai/gpt-5.5-pro
+OpenAI
+20
+1,050,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$27.27 / $163.64
+2026-04-23
+2026-04-23
+Gemini Embedding 2
+google/gemini-embedding-2
+Google
+5
+8,192
+3,072
+No
+No
+-
+No
+Closed
+$0.20 / $0.00
+2026-04-22
+2026-04-22
+MiMo-V2.5
+xiaomi/mimo-v2.5
+Xiaomi
+32
+1,048,576
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-04-22
+2026-04-22
+MiMo-V2.5-Pro
+xiaomi/mimo-v2.5-pro
+Xiaomi
+30
+1,048,576
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-04-22
+2026-04-22
+Qwen3.6 27B
+alibaba/qwen3.6-27b
+Alibaba
+29
+262,144
+65,536
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-04-22
+2026-04-22
+Deep Research Max Preview
+google/deep-research-max-preview-04-2026
+Google
+2
+1,048,576
+65,536
+Yes
+Yes
+-
+No
+Closed
+$2.00 / $12.00
+2026-04-21
+2026-04-21
+Gemini Deep Research Preview
+google/deep-research-preview-04-2026
+Google
+2
+1,048,576
+65,536
+Yes
+Yes
+-
+No
+Closed
+$2.00 / $12.00
+2026-04-21
+2026-04-21
+GPT-5.4 Image 2
+openai/gpt-5.4-image-2
+OpenAI
+3
+272,000
+128,000
+Yes
+No
+Yes
+No
+Closed
+$8.00 / $15.00
+2026-04-21
+2026-04-21
+GPT-Image-2
+openai/gpt-image-2
+OpenAI
+8
+0
+0
+No
+No
+-
+No
+Closed
+$0.00 / $0.00
+2026-04-21
+2026-04-21
+Kimi K2.6
+moonshotai/kimi-k2.6
+Moonshot AI
+66
+262,144
+262,144
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-04-21
+2026-04-21
+Hy3 preview
+tencent/hy3-preview
+Tencent
+5
+256,000
+64,000
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-04-20
+2026-04-20
+Qwen3.6 Max Preview
+alibaba/qwen3.6-max-preview
+Alibaba
+6
+262,144
+65,536
+Yes
+Yes
+-
+Yes
+Closed
+$1.04 / $6.24
+2026-04-20
+2026-04-20
+Grok 4.3
+xai/grok-4.3
+xAI
+27
+1,000,000
+30,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$1.25 / $2.50
+2026-04-17
+2026-04-17
+Qwen3.6 35B-A3B
+alibaba/qwen3.6-35b-a3b
+Alibaba
+44
+262,144
+65,536
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-04-17
+2026-04-17
+Claude Opus 4.7
+anthropic/claude-opus-4-7
+Anthropic
+52
+1,000,000
+128,000
+Yes
+Yes
+-
+No
+Closed
+$0.00 / $0.00
+2026-04-16
+2026-04-16
+Grok Build 0.1
+xai/grok-build-0.1
+xAI
+19
+256,000
+256,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-04-16
+2026-04-16
+Nemotron 3 Content Safety
+nvidia/nemotron-3-content-safety
+Nvidia
+1
+128,000
+4,096
+No
+No
+-
+No
+Open
+$0.00 / $0.00
+2026-04-16
+2026-04-16
+Gemini 3.1 Flash TTS Preview
+google/gemini-3.1-flash-tts-preview
+Google
+2
+8,192
+16,384
+No
+No
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-04-15
+2026-04-15
+Gemini Robotics-ER 1.6 Preview
+google/gemini-robotics-er-1.6-preview
+Google
+1
+131,072
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$1.00 / $5.00
+2026-04-14
+2026-04-14
+Nemotron Cascade 2 30B A3B
+nvidia/nemotron-cascade-2-30b-a3b
+Nvidia
+0
+256,000
+32,768
+Yes
+Yes
+-
+Yes
+Open
+-
+2026-03-24
+2026-04-09
+GLM-5.1
+zhipuai/glm-5.1
+Zhipu AI
+53
+200,000
+131,072
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-04-07
+2026-04-07
+Grok Imagine Image Quality
+xai/grok-imagine-image-quality
+xAI
+1
+16,000
+0
+No
+No
+-
+No
+Closed
+-
+2026-04-03
+2026-04-03
+Gemma 4 26B A4B IT
+google/gemma-4-26b-a4b-it
+Google
+31
+262,144
+32,768
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-04-02
+2026-04-02
+Gemma 4 31B IT
+google/gemma-4-31b-it
+Google
+49
+262,144
+32,768
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-04-02
+2026-04-02
+Gemma 4 E2B IT
+google/gemma-4-E2B-it
+Google
+2
+131,072
+8,192
+Yes
+Yes
+Yes
+Yes
+Open
+$0.04 / $0.08
+2026-04-02
+2026-04-02
+Gemma 4 E4B IT
+google/gemma-4-E4B-it
+Google
+2
+131,072
+8,192
+Yes
+Yes
+Yes
+Yes
+Open
+$0.02 / $0.10
+2026-04-02
+2026-04-02
+Qwen3.6 Plus
+alibaba/qwen3.6-plus
+Alibaba
+21
+1,000,000
+65,536
+Yes
+Yes
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-04-02
+2026-04-02
+Step 3.5 Flash 2603
+stepfun/step-3.5-flash-2603
+StepFun
+5
+256,000
+256,000
+Yes
+Yes
+-
+Yes
+Open
+$0.10 / $0.30
+2026-04-02
+2026-04-02
+GLM-5V-Turbo
+zhipuai/glm-5v-turbo
+Zhipu AI
+15
+200,000
+131,072
+Yes
+Yes
+-
+Yes
+Closed
+$0.73 / $3.19
+2026-04-01
+2026-04-01
+Llama Nemotron Rerank VL 1B v2
+nvidia/llama-nemotron-rerank-vl-1b-v2
+Nvidia
+1
+128,000
+4,096
+No
+No
+-
+No
+Open
+$0.00 / $0.00
+2026-03-31
+2026-03-31
+Veo 3.1 Lite Preview
+google/veo-3.1-lite-generate-preview
+Google
+1
+1,024
+0
+No
+No
+-
+No
+Closed
+-
+2026-03-31
+2026-03-31
+Gemini 3.1 Flash Live Preview
+google/gemini-3.1-flash-live-preview
+Google
+1
+131,072
+65,536
+Yes
+Yes
+No
+Yes
+Closed
+$0.75 / $4.50
+2026-03-26
+2026-03-26
+Lyria 3 Clip Preview
+google/lyria-3-clip-preview
+Google
+3
+131,072
+65,536
+No
+No
+No
+Yes
+Closed
+$0.00 / $0.00
+2026-03-25
+2026-03-25
+Lyria 3 Pro Preview
+google/lyria-3-pro-preview
+Google
+3
+131,072
+8,192
+No
+No
+No
+Yes
+Closed
+$0.00 / $0.00
+2026-03-25
+2026-03-25
+Reka Edge
+rekaai/reka-edge
+Rekaai
+3
+16,384
+14,745
+No
+Yes
+Yes
+Yes
+Open
+$0.10 / $0.10
+2026-03-20
+2026-03-20
+MiMo-V2-Omni
+xiaomi/mimo-v2-omni
+Xiaomi
+2
+262,144
+131,072
+Yes
+Yes
+-
+Yes
+Closed
+$0.14 / $0.28
+2026-03-18
+2026-03-18
+MiMo-V2-Pro
+xiaomi/mimo-v2-pro
+Xiaomi
+6
+1,048,576
+131,072
+Yes
+Yes
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-03-18
+2026-03-18
+MiniMax-M2.7
+minimax/MiniMax-M2.7
+MiniMax
+37
+204,800
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-03-18
+2026-03-18
+MiniMax-M2.7-highspeed
+minimax/MiniMax-M2.7-highspeed
+MiniMax
+14
+204,800
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-03-18
+2026-03-18
+GPT-5.4 mini
+openai/gpt-5.4-mini
+OpenAI
+37
+400,000
+128,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-03-17
+2026-03-17
+GPT-5.4 nano
+openai/gpt-5.4-nano
+OpenAI
+32
+400,000
+128,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.16 / $1.00
+2026-03-17
+2026-03-17
+GLM-5-Turbo
+zhipuai/glm-5-turbo
+Zhipu AI
+16
+200,000
+131,072
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.73 / $3.19
+2026-03-16
+2026-03-16
+Mistral Small (latest)
+mistral/mistral-small-latest
+Mistral
+4
+256,000
+256,000
+Yes
+Yes
+-
+Yes
+Open
+$0.15 / $0.60
+2026-03-16
+2026-03-16
+Mistral Small 4
+mistral/mistral-small-2603
+Mistral
+19
+256,000
+256,000
+Yes
+Yes
+-
+Yes
+Open
+$0.07 / $0.28
+2026-03-16
+2026-03-16
+Nemotron VoiceChat
+nvidia/nemotron-voicechat
+Nvidia
+1
+128,000
+8,192
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-03-16
+2026-03-16
+Claude Sonnet 4.6
+anthropic/claude-sonnet-4-6
+Anthropic
+54
+1,000,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$0.00 / $0.00
+2026-02-17
+2026-03-13
+Claude Opus 4.6
+anthropic/claude-opus-4-6
+Anthropic
+47
+1,000,000
+128,000
+Yes
+Yes
+-
+Yes
+Closed
+$5.00 / $25.00
+2026-02-05
+2026-03-13
+Nemotron 3 Super 120B A12B
+nvidia/nemotron-3-super-120b-a12b
+Nvidia
+24
+262,144
+262,144
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-03-11
+2026-03-11
+Grok 4.20 (Non-Reasoning)
+xai/grok-4.20-0309-non-reasoning
+xAI
+12
+1,000,000
+30,000
+No
+Yes
+Yes
+Yes
+Closed
+$1.25 / $2.50
+2026-03-09
+2026-03-09
+Grok 4.20 (Reasoning)
+xai/grok-4.20-0309-reasoning
+xAI
+12
+1,000,000
+30,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$1.25 / $2.50
+2026-03-09
+2026-03-09
+GPT-5.4
+openai/gpt-5.4
+OpenAI
+47
+1,050,000
+128,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-03-05
+2026-03-05
+GPT-5.4 Pro
+openai/gpt-5.4-pro
+OpenAI
+21
+1,050,000
+128,000
+Yes
+Yes
+No
+No
+Closed
+$24.00 / $144.00
+2026-03-05
+2026-03-05
+Mercury 2
+inception/mercury-2
+Inception
+7
+128,000
+50,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.25 / $0.75
+2026-03-04
+2026-03-04
+Gemini 3.1 Flash Lite Preview
+google/gemini-3.1-flash-lite-preview
+Google
+11
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.13 / $0.75
+2026-03-03
+2026-03-03
+GPT-5.3 Chat (latest)
+openai/gpt-5.3-chat-latest
+OpenAI
+4
+128,000
+16,384
+No
+Yes
+Yes
+Yes
+Closed
+$1.75 / $14.00
+2026-03-03
+2026-03-03
+DeepSeek Chat
+deepseek/deepseek-chat
+DeepSeek
+7
+1,000,000
+384,000
+No
+Yes
+-
+Yes
+Open
+$0.10 / $0.29
+2025-12-01
+2026-02-28
+DeepSeek Reasoner
+deepseek/deepseek-reasoner
+DeepSeek
+3
+1,000,000
+384,000
+Yes
+Yes
+-
+Yes
+Open
+$0.15 / $0.29
+2025-12-01
+2026-02-28
+Nano Banana 2 Preview
+google/gemini-3.1-flash-image-preview
+Google
+7
+65,536
+65,536
+Yes
+No
+-
+Yes
+Closed
+$0.50 / $3.00
+2026-02-26
+2026-02-26
+Aion-2.0
+aion-labs/aion-2.0
+Aion Labs
+3
+131,072
+32,768
+Yes
+Yes
+No
+Yes
+Closed
+$0.80 / $1.60
+2026-02-23
+2026-02-23
+Qwen3.5 122B-A10B
+alibaba/qwen3.5-122b-a10b
+Alibaba
+22
+262,144
+65,536
+Yes
+Yes
+Yes
+Yes
+Open
+$0.11 / $0.90
+2026-02-23
+2026-02-23
+Qwen3.5 27B
+alibaba/qwen3.5-27b
+Alibaba
+20
+262,144
+65,536
+Yes
+Yes
+Yes
+Yes
+Open
+$0.08 / $0.68
+2026-02-23
+2026-02-23
+Qwen3.5 35B-A3B
+alibaba/qwen3.5-35b-a3b
+Alibaba
+20
+262,144
+65,536
+Yes
+Yes
+Yes
+Yes
+Open
+$0.06 / $0.45
+2026-02-23
+2026-02-23
+Qwen3.5 9B
+alibaba/qwen3.5-9b
+Alibaba
+15
+262,144
+65,536
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-02-23
+2026-02-23
+Qwen3.5 Flash
+alibaba/qwen3.5-flash
+Alibaba
+10
+1,000,000
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.03 / $0.28
+2026-02-23
+2026-02-23
+Trendyol Asure 12B
+trendyol/asure-12b
+Trendyol
+1
+131,072
+-
+No
+No
+-
+Yes
+Open
+$0.10 / $0.50
+2026-02-19
+2026-02-20
+Gemini 3.1 Pro Preview
+google/gemini-3.1-pro-preview
+Google
+34
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-02-19
+2026-02-19
+Gemini 3.1 Pro Preview Custom Tools
+google/gemini-3.1-pro-preview-customtools
+Google
+12
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$2.00 / $12.00
+2026-02-19
+2026-02-19
+Sarvam 30B
+sarvam/sarvam-30b
+Sarvam AI
+2
+128,000
+128,000
+Yes
+Yes
+-
+Yes
+Open
+$0.02 / $0.10
+2026-02-18
+2026-02-18
+Tiny Aya Earth
+cohere/tiny-aya-earth
+Cohere
+1
+8,000
+8,000
+No
+Yes
+-
+Yes
+Open
+-
+2026-02-17
+2026-02-17
+Tiny Aya Fire
+cohere/tiny-aya-fire
+Cohere
+1
+8,000
+8,000
+No
+Yes
+-
+Yes
+Open
+-
+2026-02-17
+2026-02-17
+Tiny Aya Global
+cohere/tiny-aya-global
+Cohere
+1
+8,000
+8,000
+No
+Yes
+-
+Yes
+Open
+-
+2026-02-17
+2026-02-17
+Tiny Aya Water
+cohere/tiny-aya-water
+Cohere
+1
+8,000
+8,000
+No
+Yes
+-
+Yes
+Open
+-
+2026-02-17
+2026-02-17
+Qwen3.5 Plus
+alibaba/qwen3.5-plus
+Alibaba
+12
+1,000,000
+65,536
+Yes
+Yes
+-
+Yes
+Closed
+$0.11 / $0.66
+2026-02-16
+2026-02-16
+Qwen3.5 397B-A17B
+alibaba/qwen3.5-397b-a17b
+Alibaba
+28
+262,144
+65,536
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2026-02-15
+2026-02-15
+Seed 2.0 Code
+bytedance-seed/seed-2.0-code
+Bytedance Seed
+12
+262,144
+131,072
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.40 / $2.37
+2026-02-14
+2026-02-14
+Seed 2.0 Lite
+bytedance-seed/seed-2.0-lite
+Bytedance Seed
+8
+256,000
+32,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2026-02-14
+2026-02-14
+Seed 2.0 Mini
+bytedance-seed/seed-2.0-mini
+Bytedance Seed
+9
+256,000
+32,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.03 / $0.30
+2026-02-14
+2026-02-14
+Seed 2.0 Pro
+bytedance-seed/seed-2.0-pro
+Bytedance Seed
+5
+256,000
+128,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.47 / $2.37
+2026-02-14
+2026-02-14
+MiniMax-M2.5-highspeed
+minimax/MiniMax-M2.5-highspeed
+MiniMax
+7
+204,800
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.30 / $2.40
+2026-02-13
+2026-02-13
+Step 3.5 Flash
+stepfun/step-3.5-flash
+StepFun
+11
+256,000
+256,000
+Yes
+Yes
+-
+Yes
+Open
+$0.09 / $0.30
+2026-01-29
+2026-02-13
+GLM-5
+zhipuai/glm-5
+Zhipu AI
+38
+204,800
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-02-12
+2026-02-12
+MiniMax-M2.5
+minimax/MiniMax-M2.5
+MiniMax
+26
+204,800
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-02-12
+2026-02-12
+Llama Nemotron Embed VL 1B v2
+nvidia/llama-nemotron-embed-vl-1b-v2
+Nvidia
+1
+32,768
+2,048
+No
+No
+-
+No
+Open
+$0.00 / $0.00
+2026-02-10
+2026-02-10
+GPT-5.3 Codex
+openai/gpt-5.3-codex
+OpenAI
+26
+400,000
+128,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$1.40 / $11.20
+2026-02-05
+2026-02-05
+GPT-5.3 Codex Spark
+openai/gpt-5.3-codex-spark
+OpenAI
+2
+128,000
+32,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.00 / $0.00
+2026-02-05
+2026-02-05
+MiMo-V2-Flash
+xiaomi/mimo-v2-flash
+Xiaomi
+4
+262,144
+65,536
+Yes
+Yes
+-
+Yes
+Open
+$0.10 / $0.28
+2025-12-16
+2026-02-04
+Qwen3 Coder Next
+alibaba/qwen3-coder-next
+Alibaba
+14
+262,144
+65,536
+No
+Yes
+Yes
+Yes
+Open
+$0.11 / $0.68
+2026-02-03
+2026-02-03
+Grok Imagine Image
+xai/grok-imagine-image
+xAI
+3
+16,000
+0
+No
+No
+-
+No
+Closed
+$0.00 / $0.00
+2026-01-28
+2026-01-28
+DeepSeek OCR 2
+deepseek/deepseek-ocr-2
+DeepSeek
+3
+8,192
+8,192
+No
+No
+-
+-
+Open
+$0.00 / $0.00
+2026-01-27
+2026-01-27
+MiniMax-M2 Her
+minimax/MiniMax-M2-Her
+MiniMax
+4
+65,536
+2,048
+Yes
+Yes
+-
+Yes
+Closed
+$0.30 / $1.20
+2026-01-23
+2026-01-23
+Nemotron Content Safety Reasoning 4B
+nvidia/nemotron-content-safety-reasoning-4b
+Nvidia
+1
+128,000
+4,096
+Yes
+No
+-
+No
+Open
+$0.00 / $0.00
+2026-01-22
+2026-01-22
+GLM-4.7-Flash
+zhipuai/glm-4.7-flash
+Zhipu AI
+26
+200,000
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2026-01-19
+2026-01-19
+GLM-4.7-FlashX
+zhipuai/glm-4.7-flashx
+Zhipu AI
+8
+200,000
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.06 / $0.40
+2026-01-19
+2026-01-19
+GLM-Image
+zhipuai/glm-image
+Zhipu AI
+1
+10,240
+0
+No
+No
+-
+No
+Open
+-
+2026-01-19
+2026-01-19
+Jamba Mini
+ai21/jamba-mini
+AI21 Labs
+1
+256,000
+4,096
+No
+Yes
+Yes
+Yes
+Open
+$0.20 / $0.40
+2026-01-01
+2026-01-01
+Veo 3.1 Fast Preview
+google/veo-3.1-fast-generate-preview
+Google
+1
+1,024
+0
+No
+No
+-
+No
+Closed
+-
+2025-10-15
+2026-01-01
+Kimi K2.5
+moonshotai/kimi-k2.5
+Moonshot AI
+33
+262,144
+262,144
+Yes
+Yes
+Yes
+No
+Open
+$0.00 / $0.00
+2026-01
+2026-01
+Solar Pro 3
+upstage/solar-pro3
+Upstage
+3
+131,072
+8,192
+Yes
+Yes
+-
+Yes
+Closed
+$0.15 / $0.25
+2026-01
+2026-01
+Veo 3.1 Preview
+google/veo-3.1-generate-preview
+Google
+1
+1,024
+1
+No
+No
+-
+No
+Closed
+-
+2025-10-15
+2026-01
+Seed 1.8
+bytedance-seed/seed-1-8
+Bytedance Seed
+2
+256,000
+64,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.12 / $0.29
+2025-12-28
+2025-12-28
+MiniMax-M2.1
+minimax/MiniMax-M2.1
+MiniMax
+15
+204,800
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.27 / $1.10
+2025-12-23
+2025-12-23
+GLM-4.7
+zhipuai/glm-4.7
+Zhipu AI
+28
+204,800
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.27 / $1.10
+2025-12-22
+2025-12-22
+X-Ai/Grok-4-Fast-Non-Reasoning
+xai/grok-4-fast-non-reasoning
+xAI
+3
+2,000,000
+2,000,000
+No
+Yes
+No
+Yes
+Closed
+$0.20 / $0.50
+2025-12-18
+2025-12-18
+X-Ai/Grok-4-Fast-Reasoning
+xai/grok-4-fast-reasoning
+xAI
+1
+2,000,000
+2,000,000
+Yes
+Yes
+No
+Yes
+Closed
+$0.20 / $0.50
+2025-12-18
+2025-12-18
+Gemini 3 Flash Preview
+google/gemini-3-flash-preview
+Google
+27
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.25 / $1.50
+2025-12-17
+2025-12-17
+Nemotron 3 Nano 30B A3B
+nvidia/nemotron-3-nano-30b-a3b
+Nvidia
+17
+262,144
+262,144
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-12-15
+2025-12-15
+GPT-5.2
+openai/gpt-5.2
+OpenAI
+30
+400,000
+128,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$1.05 / $8.40
+2025-12-11
+2025-12-11
+GPT-5.2 Chat
+openai/gpt-5.2-chat-latest
+OpenAI
+3
+128,000
+16,384
+Yes
+Yes
+Yes
+No
+Closed
+$1.75 / $14.00
+2025-12-11
+2025-12-11
+GPT-5.2 Codex
+openai/gpt-5.2-codex
+OpenAI
+13
+400,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$1.40 / $11.20
+2025-12-11
+2025-12-11
+GPT-5.2 Pro
+openai/gpt-5.2-pro
+OpenAI
+11
+400,000
+128,000
+Yes
+Yes
+No
+No
+Closed
+$19.00 / $150.00
+2025-12-11
+2025-12-11
+AutoGLM Phone 9B Multilingual
+zhipuai/autoglm-phone-9b-multilingual
+Zhipu AI
+2
+65,536
+65,536
+No
+No
+-
+Yes
+Open
+$0.04 / $0.14
+2025-12-10
+2025-12-10
+Gemini 2.5 Flash TTS
+google/gemini-2.5-flash-tts
+Google
+1
+32,768
+16,384
+No
+No
+-
+Yes
+Closed
+$0.50 / $10.00
+2025-09-30
+2025-12-10
+Gemini 2.5 Pro TTS
+google/gemini-2.5-pro-tts
+Google
+1
+32,768
+16,384
+No
+No
+-
+No
+Closed
+$1.00 / $20.00
+2025-09-30
+2025-12-10
+Devstral 2
+mistral/devstral-2512
+Mistral
+15
+262,144
+262,144
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-12-09
+2025-12-09
+Devstral Small 2
+mistral/devstral-small-2
+Mistral
+1
+262,144
+262,144
+No
+Yes
+-
+Yes
+Open
+$0.10 / $0.30
+2025-12-09
+2025-12-09
+GLM-4.6V
+zhipuai/glm-4.6v
+Zhipu AI
+13
+128,000
+32,768
+Yes
+Yes
+-
+Yes
+Open
+$0.14 / $0.41
+2025-12-08
+2025-12-08
+GLM-4.6V-Flash
+zhipuai/glm-4.6v-flash
+Zhipu AI
+7
+128,000
+32,768
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-12-08
+2025-12-08
+Relace Search
+relace/relace-search
+Relace
+3
+256,000
+128,000
+No
+Yes
+No
+Yes
+Closed
+$1.00 / $3.00
+2025-12-08
+2025-12-08
+Devstral 2 (latest)
+mistral/devstral-medium-latest
+Mistral
+3
+262,144
+262,144
+No
+Yes
+-
+Yes
+Open
+$0.40 / $2.00
+2025-12-02
+2025-12-02
+Ministral 14B
+mistral/ministral-14b
+Mistral
+2
+262,144
+262,144
+No
+Yes
+-
+Yes
+Open
+$0.20 / $0.20
+2025-12-02
+2025-12-02
+Ministral 3 14B
+mistral/ministral-3-14b-instruct-2512
+Mistral
+4
+262,144
+262,144
+No
+Yes
+Yes
+Yes
+Open
+$0.20 / $0.20
+2025-12-02
+2025-12-02
+Ministral 3 14B 2512
+mistral/ministral-14b-2512
+Mistral
+7
+262,144
+209,715
+No
+Yes
+Yes
+Yes
+Open
+$0.20 / $0.20
+2025-12-02
+2025-12-02
+Ministral 3 3B
+mistral/ministral-3-3b-instruct-2512
+Mistral
+3
+262,144
+262,144
+No
+Yes
+Yes
+Yes
+Open
+$0.10 / $0.10
+2025-12-02
+2025-12-02
+Ministral 3 3B 2512
+mistral/ministral-3b-2512
+Mistral
+7
+131,072
+104,857
+No
+Yes
+Yes
+Yes
+Open
+$0.10 / $0.10
+2025-12-02
+2025-12-02
+Ministral 3 8B
+mistral/ministral-3-8b-instruct-2512
+Mistral
+3
+262,144
+262,144
+No
+Yes
+Yes
+Yes
+Open
+$0.15 / $0.15
+2025-12-02
+2025-12-02
+Ministral 3 8B 2512
+mistral/ministral-8b-2512
+Mistral
+7
+262,144
+209,715
+No
+Yes
+Yes
+Yes
+Open
+$0.15 / $0.15
+2025-12-02
+2025-12-02
+Mistral Large 3
+mistral/mistral-large-2512
+Mistral
+15
+262,144
+262,144
+No
+Yes
+-
+Yes
+Open
+$0.50 / $1.50
+2025-12-02
+2025-12-02
+Nova 2 Lite
+amazon/nova-2-lite-v1
+Amazon
+3
+1,000,000
+65,535
+Yes
+Yes
+No
+Yes
+Closed
+$0.30 / $2.50
+2025-12-02
+2025-12-02
+Mistral Large (latest)
+mistral/mistral-large-latest
+Mistral
+8
+262,144
+262,144
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2024-11-01
+2025-12-02
+Nova 2 Lite
+amazon/nova-2-lite
+Amazon
+7
+1,000,000
+65,536
+Yes
+Yes
+-
+Yes
+Closed
+$0.30 / $2.50
+2025-12-02
+2025-12-01
+DeepSeek V3.2
+deepseek/deepseek-v3.2
+DeepSeek
+23
+128,000
+64,000
+Yes
+Yes
+Yes
+Yes
+Open
+$0.21 / $0.31
+2025-12-01
+2025-12-01
+GPT-Image-1.5
+openai/gpt-image-1.5
+OpenAI
+6
+0
+0
+No
+No
+-
+No
+Closed
+$5.00 / $32.00
+2025-11-25
+2025-11-25
+Claude Opus 4.5 (latest)
+anthropic/claude-opus-4-5
+Anthropic
+26
+200,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$5.00 / $25.00
+2025-11-24
+2025-11-24
+Nano Banana Pro Preview
+google/gemini-3-pro-image-preview
+Google
+7
+65,536
+32,768
+Yes
+No
+-
+Yes
+Closed
+$1.00 / $6.00
+2025-11-20
+2025-11-20
+Grok 4.1 Fast
+xai/grok-4.1-fast
+xAI
+2
+2,000,000
+30,000
+No
+Yes
+Yes
+Yes
+Closed
+$0.20 / $0.50
+2025-11-19
+2025-11-19
+Grok 4.1 Fast (Reasoning)
+xai/grok-4.1-fast-reasoning
+xAI
+3
+2,000,000
+30,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.20 / $0.50
+2025-11-19
+2025-11-19
+Gemini 3 Pro Preview
+google/gemini-3-pro-preview
+Google
+3
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$2.00 / $12.00
+2025-11-18
+2025-11-18
+GPT-5.1
+openai/gpt-5.1
+OpenAI
+27
+400,000
+128,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$1.00 / $8.00
+2025-11-13
+2025-11-13
+GPT-5.1 Chat
+openai/gpt-5.1-chat-latest
+OpenAI
+2
+128,000
+16,384
+Yes
+Yes
+Yes
+No
+Closed
+$1.25 / $10.00
+2025-11-13
+2025-11-13
+GPT-5.1 Codex
+openai/gpt-5.1-codex
+OpenAI
+12
+400,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$1.10 / $9.00
+2025-11-13
+2025-11-13
+GPT-5.1 Codex Max
+openai/gpt-5.1-codex-max
+OpenAI
+10
+400,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$1.00 / $8.00
+2025-11-13
+2025-11-13
+GPT-5.1 Codex mini
+openai/gpt-5.1-codex-mini
+OpenAI
+12
+400,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.20 / $1.60
+2025-11-13
+2025-11-13
+Kimi K2 Thinking
+moonshotai/kimi-k2-thinking
+Moonshot AI
+13
+262,144
+262,144
+Yes
+Yes
+-
+Yes
+Open
+$0.60 / $2.50
+2025-11-06
+2025-11-06
+Kimi K2 Thinking Turbo
+moonshotai/kimi-k2-thinking-turbo
+Moonshot AI
+1
+262,144
+262,144
+Yes
+Yes
+-
+Yes
+Open
+$1.15 / $8.00
+2025-11-06
+2025-11-06
+Claude Opus 4.5
+anthropic/claude-opus-4-5-20251101
+Anthropic
+15
+200,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$5.00 / $25.00
+2025-11-01
+2025-11-01
+GPT OSS Safeguard 120B
+openai/gpt-oss-safeguard-120b
+OpenAI
+6
+131,072
+32,768
+Yes
+Yes
+Yes
+Yes
+Open
+$0.15 / $0.60
+2025-10-29
+2025-10-29
+GPT OSS Safeguard 20B
+openai/gpt-oss-safeguard-20b
+OpenAI
+12
+131,072
+131,072
+Yes
+Yes
+Yes
+Yes
+Open
+$0.07 / $0.20
+2025-10-29
+2025-10-29
+Llama 3.1 Nemotron Safety Guard 8B v3
+nvidia/llama-3.1-nemotron-safety-guard-8b-v3
+Nvidia
+1
+128,000
+4,096
+No
+No
+-
+No
+Open
+$0.00 / $0.00
+2025-10-28
+2025-10-28
+Nemotron Nano 12B v2 VL
+nvidia/nemotron-nano-12b-v2-vl
+Nvidia
+4
+128,000
+128,000
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-10-28
+2025-10-28
+MiniMax-M2
+minimax/MiniMax-M2
+MiniMax
+13
+204,800
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.17 / $1.00
+2025-10-27
+2025-10-27
+GPT-5 Image Mini
+openai/gpt-5-image-mini
+OpenAI
+2
+400,000
+128,000
+Yes
+No
+Yes
+Yes
+Closed
+$2.50 / $2.00
+2025-10-16
+2025-10-16
+Llama Nemotron Embed 1B v2
+nvidia/llama-nemotron-embed-1b-v2
+Nvidia
+1
+8,192
+2,048
+No
+No
+-
+No
+Open
+-
+2025-10-16
+2025-10-16
+PaddleOCR VL
+paddlepaddle/paddleocr-vl
+Paddlepaddle
+1
+131,072
+16,384
+No
+No
+-
+Yes
+Open
+$0.02 / $0.02
+2025-10-16
+2025-10-16
+Claude Haiku 4.5
+anthropic/claude-haiku-4-5-20251001
+Anthropic
+19
+200,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$1.00 / $5.00
+2025-10-15
+2025-10-15
+Claude Haiku 4.5 (latest)
+anthropic/claude-haiku-4-5
+Anthropic
+33
+200,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$0.60 / $3.70
+2025-10-15
+2025-10-15
+Qwen3 VL Flash (Alibaba Cloud)
+alibaba/qwen3-vl-flash
+Alibaba
+1
+262,144
+32,768
+No
+Yes
+No
+Yes
+Closed
+$0.02 / $0.21
+2025-10-15
+2025-10-15
+Seed 1.6
+bytedance-seed/seed-1-6
+Bytedance Seed
+2
+256,000
+64,000
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.12 / $0.29
+2025-10-15
+2025-10-15
+GPT-5 Image
+openai/gpt-5-image
+OpenAI
+2
+400,000
+128,000
+Yes
+No
+Yes
+Yes
+Closed
+$10.00 / $10.00
+2025-10-14
+2025-10-14
+Gemini 2.5 Computer Use Preview
+google/gemini-2.5-computer-use-preview-10-2025
+Google
+2
+128,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$1.25 / $10.00
+2025-10-07
+2025-10-07
+GPT-5 Pro
+openai/gpt-5-pro
+OpenAI
+14
+400,000
+272,000
+Yes
+Yes
+Yes
+No
+Closed
+$14.00 / $110.00
+2025-10-06
+2025-10-06
+Qwen3 VL 30B A3B Instruct
+alibaba/qwen3-vl-30b-a3b-instruct
+Alibaba
+8
+262,144
+32,768
+No
+Yes
+-
+Yes
+Open
+$0.15 / $0.60
+2025-10-04
+2025-10-04
+Granite-4.0-H-Micro
+ibm/granite-4-h-micro
+Ibm
+2
+131,072
+131,072
+No
+Yes
+Yes
+Yes
+Open
+$0.02 / $0.11
+2025-10-02
+2025-10-02
+Granite-4.0-H-Small
+ibm/granite-4-h-small
+Ibm
+1
+131,072
+131,072
+No
+Yes
+Yes
+Yes
+Open
+$0.06 / $0.27
+2025-10-02
+2025-10-02
+GLM-4.6
+zhipuai/glm-4.6
+Zhipu AI
+21
+204,800
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.27 / $1.10
+2025-09-30
+2025-09-30
+Claude Sonnet 4.5
+anthropic/claude-sonnet-4-5-20250929
+Anthropic
+16
+200,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$3.00 / $15.00
+2025-09-29
+2025-09-29
+Claude Sonnet 4.5 (latest)
+anthropic/claude-sonnet-4-5
+Anthropic
+30
+200,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$2.99 / $14.95
+2025-09-29
+2025-09-29
+Cydonia 24B V4.1
+thedrummer/cydonia-24b-v4.1
+Thedrummer
+4
+131,072
+117,964
+No
+No
+Yes
+Yes
+Open
+$0.30 / $0.50
+2025-09-27
+2025-09-27
+Relace Apply 3
+relace/relace-apply-3
+Relace
+3
+256,000
+128,000
+No
+No
+No
+No
+Closed
+$0.85 / $1.25
+2025-09-26
+2025-09-26
+Gemma-SEA-LION-v4-27B-IT
+aisingapore/gemma-sea-lion-v4-27b-it
+Aisingapore
+3
+128,000
+128,000
+No
+No
+-
+Yes
+Open
+$0.24 / $0.48
+2025-09-23
+2025-09-23
+Qwen3 Max
+alibaba/qwen3-max
+Alibaba
+13
+262,144
+65,536
+No
+Yes
+-
+Yes
+Closed
+$0.36 / $1.43
+2025-09-23
+2025-09-23
+Qwen3 VL 235B A22B Instruct
+alibaba/qwen3-vl-235b-a22b-instruct
+Alibaba
+13
+131,072
+32,768
+No
+Yes
+Yes
+Yes
+Open
+$0.20 / $0.88
+2025-09-23
+2025-09-23
+Qwen3 VL 235B A22B Thinking
+alibaba/qwen3-vl-235b-a22b-thinking
+Alibaba
+6
+131,072
+32,768
+Yes
+Yes
+Yes
+Yes
+Open
+$0.29 / $2.87
+2025-09-23
+2025-09-23
+Qwen3-VL Plus
+alibaba/qwen3-vl-plus
+Alibaba
+6
+262,144
+32,768
+Yes
+Yes
+-
+Yes
+Closed
+$0.14 / $1.37
+2025-09-23
+2025-09-23
+Qwen3 Max Preview
+alibaba/qwen3-max-preview
+Alibaba
+1
+262,144
+32,768
+No
+Yes
+-
+Yes
+Closed
+$1.08 / $4.80
+2025-09-05
+2025-09-23
+Qwen3 Omni 30B A3B Thinking
+alibaba/qwen3-omni-30b-a3b-thinking
+Alibaba
+1
+65,536
+16,384
+Yes
+Yes
+-
+Yes
+Open
+$0.25 / $0.97
+2025-09-22
+2025-09-22
+Magistral Small 1.2
+mistral/magistral-small-2509
+Mistral
+1
+131,072
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.50 / $1.50
+2025-09-18
+2025-09-18
+GPT-5-Codex
+openai/gpt-5-codex
+OpenAI
+5
+400,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$1.10 / $9.00
+2025-09-15
+2025-09-15
+Qwen Plus
+alibaba/qwen-plus
+Alibaba
+11
+1,000,000
+32,768
+Yes
+Yes
+-
+Yes
+Closed
+$0.12 / $0.29
+2024-01-25
+2025-09-11
+Kimi K2 Instruct 0905
+moonshotai/kimi-k2-0905
+Moonshot AI
+8
+262,144
+98,304
+No
+Yes
+-
+Yes
+Open
+$0.60 / $2.50
+2025-09-05
+2025-09-05
+Apertus 70B
+swiss-ai/apertus-70b
+Swiss Ai
+3
+65,536
+8,192
+No
+Yes
+-
+Yes
+Open
+$0.46 / $2.23
+2025-09-02
+2025-09-02
+Apertus 8B
+swiss-ai/apertus-8b
+Swiss Ai
+1
+65,536
+8,192
+No
+Yes
+-
+Yes
+Open
+$0.10 / $0.20
+2025-09-02
+2025-09-02
+x-AI/Grok-Code-Fast 1
+xai/grok-code-fast-1
+xAI
+1
+256,000
+10,000
+Yes
+Yes
+No
+Yes
+Closed
+$0.20 / $1.50
+2025-09-02
+2025-09-02
+Sarvam 105B
+sarvam/sarvam-105b
+Sarvam AI
+3
+131,072
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.04 / $0.16
+2025-09-01
+2025-09-01
+Sonar Deep Research
+perplexity/sonar-deep-research
+Perplexity
+5
+128,000
+32,768
+Yes
+No
+-
+No
+Closed
+$2.00 / $8.00
+2025-02-01
+2025-09-01
+Sonar
+perplexity/sonar
+Perplexity
+11
+128,000
+4,096
+No
+No
+-
+Yes
+Closed
+$0.25 / $1.00
+2024-01-01
+2025-09-01
+Sonar Pro
+perplexity/sonar-pro
+Perplexity
+8
+200,000
+8,192
+No
+No
+-
+Yes
+Closed
+$3.00 / $15.00
+2024-01-01
+2025-09-01
+Sonar Reasoning Pro
+perplexity/sonar-reasoning-pro
+Perplexity
+6
+128,000
+4,096
+Yes
+No
+-
+Yes
+Closed
+$2.00 / $8.00
+2024-01-01
+2025-09-01
+Qwen3-Next 80B-A3B (Thinking)
+alibaba/qwen3-next-80b-a3b-thinking
+Alibaba
+9
+131,072
+32,768
+Yes
+Yes
+-
+Yes
+Open
+$0.15 / $0.65
+2025-09
+2025-09
+Qwen3-Next 80B-A3B Instruct
+alibaba/qwen3-next-80b-a3b-instruct
+Alibaba
+17
+131,072
+32,768
+No
+Yes
+-
+Yes
+Open
+$0.09 / $1.10
+2025-09
+2025-09
+Command A Translate
+cohere/command-a-translate-08-2025
+Cohere
+1
+8,000
+8,000
+No
+Yes
+-
+Yes
+Open
+$2.50 / $10.00
+2025-08-28
+2025-08-28
+Seed 1.6 Flash
+bytedance-seed/seed-1-6-flash
+Bytedance Seed
+3
+256,000
+32,000
+No
+Yes
+Yes
+Yes
+Closed
+$0.02 / $0.22
+2025-08-28
+2025-08-28
+Hermes 4 405B
+nousresearch/hermes-4-405b
+Nousresearch
+5
+131,072
+117,964
+Yes
+No
+No
+Yes
+Open
+$0.30 / $1.20
+2025-08-26
+2025-08-26
+Nano Banana
+google/gemini-2.5-flash-image
+Google
+10
+32,768
+32,768
+Yes
+No
+-
+Yes
+Closed
+$0.30 / $2.50
+2025-08-26
+2025-08-26
+Command A Reasoning
+cohere/command-a-reasoning-08-2025
+Cohere
+3
+256,000
+32,000
+Yes
+Yes
+-
+Yes
+Open
+$0.63 / $5.05
+2025-08-21
+2025-08-21
+DeepSeek V3.1
+deepseek/deepseek-chat-v3.1
+DeepSeek
+2
+163,840
+32,768
+Yes
+Yes
+Yes
+Yes
+Open
+$0.25 / $0.95
+2025-08-21
+2025-08-21
+DeepSeek-V3.1
+deepseek/deepseek-v3.1
+DeepSeek
+11
+131,072
+8,192
+Yes
+Yes
+-
+Yes
+Open
+$0.19 / $0.71
+2025-08-21
+2025-08-21
+Nemotron Nano 9B v2
+nvidia/nemotron-nano-9b-v2
+Nvidia
+4
+131,072
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-08-18
+2025-08-18
+Seed 1.6 Vision
+bytedance-seed/seed-1-6-vision
+Bytedance Seed
+2
+256,000
+32,000
+No
+Yes
+Yes
+Yes
+Closed
+$0.12 / $1.15
+2025-08-15
+2025-08-15
+Qwen-VL Plus
+alibaba/qwen-vl-plus
+Alibaba
+1
+131,072
+8,192
+No
+Yes
+-
+Yes
+Closed
+$0.21 / $0.63
+2024-01-25
+2025-08-15
+Baichuan M2 32B
+baichuan/baichuan-m2-32b
+Baichuan
+1
+131,072
+131,072
+Yes
+No
+-
+Yes
+Open
+$0.07 / $0.07
+2025-08-13
+2025-08-13
+Mistral Medium 3.1
+mistral/mistral-medium-3.1
+Mistral
+4
+131,072
+104,857
+No
+Yes
+Yes
+Yes
+Closed
+$0.40 / $2.00
+2025-08-13
+2025-08-13
+Qwen-VL Max
+alibaba/qwen-vl-max
+Alibaba
+3
+131,072
+8,192
+No
+Yes
+-
+Yes
+Closed
+$0.23 / $0.58
+2024-04-08
+2025-08-13
+GLM-4.5V
+zhipuai/glm-4.5v
+Zhipu AI
+15
+64,000
+16,384
+Yes
+Yes
+-
+Yes
+Open
+$0.27 / $1.10
+2025-08-11
+2025-08-11
+GPT-5
+openai/gpt-5
+OpenAI
+33
+400,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$1.00 / $8.00
+2025-08-07
+2025-08-07
+GPT-5 Chat (latest)
+openai/gpt-5-chat-latest
+OpenAI
+2
+400,000
+128,000
+Yes
+No
+Yes
+No
+Closed
+$1.25 / $10.00
+2025-08-07
+2025-08-07
+GPT-5 Mini
+openai/gpt-5-mini
+OpenAI
+32
+400,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.20 / $1.60
+2025-08-07
+2025-08-07
+GPT-5 Nano
+openai/gpt-5-nano
+OpenAI
+28
+400,000
+128,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.04 / $0.32
+2025-08-07
+2025-08-07
+Claude Opus 4.1
+anthropic/claude-opus-4-1-20250805
+Anthropic
+8
+200,000
+32,000
+Yes
+Yes
+-
+Yes
+Closed
+$15.00 / $75.00
+2025-08-05
+2025-08-05
+Claude Opus 4.1 (latest)
+anthropic/claude-opus-4-1
+Anthropic
+11
+200,000
+32,000
+Yes
+Yes
+-
+Yes
+Closed
+$15.00 / $75.00
+2025-08-05
+2025-08-05
+GPT OSS 120B
+openai/gpt-oss-120b
+OpenAI
+81
+131,072
+32,768
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2025-08-05
+2025-08-05
+GPT OSS 20B
+openai/gpt-oss-20b
+OpenAI
+40
+131,072
+32,768
+Yes
+Yes
+Yes
+Yes
+Open
+$0.00 / $0.00
+2025-08-05
+2025-08-05
+Command A Vision
+cohere/command-a-vision-07-2025
+Cohere
+1
+128,000
+8,000
+No
+No
+-
+Yes
+Open
+$2.50 / $10.00
+2025-07-31
+2025-07-31
+Codestral 25.08
+mistral/codestral-2508
+Mistral
+10
+128,000
+8,192
+No
+Yes
+Yes
+Yes
+Closed
+$0.30 / $0.90
+2025-07-30
+2025-07-30
+GLM-4.5
+zhipuai/glm-4.5
+Zhipu AI
+16
+131,072
+98,304
+Yes
+Yes
+-
+Yes
+Open
+$0.29 / $1.16
+2025-07-28
+2025-07-28
+GLM-4.5-Air
+zhipuai/glm-4.5-air
+Zhipu AI
+16
+131,072
+98,304
+Yes
+Yes
+-
+Yes
+Open
+$0.12 / $0.29
+2025-07-28
+2025-07-28
+GLM-4.5-Flash
+zhipuai/glm-4.5-flash
+Zhipu AI
+4
+131,072
+98,304
+Yes
+Yes
+-
+Yes
+Closed
+$0.00 / $0.00
+2025-07-28
+2025-07-28
+Qwen Flash
+alibaba/qwen-flash
+Alibaba
+7
+1,000,000
+32,768
+Yes
+Yes
+-
+Yes
+Closed
+$0.02 / $0.22
+2025-07-28
+2025-07-28
+Qwen3 Coder Flash
+alibaba/qwen3-coder-flash
+Alibaba
+11
+1,000,000
+65,536
+No
+Yes
+-
+Yes
+Closed
+$0.14 / $0.57
+2025-07-28
+2025-07-28
+Llama 3.3 Nemotron Super 49B v1.5
+nvidia/llama-3.3-nemotron-super-49b-v1.5
+Nvidia
+2
+131,072
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-07-25
+2025-07-25
+Qwen MT Plus
+alibaba/qwen-mt-plus
+Alibaba
+3
+16,384
+8,192
+No
+No
+-
+Yes
+Closed
+$0.25 / $0.75
+2025-07-24
+2025-07-24
+Qwen3 Coder Plus
+alibaba/qwen3-coder-plus
+Alibaba
+5
+1,048,576
+65,536
+No
+Yes
+-
+Yes
+Closed
+$0.57 / $2.29
+2025-07-23
+2025-07-23
+Qwen3 235B-A22B Instruct 2507
+alibaba/qwen3-235b-a22b-instruct-2507
+Alibaba
+16
+262,144
+16,384
+No
+Yes
+-
+Yes
+Open
+$0.09 / $0.50
+2025-07-21
+2025-07-21
+Voxtral Mini 3B 2507
+mistral/voxtral-mini-3b-2507
+Mistral
+3
+32,768
+32,768
+No
+Yes
+-
+Yes
+Open
+$0.04 / $0.04
+2025-07-15
+2025-07-15
+Voxtral Small (latest)
+mistral/voxtral-small-latest
+Mistral
+4
+32,000
+32,000
+No
+Yes
+-
+Yes
+Open
+$0.10 / $0.30
+2025-07-15
+2025-07-15
+Voxtral Small 24B 2507
+mistral/voxtral-small-24b-2507
+Mistral
+6
+32,768
+32,768
+No
+Yes
+-
+Yes
+Open
+$0.10 / $0.30
+2025-07-15
+2025-07-15
+Kimi K2 0711
+moonshotai/kimi-k2
+Moonshot AI
+5
+131,072
+98,304
+No
+Yes
+No
+Yes
+Open
+$0.55 / $2.20
+2025-07-11
+2025-07-11
+Kimi K2 Instruct
+moonshotai/kimi-k2-instruct
+Moonshot AI
+4
+131,072
+32,768
+No
+Yes
+-
+Yes
+Open
+$0.40 / $1.80
+2025-07-11
+2025-07-11
+Devstral Medium
+mistral/devstral-medium-2507
+Mistral
+2
+128,000
+128,000
+No
+Yes
+-
+Yes
+Closed
+$0.40 / $2.00
+2025-07-10
+2025-07-10
+Devstral Small
+mistral/devstral-small-2507
+Mistral
+2
+128,000
+128,000
+No
+Yes
+-
+Yes
+Open
+$0.10 / $0.30
+2025-07-10
+2025-07-10
+Uncensored
+cognitivecomputations/dolphin-mistral-24b-venice-edition
+Cognitivecomputations
+3
+128,000
+8,192
+No
+No
+No
+Yes
+Open
+$0.20 / $0.90
+2025-07-09
+2025-07-09
+Morph V3 Fast
+morph/morph-v3-fast
+Morph
+5
+81,920
+38,000
+No
+No
+No
+Yes
+Closed
+$0.80 / $1.20
+2025-07-07
+2025-07-07
+Morph V3 Large
+morph/morph-v3-large
+Morph
+5
+262,144
+131,072
+No
+No
+Yes
+Yes
+Closed
+$0.90 / $1.90
+2025-07-07
+2025-07-07
+Jamba Large
+ai21/jamba-large
+AI21 Labs
+1
+256,000
+4,096
+No
+Yes
+Yes
+Yes
+Open
+$2.00 / $8.00
+2025-07-01
+2025-07-01
+ERNIE 4.5 21B A3B
+baidu/ernie-4.5-21b-a3b
+Baidu
+1
+131,072
+8,000
+No
+Yes
+-
+Yes
+Open
+$0.07 / $0.28
+2025-06-30
+2025-06-30
+ERNIE 4.5 VL 424B A47B 
+baidu/ernie-4.5-vl-424b-a47b
+Baidu
+1
+123,000
+16,000
+Yes
+No
+No
+Yes
+Open
+$0.42 / $1.25
+2025-06-30
+2025-06-30
+Mistral Small 3.2
+mistral/mistral-small-2506
+Mistral
+8
+128,000
+16,384
+No
+Yes
+-
+Yes
+Open
+$0.07 / $0.20
+2025-06-20
+2025-06-20
+Mistral Small 3.2 24B
+mistral/mistral-small-3.2-24b-instruct
+Mistral
+5
+256,000
+16,384
+No
+Yes
+Yes
+Yes
+Open
+$0.09 / $0.25
+2025-06-20
+2025-06-20
+Gemini 2.5 Flash
+google/gemini-2.5-flash
+Google
+24
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2025-06-17
+2025-06-17
+Gemini 2.5 Flash-Lite
+google/gemini-2.5-flash-lite
+Google
+20
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.00 / $0.00
+2025-06-17
+2025-06-17
+Gemini 2.5 Pro
+google/gemini-2.5-pro
+Google
+24
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$0.87 / $7.00
+2025-06-17
+2025-06-17
+MiniMax M1 80K
+minimax/minimax-m1-80k
+MiniMax
+2
+1,000,000
+80,000
+Yes
+Yes
+-
+Yes
+Open
+$0.55 / $2.20
+2025-06-17
+2025-06-17
+Mistral Nemotron
+nvidia/mistral-nemotron
+Nvidia
+1
+128,000
+8,192
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-06-11
+2025-06-12
+Magistral Small
+mistral/magistral-small-2506
+Mistral
+1
+131,072
+8,192
+Yes
+Yes
+-
+Yes
+Open
+$0.50 / $1.50
+2025-06-10
+2025-06-10
+o3-pro
+openai/o3-pro
+OpenAI
+8
+200,000
+100,000
+Yes
+Yes
+Yes
+No
+Closed
+$18.00 / $40.00
+2025-06-10
+2025-06-10
+Gemini 2.5 Pro Preview 06-05
+google/gemini-2.5-pro-preview
+Google
+2
+1,048,576
+65,536
+Yes
+Yes
+Yes
+Yes
+Closed
+$1.25 / $10.00
+2025-06-05
+2025-06-05
+Qwen3 Embedding 8B
+alibaba/qwen3-embedding-8b
+Alibaba
+2
+32,768
+0
+No
+No
+-
+No
+Open
+$0.07 / $0.00
+2025-06-05
+2025-06-05
+Qwen3 Reranker 8B
+alibaba/qwen3-reranker-8b
+Alibaba
+1
+32,768
+0
+No
+No
+-
+No
+Open
+$0.05 / $0.00
+2025-06-05
+2025-06-05
+DeepSeek R1 0528 Qwen3 8B
+deepseek/deepseek-r1-0528-qwen3-8b
+DeepSeek
+1
+131,072
+32,000
+Yes
+No
+-
+Yes
+Open
+$0.06 / $0.09
+2025-05-29
+2025-05-29
+DeepSeek-R1
+deepseek/deepseek-r1
+DeepSeek
+14
+128,000
+32,768
+Yes
+Yes
+-
+Yes
+Open
+$0.40 / $1.70
+2025-01-20
+2025-05-29
+DeepSeek R1 0528
+deepseek/deepseek-r1-0528
+DeepSeek
+7
+163,840
+32,768
+Yes
+Yes
+Yes
+Yes
+Open
+$0.50 / $2.15
+2025-05-28
+2025-05-28
+Claude Opus 4
+anthropic/claude-opus-4-20250514
+Anthropic
+4
+200,000
+32,000
+Yes
+Yes
+-
+Yes
+Closed
+$15.00 / $75.00
+2025-05-22
+2025-05-22
+Claude Opus 4 (latest)
+anthropic/claude-opus-4-0
+Anthropic
+0
+200,000
+32,000
+Yes
+Yes
+-
+Yes
+Closed
+-
+2025-05-22
+2025-05-22
+Claude Sonnet 4
+anthropic/claude-sonnet-4-20250514
+Anthropic
+9
+200,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$3.00 / $15.00
+2025-05-22
+2025-05-22
+Claude Sonnet 4 (latest)
+anthropic/claude-sonnet-4-0
+Anthropic
+2
+200,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$2.99 / $14.95
+2025-05-22
+2025-05-22
+Gemini Embedding 001
+google/gemini-embedding-001
+Google
+6
+2,048
+1
+No
+No
+-
+No
+Closed
+$0.15 / $0.00
+2025-05-20
+2025-05-20
+Solar Pro 2
+upstage/solar-pro2
+Upstage
+2
+65,536
+8,192
+Yes
+Yes
+-
+Yes
+Closed
+$0.15 / $0.25
+2025-05-20
+2025-05-20
+Aya Vision 32B
+cohere/c4ai-aya-vision-32b
+Cohere
+1
+16,000
+4,000
+No
+No
+-
+Yes
+Open
+-
+2025-03-04
+2025-05-14
+Aya Vision 8B
+cohere/c4ai-aya-vision-8b
+Cohere
+0
+16,000
+4,000
+No
+No
+-
+Yes
+Open
+-
+2025-03-04
+2025-05-14
+Mistral Medium 3
+mistral/mistral-medium-2505
+Mistral
+6
+131,072
+131,072
+No
+Yes
+-
+Yes
+Closed
+$0.36 / $1.22
+2025-05-07
+2025-05-07
+Mistral Medium 3
+mistral/mistral-medium-3
+Mistral
+5
+131,072
+104,857
+No
+Yes
+Yes
+Yes
+Closed
+$0.40 / $2.00
+2025-05-07
+2025-05-07
+Nova Premier
+amazon/nova-premier
+Amazon
+1
+1,000,000
+10,000
+No
+Yes
+-
+Yes
+Closed
+$2.50 / $12.50
+2025-04-30
+2025-04-30
+Palmyra X5
+writer/palmyra-x5
+Writer
+5
+1,000,000
+8,192
+Yes
+Yes
+-
+Yes
+Closed
+$0.60 / $6.00
+2025-04-28
+2025-04-28
+Qwen3 30B A3B
+alibaba/qwen3-30b-a3b
+Alibaba
+7
+131,072
+16,384
+Yes
+Yes
+-
+Yes
+Open
+$0.05 / $0.30
+2025-04-28
+2025-04-28
+Qwen Turbo
+alibaba/qwen-turbo
+Alibaba
+4
+1,000,000
+16,384
+Yes
+Yes
+-
+Yes
+Closed
+$0.04 / $0.09
+2024-11-01
+2025-04-28
+Palmyra X4
+writer/palmyra-x4
+Writer
+3
+128,000
+4,096
+Yes
+Yes
+-
+Yes
+Closed
+$2.50 / $10.00
+2024-10-09
+2025-04-28
+GPT-Image-1
+openai/gpt-image-1
+OpenAI
+5
+0
+0
+No
+No
+-
+No
+Closed
+$5.00 / $40.00
+2025-04-24
+2025-04-24
+o3
+openai/o3
+OpenAI
+21
+200,000
+100,000
+Yes
+Yes
+Yes
+No
+Closed
+$1.80 / $7.20
+2025-04-16
+2025-04-16
+o4-mini
+openai/o4-mini
+OpenAI
+21
+200,000
+100,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.99 / $4.00
+2025-04-16
+2025-04-16
+Llama 3.1 Nemotron 70B Instruct
+nvidia/llama-3.1-nemotron-70b-instruct
+Nvidia
+3
+128,000
+8,192
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-04-15
+2025-04-15
+GPT-4.1
+openai/gpt-4.1
+OpenAI
+31
+1,047,576
+32,768
+No
+Yes
+Yes
+Yes
+Closed
+$1.60 / $6.40
+2025-04-14
+2025-04-14
+GPT-4.1 mini
+openai/gpt-4.1-mini
+OpenAI
+29
+1,047,576
+32,768
+No
+Yes
+Yes
+Yes
+Closed
+$0.32 / $1.28
+2025-04-14
+2025-04-14
+GPT-4.1 nano
+openai/gpt-4.1-nano
+OpenAI
+24
+1,047,576
+32,768
+No
+Yes
+Yes
+Yes
+Closed
+$0.08 / $0.26
+2025-04-14
+2025-04-14
+Pixtral Large (25.02)
+mistral/pixtral-large-2502
+Mistral
+6
+128,000
+8,192
+No
+Yes
+-
+Yes
+Closed
+$1.99 / $5.98
+2025-04-08
+2025-04-08
+Llama 3.1 Nemotron Ultra 253B
+nvidia/llama-3.1-nemotron-ultra-253b
+Nvidia
+1
+128,000
+8,192
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-04-07
+2025-04-07
+Llama 3.3 Nemotron Super 49B v1
+nvidia/llama-3.3-nemotron-super-49b-v1
+Nvidia
+2
+131,072
+131,072
+Yes
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-04-07
+2025-04-07
+Llama 4 Maverick 17B Instruct
+meta/llama-4-maverick-17b-instruct
+Meta
+9
+1,000,000
+16,384
+No
+Yes
+-
+Yes
+Open
+$0.14 / $0.59
+2025-04-05
+2025-04-05
+Llama 4 Scout 17B Instruct
+meta/llama-4-scout-17b-instruct
+Meta
+8
+10,000,000
+16,384
+No
+Yes
+-
+Yes
+Open
+$0.17 / $0.59
+2025-04-05
+2025-04-05
+Qwen3 235B-A22B
+alibaba/qwen3-235b-a22b
+Alibaba
+5
+131,072
+16,384
+Yes
+Yes
+-
+Yes
+Open
+$0.20 / $0.50
+2025-04
+2025-04
+Qwen3 32B
+alibaba/qwen3-32b
+Alibaba
+14
+131,072
+16,384
+Yes
+Yes
+-
+Yes
+Open
+$0.08 / $0.28
+2025-04
+2025-04
+Qwen3-Coder 30B-A3B Instruct
+alibaba/qwen3-coder-30b-a3b-instruct
+Alibaba
+13
+262,144
+65,536
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-04
+2025-04
+Qwen3-Coder 480B-A35B Instruct
+alibaba/qwen3-coder-480b-a35b-instruct
+Alibaba
+9
+262,144
+65,536
+No
+Yes
+-
+Yes
+Open
+$0.22 / $1.20
+2025-04
+2025-04
+Qwen-Omni Turbo
+alibaba/qwen-omni-turbo
+Alibaba
+1
+32,768
+2,048
+No
+Yes
+-
+Yes
+Closed
+$0.07 / $0.27
+2025-01-19
+2025-03-26
+DeepSeek V3 0324
+deepseek/deepseek-v3-0324
+DeepSeek
+6
+163,840
+163,840
+No
+Yes
+-
+Yes
+Open
+$0.20 / $0.77
+2025-03-24
+2025-03-24
+DeepSeek V3 0324
+deepseek/deepseek-chat-v3-0324
+DeepSeek
+3
+163,840
+147,456
+No
+Yes
+Yes
+Yes
+Open
+$0.29 / $1.14
+2025-03-24
+2025-03-24
+Magistral Medium (latest)
+mistral/magistral-medium-latest
+Mistral
+4
+128,000
+16,384
+Yes
+Yes
+-
+Yes
+Closed
+$1.50 / $5.00
+2025-03-17
+2025-03-20
+o1-pro
+openai/o1-pro
+OpenAI
+7
+200,000
+100,000
+Yes
+Yes
+Yes
+No
+Closed
+$140.00 / $540.00
+2025-03-19
+2025-03-19
+Mistral Small 3.1 24B
+mistral/mistral-small-3-1-24b-instruct-2503
+Mistral
+3
+128,000
+16,384
+No
+Yes
+Yes
+Yes
+Open
+$0.10 / $0.30
+2025-03-17
+2025-03-17
+Mistral Small 3.1 24B
+mistral/mistral-small-3.1-24b-instruct
+Mistral
+5
+128,000
+102,400
+No
+No
+No
+Yes
+Open
+$0.10 / $0.30
+2025-03-17
+2025-03-17
+Command A
+cohere/command-a
+Cohere
+4
+256,000
+8,192
+No
+No
+Yes
+Yes
+Open
+$2.50 / $10.00
+2025-03-13
+2025-03-13
+Command A
+cohere/command-a-03-2025
+Cohere
+3
+256,000
+8,000
+No
+Yes
+-
+Yes
+Open
+$2.50 / $10.00
+2025-03-13
+2025-03-13
+Gemma 3 12B IT
+google/gemma-3-12b-it
+Google
+12
+131,072
+131,072
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-03-12
+2025-03-12
+Gemma 3 27B IT
+google/gemma-3-27b-it
+Google
+19
+131,072
+131,072
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-03-12
+2025-03-12
+Gemma 3 4B IT
+google/gemma-3-4b-it
+Google
+11
+131,072
+131,072
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2025-03-12
+2025-03-12
+Reka Flash 3
+rekaai/reka-flash-3
+Rekaai
+2
+65,536
+58,982
+Yes
+No
+Yes
+Yes
+Open
+$0.10 / $0.20
+2025-03-12
+2025-03-12
+Skyfall 36B V2
+thedrummer/skyfall-36b-v2
+Thedrummer
+4
+32,768
+29,491
+No
+No
+Yes
+Yes
+Open
+$0.55 / $0.80
+2025-03-10
+2025-03-10
+QwQ 32B
+alibaba/qwq-32b
+Alibaba
+1
+131,072
+8,192
+Yes
+Yes
+-
+Yes
+Open
+$0.66 / $1.00
+2025-03-05
+2025-03-05
+QwQ Plus
+alibaba/qwq-plus
+Alibaba
+1
+131,072
+8,192
+Yes
+Yes
+-
+Yes
+Closed
+$0.80 / $2.40
+2025-03-05
+2025-03-05
+Command R7B Arabic
+cohere/command-r7b-arabic-02-2025
+Cohere
+1
+128,000
+4,000
+No
+Yes
+-
+Yes
+Open
+$0.04 / $0.15
+2025-02-27
+2025-02-27
+Claude Sonnet 3.7
+anthropic/claude-3-7-sonnet-20250219
+Anthropic
+3
+200,000
+64,000
+Yes
+Yes
+-
+Yes
+Closed
+$3.00 / $15.00
+2025-02-19
+2025-02-19
+Saba
+mistral/mistral-saba
+Mistral
+4
+32,768
+26,214
+No
+Yes
+Yes
+Yes
+Closed
+$0.20 / $0.59
+2025-02-17
+2025-02-17
+Aion-RP 1.0 (8B)
+aion-labs/aion-rp-llama-3.1-8b
+Aion Labs
+4
+32,768
+29,491
+No
+No
+No
+Yes
+Closed
+$0.80 / $1.60
+2025-02-04
+2025-02-04
+Mistral Small 3
+mistral/mistral-small-24b-instruct-2501
+Mistral
+6
+32,768
+16,384
+No
+No
+Yes
+Yes
+Open
+$0.05 / $0.08
+2025-01-30
+2025-01-30
+o3-mini
+openai/o3-mini
+OpenAI
+18
+200,000
+100,000
+Yes
+Yes
+Yes
+No
+Closed
+$0.99 / $4.00
+2024-12-20
+2025-01-29
+Qwen Max
+alibaba/qwen-max
+Alibaba
+8
+32,768
+8,192
+No
+Yes
+-
+Yes
+Closed
+$0.35 / $1.38
+2024-04-03
+2025-01-25
+ALLaM-2-7b
+sdaia/allam-2-7b
+Sdaia
+2
+4,096
+4,096
+No
+No
+-
+Yes
+Open
+$0.00 / $0.00
+2025-01-23
+2025-01-23
+DeepSeek-R1-Distill-Qwen-32B
+deepseek/deepseek-r1-distill-qwen-32b
+DeepSeek
+0
+131,072
+32,768
+Yes
+No
+-
+Yes
+Open
+-
+2025-01-20
+2025-01-20
+MiniMax Text 01 (MiniMax)
+minimax/MiniMax-Text-01
+MiniMax
+0
+1,000,000
+131,072
+Yes
+Yes
+No
+Yes
+Closed
+-
+2025-01-15
+2025-01-15
+Codestral (latest)
+mistral/codestral-latest
+Mistral
+3
+256,000
+4,096
+No
+Yes
+-
+Yes
+Open
+$0.30 / $0.90
+2024-05-29
+2025-01-04
+DeepSeek-V3
+deepseek/deepseek-v3
+DeepSeek
+6
+131,072
+8,192
+No
+Yes
+-
+Yes
+Open
+$0.27 / $0.89
+2024-12-26
+2024-12-26
+Llama 3.3 Euryale 70B
+sao10k/l3.3-euryale-70b
+Sao10k
+3
+131,072
+16,384
+No
+No
+Yes
+Yes
+Open
+$0.65 / $0.75
+2024-12-18
+2024-12-18
+Gemini 2.0 Flash
+google/gemini-2.0-flash
+Google
+1
+1,048,576
+8,192
+No
+Yes
+Yes
+Yes
+Closed
+$0.10 / $0.42
+2024-12-11
+2024-12-11
+Gemini 2.0 Flash-Lite
+google/gemini-2.0-flash-lite
+Google
+1
+1,048,576
+8,192
+No
+Yes
+Yes
+Yes
+Closed
+$0.05 / $0.21
+2024-12-11
+2024-12-11
+Phi-4-mini
+microsoft/phi-4-mini
+Microsoft
+0
+128,000
+4,096
+No
+Yes
+-
+Yes
+Open
+-
+2024-12-11
+2024-12-11
+Llama-3.3-70B-Instruct
+meta/llama-3.3-70b-instruct
+Meta
+33
+128,000
+4,096
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2024-12-06
+2024-12-06
+Nova Lite 1.0
+amazon/nova-lite-v1
+Amazon
+5
+300,000
+5,120
+No
+Yes
+No
+Yes
+Closed
+$0.06 / $0.24
+2024-12-05
+2024-12-05
+Nova Micro 1.0
+amazon/nova-micro-v1
+Amazon
+4
+128,000
+5,120
+No
+Yes
+No
+Yes
+Closed
+$0.04 / $0.14
+2024-12-05
+2024-12-05
+Nova Pro 1.0
+amazon/nova-pro-v1
+Amazon
+5
+300,000
+5,120
+No
+Yes
+No
+Yes
+Closed
+$0.80 / $3.20
+2024-12-05
+2024-12-05
+o1
+openai/o1
+OpenAI
+12
+200,000
+100,000
+Yes
+Yes
+Yes
+No
+Closed
+$14.00 / $54.00
+2024-12-05
+2024-12-05
+Nova Lite
+amazon/nova-lite
+Amazon
+8
+300,000
+10,000
+No
+Yes
+-
+Yes
+Closed
+$0.06 / $0.24
+2024-12-03
+2024-12-03
+Nova Micro
+amazon/nova-micro
+Amazon
+7
+128,000
+10,000
+No
+Yes
+-
+Yes
+Closed
+$0.04 / $0.14
+2024-12-03
+2024-12-03
+Nova Pro
+amazon/nova-pro
+Amazon
+7
+300,000
+10,000
+No
+Yes
+-
+Yes
+Closed
+$0.80 / $3.20
+2024-12-03
+2024-12-03
+Command R7B
+cohere/command-r7b-12-2024
+Cohere
+6
+128,000
+4,000
+No
+Yes
+-
+Yes
+Open
+$0.04 / $0.15
+2024-12-02
+2024-12-02
+GPT-4o (2024-11-20)
+openai/gpt-4o-2024-11-20
+OpenAI
+9
+128,000
+16,384
+No
+Yes
+Yes
+Yes
+Closed
+$2.50 / $10.00
+2024-11-20
+2024-11-20
+Mistral Large 2407
+mistral/mistral-large-2407
+Mistral
+4
+131,072
+104,857
+No
+Yes
+Yes
+Yes
+Closed
+$2.00 / $6.00
+2024-11-19
+2024-11-19
+Mistral Large 2.1
+mistral/mistral-large-2411
+Mistral
+2
+131,072
+16,384
+No
+Yes
+-
+Yes
+Open
+$2.00 / $6.00
+2024-11-18
+2024-11-18
+Qwen2.5-Coder-0.5B
+alibaba/qwen2.5-coder-0.5b
+Alibaba
+1
+32,768
+8,192
+No
+No
+-
+Yes
+Open
+$0.10 / $0.10
+2024-11-12
+2024-11-12
+Qwen2.5-Coder-32B-Instruct
+alibaba/qwen2.5-coder-32b-instruct
+Alibaba
+4
+131,072
+8,192
+No
+Yes
+-
+Yes
+Open
+$0.06 / $0.20
+2024-11-12
+2024-11-12
+UnslopNemo 12B
+thedrummer/unslopnemo-12b
+Thedrummer
+3
+1,024,000
+819,200
+No
+No
+Yes
+Yes
+Open
+$0.40 / $0.40
+2024-11-08
+2024-11-08
+Pixtral Large (latest)
+mistral/pixtral-large-latest
+Mistral
+2
+128,000
+128,000
+No
+Yes
+-
+Yes
+Open
+$2.00 / $6.00
+2024-11-01
+2024-11-04
+Aya Expanse 32B
+cohere/c4ai-aya-expanse-32b
+Cohere
+2
+128,000
+4,000
+No
+No
+-
+Yes
+Open
+$0.50 / $1.50
+2024-10-24
+2024-10-24
+Aya Expanse 8B
+cohere/c4ai-aya-expanse-8b
+Cohere
+0
+8,000
+4,000
+No
+No
+-
+Yes
+Open
+-
+2024-10-24
+2024-10-24
+Claude Haiku 3.5
+anthropic/claude-3-5-haiku-20241022
+Anthropic
+0
+200,000
+8,192
+No
+Yes
+-
+Yes
+Closed
+-
+2024-10-22
+2024-10-22
+Claude Sonnet 3.5 v2
+anthropic/claude-3-5-sonnet-20241022
+Anthropic
+1
+200,000
+8,192
+No
+Yes
+-
+Yes
+Closed
+$3.00 / $15.00
+2024-10-22
+2024-10-22
+Magnum v4 72B
+anthracite-org/magnum-v4-72b
+Anthracite Org
+4
+32,768
+4,096
+No
+No
+Yes
+Yes
+Open
+$2.01 / $2.99
+2024-10-22
+2024-10-22
+Ministral 3B
+mistral/ministral-3b
+Mistral
+2
+128,000
+8,192
+No
+Yes
+-
+Yes
+Open
+$0.04 / $0.04
+2024-10-16
+2024-10-16
+Ministral 8B Instruct
+mistral/ministral-8b-instruct-2410
+Mistral
+1
+131,072
+8,192
+No
+Yes
+-
+Yes
+Open
+$0.15 / $0.15
+2024-10-16
+2024-10-16
+Whisper 3 Large
+openai/whisper-large-v3
+OpenAI
+5
+448
+4,096
+No
+No
+-
+-
+Open
+$0.00 / $0.00
+2024-10-01
+2024-10-01
+Whisper Large v3 Turbo
+openai/whisper-large-v3-turbo
+OpenAI
+2
+448
+448
+No
+No
+-
+-
+Open
+$0.00 / $0.00
+2024-10-01
+2024-10-01
+Llama 3.2 1B Instruct
+meta/llama-3.2-1b-instruct
+Meta
+6
+131,072
+32,000
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2024-09-25
+2024-09-25
+Llama-3.2-11B-Vision-Instruct
+meta/llama-3.2-11b-vision-instruct
+Meta
+4
+128,000
+4,096
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2024-09-25
+2024-09-25
+Llama-3.2-1B
+meta/llama-3.2-1b
+Meta
+2
+131,072
+8,192
+No
+No
+-
+Yes
+Open
+$0.03 / $0.10
+2024-09-25
+2024-09-25
+Llama-3.2-3B
+meta/llama-3.2-3b
+Meta
+3
+131,072
+8,192
+No
+No
+-
+Yes
+Open
+$0.05 / $0.10
+2024-09-25
+2024-09-25
+Pixtral 12B
+mistral/pixtral-12b
+Mistral
+4
+128,000
+128,000
+No
+Yes
+-
+Yes
+Open
+$0.15 / $0.15
+2024-09-01
+2024-09-01
+Qwen2.5-VL 72B Instruct
+alibaba/qwen2-5-vl-72b-instruct
+Alibaba
+1
+131,072
+8,192
+No
+Yes
+-
+Yes
+Open
+$2.80 / $8.40
+2024-09
+2024-09
+Command R
+cohere/command-r-08-2024
+Cohere
+6
+128,000
+4,000
+No
+Yes
+-
+Yes
+Open
+$0.15 / $0.60
+2024-08-30
+2024-08-30
+Command R+
+cohere/command-r-plus-08-2024
+Cohere
+8
+128,000
+4,000
+No
+Yes
+-
+Yes
+Open
+$2.50 / $10.00
+2024-08-30
+2024-08-30
+Llama 3.1 Euryale 70B v2.2
+sao10k/l3.1-euryale-70b
+Sao10k
+3
+131,072
+16,384
+No
+Yes
+Yes
+Yes
+Open
+$0.85 / $0.85
+2024-08-28
+2024-08-28
+Nemotron Mini 4B Instruct
+nvidia/nemotron-mini-4b-instruct
+Nvidia
+1
+128,000
+8,192
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2024-08-21
+2024-08-26
+Hermes 3 70B Instruct
+nousresearch/hermes-3-llama-3.1-70b
+Nousresearch
+5
+131,072
+16,384
+No
+No
+Yes
+Yes
+Open
+$0.41 / $0.41
+2024-08-18
+2024-08-18
+Hermes 3 405B Instruct
+nousresearch/hermes-3-llama-3.1-405b
+Nousresearch
+5
+131,072
+16,384
+No
+No
+Yes
+Yes
+Open
+$1.00 / $1.00
+2024-08-16
+2024-08-16
+Llama 3 8B Lunaris
+sao10k/l3-lunaris-8b
+Sao10k
+3
+8,192
+7,372
+No
+No
+Yes
+Yes
+Open
+$0.04 / $0.05
+2024-08-13
+2024-08-13
+GPT-4o (2024-08-06)
+openai/gpt-4o-2024-08-06
+OpenAI
+8
+128,000
+16,384
+No
+Yes
+Yes
+Yes
+Closed
+$2.50 / $10.00
+2024-08-06
+2024-08-06
+GPT-4o
+openai/gpt-4o
+OpenAI
+24
+128,000
+16,384
+No
+Yes
+Yes
+Yes
+Closed
+$1.25 / $5.00
+2024-05-13
+2024-08-06
+Llama-3.1-70B-Instruct
+meta/llama-3.1-70b-instruct
+Meta
+6
+128,000
+4,096
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2024-07-23
+2024-07-23
+Llama-3.1-8B-Instruct
+meta/llama-3.1-8b-instruct
+Meta
+13
+128,000
+4,096
+No
+Yes
+-
+Yes
+Open
+$0.00 / $0.00
+2024-07-23
+2024-07-23
+Llama-Guard-3-8B
+meta/llama-guard-3-8b
+Meta
+3
+128,000
+4,096
+No
+No
+-
+Yes
+Open
+$0.06 / $0.03
+2024-07-23
+2024-07-23
+GPT-4o mini
+openai/gpt-4o-mini
+OpenAI
+26
+128,000
+16,384
+No
+Yes
+Yes
+Yes
+Closed
+$0.07 / $0.30
+2024-07-18
+2024-07-18
+Gemma 2 27B
+google/gemma-2-27b-it
+Google
+3
+8,192
+2,048
+No
+No
+Yes
+Yes
+Open
+$0.65 / $0.65
+2024-07-13
+2024-07-13
+Mistral Nemo
+mistral/mistral-nemo
+Mistral
+8
+128,000
+128,000
+No
+Yes
+-
+Yes
+Open
+$0.02 / $0.03
+2024-07-01
+2024-07-01
+o3-deep-research
+openai/o3-deep-research
+OpenAI
+1
+200,000
+100,000
+Yes
+Yes
+-
+No
+Closed
+$9.00 / $36.00
+2024-06-26
+2024-06-26
+o4-mini-deep-research
+openai/o4-mini-deep-research
+OpenAI
+1
+200,000
+100,000
+Yes
+Yes
+-
+No
+Closed
+$1.80 / $7.20
+2024-06-26
+2024-06-26
+Codestral-22B-v0.1
+mistral/codestral-22b-v0.1
+Mistral
+1
+32,768
+8,192
+No
+No
+-
+Yes
+Open
+$0.30 / $0.90
+2024-05-29
+2024-05-29
+GPT-4o (2024-05-13)
+openai/gpt-4o-2024-05-13
+OpenAI
+6
+128,000
+4,096
+No
+Yes
+Yes
+Yes
+Closed
+$5.00 / $15.00
+2024-05-13
+2024-05-13
+Hermes 2 Pro Llama 3 8B
+nousresearch/hermes-2-pro-llama-3-8b
+Nousresearch
+1
+8,192
+8,192
+No
+Yes
+Yes
+Yes
+Open
+$0.14 / $0.14
+2024-04-30
+2024-04-30
+Mixtral 8x22B Instruct
+mistral/mixtral-8x22b-instruct
+Mistral
+4
+65,536
+52,428
+No
+Yes
+Yes
+Yes
+Open
+$2.00 / $6.00
+2024-04-17
+2024-04-17
+WizardLM 2 8x22B
+microsoft/wizardlm-2-8x22b
+Microsoft
+5
+65,536
+8,000
+No
+No
+-
+Yes
+Open
+$0.48 / $0.48
+2024-04-15
+2024-04-15
+GPT-4
+openai/gpt-4
+OpenAI
+9
+8,192
+8,192
+No
+Yes
+No
+Yes
+Closed
+$30.00 / $60.00
+2023-11-06
+2024-04-09
+GPT-4 Turbo
+openai/gpt-4-turbo
+OpenAI
+15
+128,000
+4,096
+No
+Yes
+No
+Yes
+Closed
+$9.00 / $27.00
+2023-11-06
+2024-04-09
+BGE Reranker V2 M3
+baai/bge-reranker-v2-m3
+Baai
+1
+8,192
+0
+No
+No
+-
+No
+Open
+$0.01 / $0.00
+2024-03-15
+2024-03-15
+Claude Haiku 3
+anthropic/claude-3-haiku-20240307
+Anthropic
+1
+200,000
+4,096
+No
+Yes
+-
+Yes
+Closed
+$0.25 / $1.25
+2024-03-13
+2024-03-13
+Mistral Large
+mistral/mistral-large
+Mistral
+4
+128,000
+102,400
+No
+Yes
+Yes
+Yes
+Closed
+$2.00 / $6.00
+2024-02-26
+2024-02-26
+BGE M3
+baai/bge-m3
+Baai
+2
+8,192
+0
+No
+No
+-
+No
+Open
+$0.00 / $0.00
+2024-01-30
+2024-01-30
+Mistral Embed
+mistral/mistral-embed
+Mistral
+3
+8,000
+3,072
+No
+No
+-
+No
+Closed
+$0.10 / $0.00
+2023-12-11
+2023-12-11
+GPT-3.5-turbo
+openai/gpt-3.5-turbo
+OpenAI
+13
+16,385
+4,096
+No
+No
+No
+Yes
+Closed
+$0.45 / $1.40
+2023-03-01
+2023-11-06
+MythoMax L2 13B
+gryphe/mythomax-l2-13b
+Gryphe
+6
+4,096
+3,200
+No
+No
+-
+Yes
+Open
+$0.08 / $0.09
+2023-08-10
+2023-08-10
+Weaver (alpha)
+mancer/weaver
+Mancer
+3
+8,000
+6,000
+No
+No
+No
+Yes
+Closed
+$0.40 / $0.75
+2023-08-02
+2023-08-02
+ReMM SLERP 13B
+undi95/remm-slerp-l2-13b
+Undi95
+4
+6,144
+5,529
+No
+No
+Yes
+Yes
+Open
+$0.35 / $0.65
+2023-07-22
+2023-07-22
+No rows match the current search.
+No rows match the current search.
+Menu
+Models
+Providers
+Labs
+Search
+GitHub
+How to use
+Esc
+Search
+No matching results.
+How to use
+Models.dev
+ is a comprehensive open-source database of AI model specifications, pricing, and features.
+The homepage starts with provider-agnostic model metadata. Model pages list the providers serving that model; provider pages list every model available from that provider; lab pages group canonical models by author.
+API
+You can access provider data, provider-agnostic model metadata, or the combined catalog through JSON endpoints. Specialized model types are omitted by default; the site includes all model types.
+curl 
+https://models.dev/api.json?type=all
+curl 
+https://models.dev/models.json?type=all
+curl 
+https://models.dev/catalog.json?type=all
+Logos
+Provider logos are available at 
+/logos/{provider}.svg
+ where 
+{provider}
+ is the provider ID. Lab logos are available at 
+/logos/labs/{lab}.svg
+.
+curl 
+https://models.dev/logos/anthropic.svg
+SDK
+Use the SDK to query the API from your app. It's type-safe and exports the latest snapshot for offline use.
+npm install 
+@opencode-ai/models
+Contribute
+The data is stored in 
+GitHub
+ as TOML files organized by provider and canonical model.
+Edit on GitHub
+Created by OpenCode
+

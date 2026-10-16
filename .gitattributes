@@ -1,0 +1,23 @@
+# 统一换行符，避免 Windows 上 checkout 后 shell 脚本变成 CRLF 而无法执行。
+# CI 里有一条检查会验证 *.sh 必须是 LF。
+* text=auto eol=lf
+
+# Windows 批处理必须是 CRLF，否则 cmd.exe 解析会出问题
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# 二进制：不要做任何换行转换
+*.exe binary
+*.dll binary
+*.zip binary
+*.gz binary
+*.tgz binary
+*.db binary
+*.mmdb binary
+*.dat binary
+*.png binary
+*.jpg binary
+*.ico binary
+
+# 归档文件在 GitHub 上不计入语言统计
+*.jsonl linguist-generated

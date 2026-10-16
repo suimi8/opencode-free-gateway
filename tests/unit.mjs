@@ -1,0 +1,122 @@
+#!/usr/bin/env node
+/**
+ * tests/unit.mjs —— 纯逻辑单元测试（无网络、无凭据、无副作用）
+ *
+ * 覆盖协议互转层 bridge.mjs：跨协议互转是「两种协议都能用全部模型」的核心，
+ * 它一旦回归，Codex / OpenAI SDK 会拿到看不懂的响应，而且不报错只出错数据。
+ */
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// Windows 下动态 import 必须用 file:// URL，直接给绝对路径会报 ERR_UNSUPPORTED_ESM_URL_SCHEME
+const B = await import(pathToFileURL(path.join(ROOT, '01-管理面板', 'bridge.mjs')).href);
+
+let pass = 0, fail = 0;
+const eq = (name, got, want) => {
+  const ok = JSON.stringify(got) === JSON.stringify(want);
+  if (ok) { pass++; console.log(`  [OK]   ${name}`); }
+  else { fail++; console.log(`  [FAIL] ${name}\n         got  ${JSON.stringify(got)}\n         want ${JSON.stringify(want)}`); }
+};
+const ok = (name, cond, extra = '') => {
+  if (cond) { pass++; console.log(`  [OK]   ${name}`); }
+  else { fail++; console.log(`  [FAIL] ${name} ${extra}`); }
+};
+const feed = (conv, sse) => { let out = ''; for (const l of sse.split('\n')) out += conv.push(l); return out; };
+
+console.log('\n── 1) chat → responses 请求体 ──');
+const r1 = B.chatToResponses({
+  model: 'm',
+  messages: [
+    { role: 'system', content: 'S' },
+    { role: 'user', content: 'U' },
+    { role: 'assistant', content: null, tool_calls: [{ id: 'c1', type: 'function', function: { name: 'read', arguments: '{"p":"a"}' } }] },
+    { role: 'tool', tool_call_id: 'c1', content: 'R' },
+  ],
+  tools: [{ type: 'function', function: { name: 'read', description: 'd', parameters: { type: 'object', properties: {} } } }],
+  stream: false,
+});
+eq('system → instructions', r1.instructions, 'S');
+eq('stream 强制 true', r1.stream, true);
+eq('input 条数', r1.input.length, 3);
+eq('user 项形状', r1.input[0], { type: 'message', role: 'user', content: [{ type: 'input_text', text: 'U' }] });
+eq('function_call 项', r1.input[1].type, 'function_call');
+eq('function_call_output 项', r1.input[2].type, 'function_call_output');
+eq('tools 扁平化', r1.tools[0].name, 'read');
+ok('不带 max_tokens（Responses 会拒）', !('max_tokens' in r1));
+
+console.log('\n── 2) responses → chat 请求体 ──');
+const r2 = B.responsesToChat({
+  model: 'm',
+  instructions: 'S',
+  input: [
+    { type: 'message', role: 'user', content: [{ type: 'input_text', text: 'U' }] },
+    { type: 'function_call', call_id: 'c1', name: 'shell', arguments: '{"cmd":"ls"}' },
+    { type: 'function_call_output', call_id: 'c1', output: 'ok' },
+  ],
+  tools: [{ type: 'function', name: 'shell', description: 'd', parameters: { type: 'object', properties: {} } }],
+  stream: true,
+});
+eq('messages 条数 (system+user+assistant+tool)', r2.messages.length, 4);
+eq('第 1 条 system', r2.messages[0], { role: 'system', content: 'S' });
+eq('assistant 带 tool_calls', r2.messages[2].tool_calls[0].id, 'c1');
+eq('tool 角色', r2.messages[3].role, 'tool');
+eq('tools 嵌套化', r2.tools[0].function.name, 'shell');
+
+console.log('\n── 3) 往返不丢信息 ──');
+const back = B.responsesToChat(B.chatToResponses({ model: 'm', messages: [{ role: 'system', content: 'S' }, { role: 'user', content: 'U' }], stream: true }));
+eq('chat→responses→chat', back.messages, [{ role: 'system', content: 'S' }, { role: 'user', content: 'U' }]);
+
+console.log('\n── 4) chat SSE → responses SSE ──');
+const s = B.makeChatToResponsesStream('m');
+let acc = feed(s, `data: ${JSON.stringify({ id: 'c', choices: [{ index: 0, delta: { role: 'assistant', content: '' } }] })}\n`);
+acc += feed(s, `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: 'Hel' } }] })}\n`);
+acc += feed(s, `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: 'lo' } }] })}\n`);
+acc += feed(s, `data: ${JSON.stringify({ choices: [{ index: 0, delta: {}, finish_reason: 'stop' }], usage: { prompt_tokens: 11, completion_tokens: 2, total_tokens: 13 } })}\n`);
+const fin = s.end();
+acc += fin.sse;
+const evs = [...acc.matchAll(/^event: (\S+)/gm)].map((m) => m[1]);
+for (const need of ['response.created', 'response.in_progress', 'response.output_item.added', 'response.content_part.added', 'response.output_text.delta', 'response.output_text.done', 'response.content_part.done', 'response.output_item.done', 'response.completed']) {
+  ok(`事件序列含 ${need}`, evs.includes(need), `实际: ${evs.join('→')}`);
+}
+eq('累计文本', fin.text, 'Hello');
+eq('completed.usage.input_tokens', fin.response.usage.input_tokens, 11);
+
+console.log('\n── 5) 工具调用 chat SSE → responses SSE ──');
+const s3 = B.makeChatToResponsesStream('m');
+let a3 = feed(s3, `data: ${JSON.stringify({ choices: [{ index: 0, delta: { tool_calls: [{ index: 0, id: 'c9', type: 'function', function: { name: 'read', arguments: '{"p"' } }] } }] })}\n`);
+a3 += feed(s3, `data: ${JSON.stringify({ choices: [{ index: 0, delta: { tool_calls: [{ index: 0, function: { arguments: ':"a"}' } }] } }] })}\n`);
+a3 += feed(s3, `data: ${JSON.stringify({ choices: [{ index: 0, delta: {}, finish_reason: 'tool_calls' }] })}\n`);
+a3 += s3.end().sse;
+ok('产生 function_call 项', a3.includes('function_call'));
+ok('参数分片拼接完整', a3.includes('a.txt') || a3.includes(':"a"}') || a3.includes('{\\"p\\":\\"a\\"}'));
+
+console.log('\n── 6) responses SSE → chat SSE ──');
+const c2 = B.makeResponsesToChatStream('m');
+let out2 = feed(c2, `data: ${JSON.stringify({ type: 'response.created', response: { id: 'r', status: 'in_progress' } })}\n`);
+out2 += feed(c2, `data: ${JSON.stringify({ type: 'response.output_text.delta', delta: 'Hel' })}\n`);
+out2 += feed(c2, `data: ${JSON.stringify({ type: 'response.output_text.delta', delta: 'lo' })}\n`);
+out2 += feed(c2, `data: ${JSON.stringify({ type: 'response.completed', response: { status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: 'Hello' }] }], usage: { input_tokens: 9, output_tokens: 2, total_tokens: 11 } } })}\n`);
+out2 += c2.end();
+const chunks = out2.split('\n').filter((l) => l.startsWith('data: ')).map((l) => l.slice(6));
+ok('以 [DONE] 结束', chunks[chunks.length - 1] === '[DONE]');
+const agg = B.aggregateChatSSE(out2, 'm', 'm');
+eq('聚合文本', agg.choices[0].message.content, 'Hello');
+eq('聚合 usage', agg.usage.total_tokens, 11);
+eq('finish_reason', agg.choices[0].finish_reason, 'stop');
+
+console.log('\n── 7) responses 工具调用 → chat ──');
+const c3 = B.makeResponsesToChatStream('m');
+let out3 = feed(c3, `data: ${JSON.stringify({ type: 'response.completed', response: { status: 'completed', output: [{ type: 'function_call', call_id: 'c7', name: 'read', arguments: '{"p":"a"}' }], usage: { input_tokens: 5, output_tokens: 1, total_tokens: 6 } } })}\n`);
+out3 += c3.end();
+const agg3 = B.aggregateChatSSE(out3, 'm', 'm');
+ok('聚合出 tool_calls', Array.isArray(agg3.choices[0].message.tool_calls) && agg3.choices[0].message.tool_calls.length === 1);
+eq('tool 名字', agg3.choices[0].message.tool_calls?.[0]?.function?.name, 'read');
+eq('finish_reason=tool_calls', agg3.choices[0].finish_reason, 'tool_calls');
+
+console.log('\n── 8) 非流式聚合 ──');
+const rs = B.aggregateResponsesSSE(`event: response.completed\ndata: ${JSON.stringify({ type: 'response.completed', response: { id: 'r', status: 'completed' } })}\n`);
+eq('聚合出最终 response', rs?.status, 'completed');
+
+console.log(`\n单元测试: ${pass} 通过, ${fail} 失败`);
+process.exit(fail ? 1 : 0);

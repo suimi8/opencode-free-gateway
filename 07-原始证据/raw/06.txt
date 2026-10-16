@@ -1,0 +1,98 @@
+﻿
+OpenCode Zen | A curated set of reliable optimized models for coding agents
+GitHub
+Docs
+Data
+Zen
+Go
+Enterprise
+Login
+Open menu
+Reliable optimized models for coding agents
+Zen gives you access to a curated set of AI models that OpenCode has tested and benchmarked specifically for coding agents. No need to worry about inconsistent performance and quality, use validated models that work.
+Get started with Zen
+Add $20 Pay as you go balance
+(+$1.23 card processing fee)
+Use with any agent. Set monthly spend limits. Cancel any time.
+Your browser does not support the video tag.
+What problem is Zen solving?
+There are so many models available, but only a few work well with coding agents. Most providers configure them differently with varying results.
+We're fixing this for everyone, not just OpenCode users.
+[*]
+Testing select models and consulting their teams
+[*]
+Working with providers to ensure they're delivered properly
+[*]
+Benchmarking all model-provider combinations we recommend
+How Zen works
+While we suggest you use Zen with OpenCode, you can use Zen with any agent.
+[1]
+Sign up and add $20 balance
+ - 
+follow the
+setup instructions
+[2]
+Use Zen with transparent pricing
+ - 
+pay per request
+with zero markups
+[3]
+Auto-top up
+ - 
+when your balance reaches $5 we'll automatically add $20
+Your privacy is important to us
+[*]
+All Zen models are hosted in the US. Providers follow a zero-retention policy and do not use your data for model training, with the
+following exceptions
+.
+Dax Raad
+ex-CEO, Terminal Products
+@OpenCode
+ Zen has been life changing, it's truly a no-brainer.
+Jay V
+ex-Founder, SEED, PM, Melt, Pop, Dapt, Cadmus, and ViewPoint
+4 out of 5 people on our team love using 
+@OpenCode
+ Zen.
+Adam Elmore
+ex-Hero, AWS
+I can't recommend 
+@OpenCode
+ Zen enough. Seriously, it's really good.
+David Hill
+ex-Head of Design, Laravel
+With 
+@OpenCode
+ Zen I know all the models are tested and perfect for coding agents.
+Frank Wang
+ex-Intern, Nvidia (4 times)
+I wish I was still at Nvidia.
+FAQ
+What is OpenCode Zen?
+What makes Zen more accurate?
+Is Zen cheaper?
+How much does Zen cost?
+What about data and privacy?
+Can I set spend limits?
+Can I cancel?
+Can I use Zen with other coding agents?
+Can I get a refund?
+Be the first to know when we release new products
+Join the waitlist for early access.
+Subscribe
+GitHub
+[
+208K
+]
+Docs
+Changelog
+Discord
+X
+©
+2026
+Anomaly
+Brand
+Privacy
+Terms
+English
+

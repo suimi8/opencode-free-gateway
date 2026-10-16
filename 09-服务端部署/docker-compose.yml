@@ -1,0 +1,76 @@
+# ══════════════════════════════════════════════════════════════════════
+# OpenCode 免费层网关 · 管理面板 —— docker compose
+#
+# ⚠️ 构建上下文必须是【项目根目录】（含 01-管理面板/ 和 09-服务端部署/ 的那层）。
+#    本文件写的是 context: .. —— 相对本文件所在目录（09-服务端部署/）的上一级，
+#    正好是项目根。所以：
+#
+#        cd "<项目根>"
+#        docker compose -f 09-服务端部署/docker-compose.yml up -d --build
+#
+#    或者先 cd 进 09-服务端部署/ 再 `docker compose up -d`（compose 会自动
+#    以该文件所在目录为基准解析 context: ..）。
+#
+#    注意 Docker 不允许 COPY ../xxx，所以 dockerfile 路径写成
+#    09-服务端部署/Dockerfile 而 context 是项目根 —— 这是唯一合法组合。
+# ══════════════════════════════════════════════════════════════════════
+
+services:
+  opencode-gateway:
+    build:
+      context: ..
+      dockerfile: 09-服务端部署/Dockerfile
+    image: opencode-gateway:latest
+    container_name: opencode-gateway
+
+    restart: unless-stopped
+
+    # ⚠️ 默认只绑回环：宿主机 nginx 反代 + HTTPS 时用这个。
+    #    要直接对外暴露可改成 "8790:8790"，但那会让面板明文可达 ——
+    #    面板登录 cookie 没有 Secure 标志、登录接口没有速率限制，
+    #    公网暴露前必须在反代层加 limit_req 与 HSTS。
+    ports:
+      - "127.0.0.1:8790:8790"
+
+    environment:
+      PANEL_HOST: "0.0.0.0"      # 容器内必须监听 0.0.0.0，否则宿主机映射不进来
+      PANEL_PORT: "8790"
+      PANEL_DB: "/app/data/panel.db"   # 数据落在命名卷里（面板原生支持，无需软链）
+      TZ: "Asia/Shanghai"
+
+    # 也可改用文件: env_file: ["../09-服务端部署/.env"]（模板见 .env.example）
+
+    volumes:
+      # 命名卷持久化 panel.db(-wal/-shm)。
+      # 为什么不直接挂单文件匿名卷: WAL 模式还需要 panel.db-wal / panel.db-shm,
+      # 只挂 panel.db 会让 SQLite 在容器层写 -wal，重建容器即丢数据甚至锁不一致。
+      # 挂【目录】才能把三者一起持久化。
+      - panel-data:/app/data
+
+      # 想直接看到文件（便于用 snapshot-db.mjs 备份）可换成 bind mount：
+      #   - ./data:/app/data
+      # 宿主机目录需先 chown 给容器内 uid（默认 1000, node）: sudo chown -R 1000:1000 ./data
+
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get({host:'127.0.0.1',port:8790,path:'/',timeout:4000},r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+    # 面板要连上游 HTTPS 并使用渠道里配置的代理（如 socks5/http 代理）时，
+    # 通常需要 --add-host 或自定义网络；默认 bridge 已可出网。
+    # 若上游代理跑在宿主机上，用 host.docker.internal（Linux 需加：
+    #   extra_hosts: ["host.docker.internal:host-gateway"] ），
+    # 并注意渠道里填 127.0.0.1 在容器内指向容器自身，不是宿主机。
+
+    # 日志不要涨到天上去
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  panel-data:
+    driver: local

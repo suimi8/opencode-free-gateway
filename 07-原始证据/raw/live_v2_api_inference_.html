@@ -1,0 +1,154 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Call OpenAI, Anthropic, and Gemini-compatible models through Console inference with one authentication header."><meta name="theme-color" content="#000000"><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="swap"><script type="module" src="/v2/_astro/ClientRouter.astro_astro_type_script_index_0_lang.QXqYV-0P.js"></script><link rel="canonical" href="https://opencode.ai/v2/docs/console/api/inference/"><link rel="icon" type="image/svg+xml" href="/v2/favicon.svg"><title>Inference API | OpenCode</title><link rel="stylesheet" href="/v2/_astro/_..CwgjG4PU.css"></head><body><a class="skip-link" href="#docs-content">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/v2/" aria-label="OpenCode home"><img src="/v2/assets/logo-dark.svg" alt="OpenCode"></a><nav aria-label="Documentation sections"><a href="/v2/docs/">Docs</a><a href="/v2/docs/cli/">CLI</a><a href="/v2/docs/build/">Build</a><a href="/v2/docs/api/">API</a><a href="/v2/docs/console/" aria-current="page">Console</a><a href="/docs">V1</a></nav><div class="header-spacer"></div><button class="search-trigger" type="button" data-search-open aria-label="Search documentation"><span>Search</span><kbd>⌘K</kbd></button><a class="github-link" href="https://github.com/anomalyco/opencode" aria-label="OpenCode on GitHub">GitHub</a></div></header><dialog class="search-dialog" data-search-dialog data-pagefind-path="/v2/docs/pagefind/pagefind.js" data-base-url="/v2/docs/" aria-label="Search documentation"><form method="dialog" class="search-bar"><span aria-hidden="true">&gt;</span><input data-search-input type="search" placeholder="Search docs" autocomplete="off"><button type="submit" aria-label="Close search">Esc</button></form><div class="search-results" data-search-results><p>Start typing to search the documentation.</p></div></dialog><script>
+  let pagefind
+
+  document.addEventListener("keydown", (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault()
+      const dialog = document.querySelector("[data-search-dialog]")
+      dialog?.showModal()
+      dialog?.querySelector("[data-search-input]")?.focus()
+    }
+  })
+
+  const setupSearch = () => {
+    const dialog = document.querySelector("[data-search-dialog]")
+    const input = document.querySelector("[data-search-input]")
+    const results = document.querySelector("[data-search-results]")
+    const trigger = document.querySelector("[data-search-open]")
+    if (trigger && !trigger.dataset.searchReady) {
+      trigger.dataset.searchReady = "true"
+      trigger.addEventListener("click", () => {
+        dialog?.showModal()
+        input?.focus()
+      })
+    }
+
+    if (input && results && !input.dataset.searchReady) input.addEventListener("input", async () => {
+      input.dataset.searchReady = "true"
+      const query = input.value.trim()
+      if (!query) {
+        results.innerHTML = "<p>Start typing to search the documentation.</p>"
+        return
+      }
+
+      const pagefindPath = dialog?.dataset.pagefindPath
+      if (!pagefindPath) return
+      const api = pagefind ?? (pagefind = await import(pagefindPath))
+      const search = await api.search(query)
+      const pages = await Promise.all(search.results.slice(0, 8).map((result) => result.data()))
+      results.replaceChildren(
+        ...pages.map((page) => {
+          const link = document.createElement("a")
+          const base = dialog.dataset.baseUrl ?? "/"
+          link.href = page.url.startsWith(base)
+            ? page.url
+            : `${dialog.dataset.baseUrl?.replace(/\/$/, "")}${page.url}`
+          const title = document.createElement("strong")
+          title.textContent = page.meta.title
+          const excerpt = document.createElement("span")
+          excerpt.innerHTML = page.excerpt
+          link.append(title, excerpt)
+          return link
+        }),
+      )
+      if (!pages.length) results.innerHTML = "<p>No results found.</p>"
+    })
+  }
+
+  setupSearch()
+  document.addEventListener("astro:page-load", setupSearch)
+</script><details class="mobile-navigation"><summary>Console navigation</summary><nav class="docs-sidebar" aria-label="Documentation"><section><ul><li><a href="/v2/docs/console/">Intro</a></li><li><a href="/v2/docs/console/models/">Models</a></li><li><a href="/v2/docs/console/providers/">Providers</a></li><li><a href="/v2/docs/console/websearch/">Web Search</a></li><li><a href="/v2/docs/console/go/">Go</a></li></ul></section><section><h2>Workspace</h2><ul><li><a href="/v2/docs/console/workspaces/">Basics</a></li><li><a href="/v2/docs/console/members/">Members</a></li><li><a href="/v2/docs/console/sso/">SSO</a></li><li><a href="/v2/docs/console/scim/">SCIM</a></li><li><a href="/v2/docs/console/budgets/">Budgets</a></li><li><a href="/v2/docs/console/billing/">Billing</a></li></ul></section><section><h2>API</h2><ul><li><a href="/v2/docs/console/api/">Overview</a></li><li><a href="/v2/docs/console/api/inference/" aria-current="page">Inference</a></li><li><a href="/v2/docs/console/api/providers/">Providers</a></li><li><a href="/v2/docs/console/api/budgets/">Budgets</a></li></ul></section></nav></details><div class="docs-frame"><aside class="sidebar-column"><nav class="docs-sidebar" aria-label="Documentation"><section><ul><li><a href="/v2/docs/console/">Intro</a></li><li><a href="/v2/docs/console/models/">Models</a></li><li><a href="/v2/docs/console/providers/">Providers</a></li><li><a href="/v2/docs/console/websearch/">Web Search</a></li><li><a href="/v2/docs/console/go/">Go</a></li></ul></section><section><h2>Workspace</h2><ul><li><a href="/v2/docs/console/workspaces/">Basics</a></li><li><a href="/v2/docs/console/members/">Members</a></li><li><a href="/v2/docs/console/sso/">SSO</a></li><li><a href="/v2/docs/console/scim/">SCIM</a></li><li><a href="/v2/docs/console/budgets/">Budgets</a></li><li><a href="/v2/docs/console/billing/">Billing</a></li></ul></section><section><h2>API</h2><ul><li><a href="/v2/docs/console/api/">Overview</a></li><li><a href="/v2/docs/console/api/inference/" aria-current="page">Inference</a></li><li><a href="/v2/docs/console/api/providers/">Providers</a></li><li><a href="/v2/docs/console/api/budgets/">Budgets</a></li></ul></section></nav></aside><main id="docs-content"><article class="prose" data-pagefind-body data-pagefind-meta="title:Inference API"><h1>Inference API<button type="button" aria-label="Copy page as Markdown" data-copy-markdown data-pagefind-ignore><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg></button></h1><p>Console inference serves OpenAI, Anthropic, and Gemini-compatible APIs from <code>https://opencode.ai/inference</code>. Send a
+JSON <code>POST</code> request to the endpoint that matches the model’s API family.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;https://opencode.ai/inference/openai/v1/chat/completions&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Authorization: Bearer &lt;token&gt;&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Content-Type: application/json&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#39;{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    &quot;model&quot;: &quot;kimi-k2.6&quot;,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    &quot;messages&quot;: [{ &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Say hi&quot; }]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }&#39;</span></span></code></pre>
+<h2 id="authentication">Authentication</h2>
+<p>Replace <code>&lt;token&gt;</code> with a <a href="/v2/docs/console/api#service-accounts">service account key</a> created in the <a href="https://opencode.ai/console">Console</a>. Paid models
+require the header; free chat models can be called without it.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="text"><code><span class="line"><span>Authorization: Bearer &lt;token&gt;</span></span></code></pre>
+<h2 id="endpoints">Endpoints</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>API</th><th>Path</th></tr></thead><tbody><tr><td>OpenAI Chat Completions</td><td><code>/inference/openai/v1/chat/completions</code></td></tr><tr><td>OpenAI Responses</td><td><code>/inference/openai/v1/responses</code></td></tr><tr><td>Anthropic Messages</td><td><code>/inference/anthropic/v1/messages</code></td></tr><tr><td>Gemini</td><td><code>/inference/google/v1beta/models/&lt;model&gt;:generateContent</code></td></tr></tbody></table>
+<p>Each model is served by one API family. See the <a href="/v2/docs/console/models#endpoints">model endpoints</a> table, or fetch the live
+list:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> https://opencode.ai/inference/v1/models</span></span></code></pre>
+<h3 id="openai-chat-completions">OpenAI Chat Completions</h3>
+<p>Open models such as <code>kimi-k2.6</code>, <code>glm-5.1</code>, <code>minimax-m2.7</code>, and the free models use the Chat Completions API.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;https://opencode.ai/inference/openai/v1/chat/completions&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Authorization: Bearer &lt;token&gt;&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Content-Type: application/json&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#39;{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    &quot;model&quot;: &quot;glm-5.1&quot;,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    &quot;messages&quot;: [{ &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Say hi&quot; }]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }&#39;</span></span></code></pre>
+<h3 id="openai-responses">OpenAI Responses</h3>
+<p>GPT models use the Responses API.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;https://opencode.ai/inference/openai/v1/responses&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Authorization: Bearer &lt;token&gt;&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Content-Type: application/json&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#39;{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    &quot;model&quot;: &quot;gpt-5.5&quot;,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    &quot;input&quot;: &quot;Say hi&quot;</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }&#39;</span></span></code></pre>
+<h3 id="anthropic-messages">Anthropic Messages</h3>
+<p>Claude and Qwen models use the Messages API. <code>max_tokens</code> is required.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;https://opencode.ai/inference/anthropic/v1/messages&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Authorization: Bearer &lt;token&gt;&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Content-Type: application/json&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#39;{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    &quot;model&quot;: &quot;claude-sonnet-4-6&quot;,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    &quot;max_tokens&quot;: 1024,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    &quot;messages&quot;: [{ &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Say hi&quot; }]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }&#39;</span></span></code></pre>
+<h3 id="gemini">Gemini</h3>
+<p>Gemini models take the model and method in the path. Replace <code>:generateContent</code> with <code>:streamGenerateContent</code> to
+stream the response.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8;overflow-x:auto" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;https://opencode.ai/inference/google/v1beta/models/gemini-3.1-pro:generateContent&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Authorization: Bearer &lt;token&gt;&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &quot;Content-Type: application/json&quot;</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#39;{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    &quot;contents&quot;: [{ &quot;parts&quot;: [{ &quot;text&quot;: &quot;Say hi&quot; }] }]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }&#39;</span></span></code></pre></article></main><aside class="toc-column"><nav class="docs-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#authentication">Authentication</a></li><li><a href="#endpoints">Endpoints</a></li><li class="nested"><a href="#openai-chat-completions">OpenAI Chat Completions</a></li><li class="nested"><a href="#openai-responses">OpenAI Responses</a></li><li class="nested"><a href="#anthropic-messages">Anthropic Messages</a></li><li class="nested"><a href="#gemini">Gemini</a></li></ul></nav></aside></div><script>
+      const addHeadingAnchors = () => {
+        for (const heading of document.querySelectorAll(".prose :is(h2, h3)[id]")) {
+          if (heading.querySelector(".heading-anchor")) continue
+          const anchor = document.createElement("a")
+          anchor.className = "heading-anchor"
+          anchor.href = `#${heading.id}`
+          anchor.setAttribute("aria-label", `Link to ${heading.textContent ?? "section"}`)
+          anchor.textContent = "#"
+          heading.append(anchor)
+        }
+      }
+
+      addHeadingAnchors()
+      document.addEventListener("astro:page-load", addHeadingAnchors)
+    </script><script type="module">globalThis.process??={},globalThis.process.env??={},document.addEventListener(`click`,async e=>{if(!(e.target instanceof Element))return;let t=e.target.closest(`[data-copy-markdown]`);if(!t)return;t.dataset.copied=`true`,t.setAttribute(`aria-label`,`Copied`),window.setTimeout(()=>{delete t.dataset.copied,t.setAttribute(`aria-label`,`Copy page as Markdown`)},1500);let n=await fetch(window.location.href,{headers:{Accept:`text/markdown`}});n.ok&&await navigator.clipboard.writeText(await n.text())});</script></body></html>

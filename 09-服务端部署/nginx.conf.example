@@ -1,0 +1,200 @@
+# ══════════════════════════════════════════════════════════════════════
+# OpenCode 免费层网关 · 管理面板 —— nginx 反向代理示例（HTTPS + SSE）
+#
+# 目标拓扑：公网 -> nginx(443, TLS) -> 面板(127.0.0.1:8790)
+# 面板只监听回环、不直接暴露公网。
+#
+# ── 安装（两步，顺序不能颠倒）──────────────────────────────────────
+# ⚠️ 本文件里的 limit_req_zone / limit_conn_zone 属于 **http {} 上下文**，
+#    不能放进 conf.d/*.conf（那层已在 http 内部，会报
+#    "limit_req_zone directive is not allowed here"）。因此：
+#
+#    第 1 步：把本文件中标注「http 上下文片段」的那一块粘进
+#             /etc/nginx/nginx.conf 的 http { } 内部。
+#    第 2 步：把本文件的两个 server 块（HTTP 跳转 + HTTPS 主站）存成
+#             /etc/nginx/conf.d/opencode-gateway.conf
+#
+#    只做第 2 步会报: unknown limit_req_zone "ocgw_login"
+#
+#    完成后校验并热加载：
+#        sudo nginx -t && sudo systemctl reload nginx
+#
+# ── 必须要改的地方 ──────────────────────────────────────────────────
+#   1) server_name          改成你的真实域名
+#   2) ssl_certificate      改成你的证书路径（下面用 Let's Encrypt 常见路径占位）
+#   3) ssl_certificate_key  同上；证书获取：certbot --nginx -d gw.example.com
+#   4) proxy_pass 端口       与面板 PANEL_PORT 保持一致（默认 8790）
+#   5) 若面板跑在 Docker 里，proxy_pass 改成 http://127.0.0.1:8790 仍然可用
+#      （因为 compose 把端口映射到了宿主机回环）；也可改成
+#      http://opencode-gateway:8790 走 docker 网络（需同一网络）。
+# ══════════════════════════════════════════════════════════════════════
+
+
+# ─────────────────────────────────────────────────────────────────────
+# 【http 上下文片段 — 限速与连接数】
+#
+# 为什么要单独说明：limit_req_zone / limit_conn_zone 属于 **http {} 上下文**，
+# 放进 conf.d/*.conf（那层已经在 http 内部）会报
+#   "limit_req_zone directive is not allowed here"
+# 导致 nginx -t 失败、服务起不来。
+#
+# 所以安装分两步：
+#   第 1 步：把下面这一整块（到 "【片段结束】" 为止）粘进
+#            /etc/nginx/nginx.conf 的 http { } 内部；
+#   第 2 步：把本文件的两个 server 块存成
+#            /etc/nginx/conf.d/opencode-gateway.conf
+#   两步都做完再 nginx -t（只做第 2 步会报 zone "ocgw_login" is unknown）。
+# ─────────────────────────────────────────────────────────────────────
+
+# 登录接口限速：按客户端 IP 限流，防暴力破解密码。
+# 5r/m = 每 IP 每分钟 5 次；burst=3 允许瞬时突发 3 次；nodelay 让突发立即处理。
+# 面板登录接口自身没有任何速率限制，这一层是唯一的爆破防线。
+limit_req_zone $binary_remote_addr zone=ocgw_login:10m rate=5r/m;
+
+# 整站兜底限速，防止令牌被拿去刷（面板自身不限制调用频率）。
+# 注意：正常 LLM 调用是低频长耗时，30r/s 足够宽松，不会误伤真实用户。
+limit_req_zone $binary_remote_addr zone=ocgw_api:10m rate=30r/s;
+
+# 单 IP 并发连接上限（SSE 长连接会占住连接，给足余量）
+limit_conn_zone $binary_remote_addr zone=ocgw_conn:10m;
+
+# 触发限速时返回 429 而不是默认的 503
+limit_req_status 429;
+
+# ─────────────────────────── 【片段结束】 ───────────────────────────
+
+
+# ── HTTP:80 -> 强制跳转 HTTPS ───────────────────────────────────────
+server {
+    listen      80;
+    listen      [::]:80;
+    server_name gw.example.com;          # ← 改成你的域名
+
+    # 保留 ACME 挑战目录，否则 certbot renew 会失败
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+
+# ── HTTPS:443 主站点 ────────────────────────────────────────────────
+server {
+    listen      443 ssl;
+    listen      [::]:443 ssl;
+    http2       on;
+    server_name gw.example.com;          # ← 改成你的域名
+
+    # ── 证书（必须替换成你自己的真实路径）────────────────────────
+    ssl_certificate     /etc/letsencrypt/live/gw.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gw.example.com/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/gw.example.com/chain.pem;
+
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache   shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+    ssl_stapling        on;
+    ssl_stapling_verify on;
+
+    # ── 安全响应头 ────────────────────────────────────────────────
+    # HSTS：确认 HTTPS 长期可用后再开；includeSubDomains 会影响所有子域。
+    # 先去 https://hstspreload.org 了解后果，再决定要不要 preload。
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Frame-Options            "SAMEORIGIN" always;
+    add_header X-Content-Type-Options     "nosniff" always;
+    add_header Referrer-Policy            "no-referrer" always;
+    add_header Permissions-Policy         "geolocation=(), microphone=(), camera=()" always;
+
+    # 上传/请求体上限：面板本身限制 4MB，留点余量
+    client_max_body_size 8m;
+    client_body_timeout  600s;
+
+    # 单 IP 并发连接数上限，避免一个客户端把连接池占满
+    limit_conn ocgw_conn 20;
+
+    # ── 登录接口：独立限速（防密码爆破）────────────────────────────
+    # 精确匹配优先于 location /，因此 /api/login 只走这一条。
+    # limit_req_status 429 已在 http 片段里全局设置，这里不重复写。
+    location = /api/login {
+        limit_req zone=ocgw_login burst=3 nodelay;
+
+        proxy_pass http://127.0.0.1:8790;      # ← 端口与 PANEL_PORT 一致
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header Connection        "";   # 关闭 keep-alive 以外的连接复用语义
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 60s;
+        proxy_send_timeout 60s;
+    }
+
+    # ── OpenAI 兼容接口：SSE 流式必须关缓冲 ───────────────────────
+    # 这是全篇最关键的一段：nginx 默认 proxy_buffering on 会把上游响应攒在
+    # 缓冲区里，导致 stream:true 的 SSE 一直不发（客户端看起来像卡死）。
+    location /v1/ {
+        limit_req zone=ocgw_api burst=60 nodelay;
+
+        proxy_pass http://127.0.0.1:8790;      # ← 端口与 PANEL_PORT 一致
+
+        # 透传与协议细节
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header Connection        "";
+
+        # ── SSE / 长响应关键三件套 ──
+        proxy_buffering off;                 # 不缓冲响应体，边收边发
+        proxy_cache off;                     # 不缓存（流式响应绝不能缓存）
+        proxy_request_buffering off;         # 请求体也不缓冲，降低首字延迟
+        proxy_read_timeout 600s;             # 大模型可能长时间不吐字，默认 60s 会掐断
+        proxy_send_timeout 600s;
+        chunked_transfer_encoding on;
+
+        # 告诉上游/客户端不要做任何额外缓冲
+        proxy_set_header X-Accel-Buffering "no";
+        add_header X-Accel-Buffering "no" always;
+        # SSE 场景下 nginx 的 gzip 由上游决定；这里不对 /v1/ 做压缩，
+        # 避免压缩缓冲引入额外延迟。
+        gzip off;
+    }
+
+    # ── 管理面板与其余 API ────────────────────────────────────────
+    location / {
+        proxy_pass http://127.0.0.1:8790;
+
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header Connection        "";
+
+        # 管理 API 里有导出/统计等慢查询，超时放宽
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+    }
+
+    # 禁止通过反代访问数据库与源码文件（双保险；面板本身不暴露这些路径）
+    location ~* \.(db|db-wal|db-shm|mjs|json)$ {
+        deny all;
+    }
+    location ~ /\.(?!well-known) {
+        deny all;
+    }
+}

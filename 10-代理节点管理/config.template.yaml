@@ -1,0 +1,60 @@
+# mihomo 配置模板 —— 由 mihomo.mjs 用 subscriptions.json 渲染
+#
+# 这是一个**独立实例**，与你的 Clash Verge 完全隔离：
+#   · 自己的端口（mixed-port / external-controller 都与 Clash Verge 不同）
+#   · 自己的配置目录与订阅缓存
+#   · allow-lan: false + bind-address: 127.0.0.1，只本机可连
+# 因此**不会影响浏览器/系统代理**。只有指向本实例端口的进程（面板）才会走这些节点。
+
+mixed-port: {{MIXED_PORT}}
+allow-lan: false
+bind-address: 127.0.0.1
+mode: rule
+log-level: {{LOG_LEVEL}}
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+find-process-mode: 'off'
+external-controller: 127.0.0.1:{{CONTROLLER_PORT}}
+secret: '{{SECRET}}'
+external-controller-cors:
+  allow-private-network: true
+
+# 记住手动选择的节点，重启后仍是同一个出口 IP
+profile:
+  store-selected: true
+  store-fake-ip: false
+
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  # ⚠️ 关键：本机 Clash Verge 的 TUN 开着（auto-route + dns-hijack any:53），
+  #    系统 DNS 会返回 fake-ip（198.18.x.x）。如果不单独指定
+  #    proxy-server-nameserver，mihomo 就会用 fake-ip 去连机场服务器 →
+  #    全部节点 "connect error: EOF / context deadline exceeded"。
+  #    这里用**IP 字面量的 DoH**，无需 bootstrap，也不会被 fake-ip 污染。
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  proxy-server-nameserver:
+    - https://223.5.5.5/dns-query
+    - https://1.1.1.1/dns-query
+  nameserver:
+    - https://223.5.5.5/dns-query
+    - https://1.1.1.1/dns-query
+
+proxy-providers:
+{{PROVIDERS}}
+
+proxy-groups:
+  # 面板只认这一个组，用控制器 API 在里面切换节点
+  - name: {{GROUP_NAME}}
+    type: select
+    use:
+{{GROUP_USES}}
+
+rules:
+  # 本实例只给面板用，全部流量走选定节点
+  - MATCH,{{GROUP_NAME}}

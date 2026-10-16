@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/console/favicon.svg" />
+  <title>OpenCode Console</title>
+  <script type="module" crossorigin src="/console/assets/index-sZVFsr3I.js"></script>
+  <link rel="stylesheet" crossorigin href="/console/assets/index-C0Kp840T.css">
+  <script>if (new RegExp("^/console/(org_|wrk_|internal(/|$))").test(location.pathname)) for (const href of ["/console/assets/app-pages-CIXNPmeP.js","/console/assets/app-pages-Dbuvr40W.css","/console/assets/select-input-B5_iruf-.css","/console/assets/meters-CnpHLcAr.js","/console/assets/meters-D2Y_HEIr.css","/console/assets/segmented-control-146Om4vf.js","/console/assets/segmented-control-Bmytif_-.css","/console/assets/data-table-DPz3ffiO.js","/console/assets/icon-BssLZLzA.js","/console/assets/select-input-ElmKivoq.js","/console/assets/text-button-BcUWjTes.js","/console/assets/inline-message-BpbCnX0i.js","/console/assets/session-guard-CL7CYE4z.js","/console/assets/password-requirements-CaLoT4U6.js"]) { const link = document.createElement("link"); link.rel = href.endsWith(".css") ? "preload" : "modulepreload"; if (href.endsWith(".css")) link.as = "style"; link.href = href; document.head.append(link) }</script>
+</head>
+<body>
+  <script>
+    const savedColorScheme = localStorage.getItem("oc:color-scheme")
+    document.documentElement.dataset.colorScheme = savedColorScheme === "light" || savedColorScheme === "dark"
+      ? savedColorScheme
+      : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+    if (typeof performance !== "undefined" && typeof performance.now === "function") {
+      performance.now = performance.now.bind(performance)
+    }
+    if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+      crypto.getRandomValues = crypto.getRandomValues.bind(crypto)
+    }
+    if (typeof fetch === "function") {
+      globalThis.fetch = globalThis.fetch.bind(globalThis)
+    }
+    if (typeof setTimeout === "function") {
+      globalThis.setTimeout = globalThis.setTimeout.bind(globalThis)
+      globalThis.clearTimeout = globalThis.clearTimeout.bind(globalThis)
+    }
+    if (typeof setInterval === "function") {
+      globalThis.setInterval = globalThis.setInterval.bind(globalThis)
+      globalThis.clearInterval = globalThis.clearInterval.bind(globalThis)
+    }
+  </script>
+  <div id="app"></div>
+</body>
+</html>

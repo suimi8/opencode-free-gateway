@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+    tags-ignore: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.os }} · Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: 环境信息
+        run: node -e "console.log('node', process.version, '|', process.platform, process.arch)"
+
+      - name: 检查 node:sqlite 可用（需要 Node >= 22.5）
+        run: |
+          node -e "const {DatabaseSync}=require('node:sqlite'); const d=new DatabaseSync(':memory:'); d.exec('CREATE TABLE t(a)'); d.prepare('INSERT INTO t VALUES(?)').run(1); console.log('node:sqlite OK', d.prepare('SELECT a FROM t').get());"
+
+      - name: 语法检查 + 凭据泄漏扫描
+        run: node scripts/check-syntax.mjs
+
+      - name: 单元测试（协议互转，纯逻辑）
+        run: node tests/unit.mjs
+
+      - name: 冒烟测试（面板 HTTP 层，不连上游）
+        run: node tests/smoke.mjs
+
+      - name: Shell 脚本语法与换行符
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -e
+          bad=0
+          while IFS= read -r f; do
+            bash -n "$f" || { echo "语法错误: $f"; bad=1; }
+            if grep -q $'\r' "$f"; then echo "含 CRLF（应为 LF）: $f"; bad=1; fi
+          done < <(find . -name '*.sh' -not -path './node_modules/*')
+          exit $bad
+
+      - name: PowerShell 脚本语法
+        shell: pwsh
+        run: |
+          $bad = 0
+          Get-ChildItem -Recurse -Filter *.ps1 -ErrorAction SilentlyContinue | ForEach-Object {
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors) | Out-Null
+            if ($errors -and $errors.Count) {
+              $bad++
+              Write-Host "FAIL $($_.FullName)"
+              $errors | Select-Object -First 3 | ForEach-Object { Write-Host "     $_" }
+            }
+          }
+          if ($bad) { exit 1 } else { Write-Host "PowerShell 脚本语法全部通过" }
+
+      - name: 面板默认渠道种子可自查（全新数据库）
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -e
+          TMPDB="$(mktemp -d)/panel.db"
+          PANEL_DB="$TMPDB" PANEL_PORT=18901 PANEL_NODE_POOL=0 PANEL_MODEL_DISCOVERY=0 \
+            node 01-管理面板/server.mjs & SRV=$!
+          for i in $(seq 1 60); do sleep 0.25; curl -fsS --max-time 2 http://127.0.0.1:18901/ -o /dev/null && break; done
+          curl -fsS -X POST http://127.0.0.1:18901/api/login -H 'content-type: application/json' \
+            -d '{"password":"admin123"}' -c /tmp/ck.txt | grep -q '"ok":true'
+          curl -fsS http://127.0.0.1:18901/api/channels -b /tmp/ck.txt | grep -q 'OpenCode'
+          echo "默认种子渠道 OK"
+          kill $SRV 2>/dev/null || true
+
+  package:
+    name: 打包
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 构建发布包
+        run: node scripts/package.mjs
+
+      - name: 列出产物
+        run: ls -lh dist/
+
+      - name: 上传 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencode-free-gateway-${{ github.sha }}
+          path: dist/*
+          retention-days: 30

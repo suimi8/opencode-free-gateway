@@ -1,0 +1,195 @@
+﻿
+OpenCode Go | Low cost coding models for everyone
+GitHub
+Docs
+Data
+Zen
+Go
+Enterprise
+Login
+Open menu
+New
+Step 5 Preview is now available in Go with 4× usage for a limited time.
+Low cost coding models for everyone
+Go brings agentic coding to programmers around the world. Offering generous limits and reliable access to the most capable open-source models, so you can build with powerful agents without worrying about cost or availability.
+Use with any agent. Top up credit if needed. Cancel any time.
+Go
+$10
+per month
+Curated, affordable models
+Tested for agentic coding
+Generous limits and reliable access
+Subscribe to Go
+Go Plus
+$40
+per month
+Everything included in Go
+Higher limits and fewer interruptions
+Built for larger, demanding projects
+Subscribe to Go Plus
+Limits
+Estimated requests per 5 hours and monthly usage limits by model
+Go
+Go Plus
+Model
+Est. requests / 5h
+Monthly usage
+Kimi K3
+110
+440
+$15
+$60
+Gemini 4 Argon Contributor
+New
+2× usage
+Limited Time
+220
+440
+880
+1,760
+$30
+$60
+$120
+$240
+Kimi K2.7 Code
+1,350
+4,050
+$60
+$180
+Step 5 Preview
+New
+4× usage
+Limited Time
+430
+1,720
+1,720
+6,880
+$15
+$60
+$60
+$240
+Space Bunny
+3,130
+12,500
+$30
+$120
+MiniMax M3
+3,200
+9,600
+$60
+$180
+Claude Haiku 5.5
+New
+3,850
+15,380
+$15
+$60
+GPT 6 Luna
+4,230
+16,920
+$15
+$60
+Qwen3.7 Plus
+4,300
+12,900
+$60
+$180
+GLM-5.3-Flash
+6,320
+18,960
+$60
+$180
+MiMo-V2.6-Flash
+30,100
+60,200
+$60
+$120
+DeepSeek V4.1 Flash
+34,670
+69,330
+$80
+$160
+Muse Spark 1.3 Contributor
+Limited Regions
+45,300
+90,600
+$60
+$120
+LongCat 2.5 Preview Free
+Limited Time
+∞
+∞
+∞
+∞
+Cat Jam Free
+New
+Limited Time
+∞
+∞
+∞
+∞
+100
+1K
+10K
+View all 31 models
+Usage limits
+What problem is Go solving?
+We're focused on bringing the OpenCode experience to as many people as possible. OpenCode Go is a low cost $10/month subscription. It provides generous limits and reliable access to the most capable open source models.
+Go Plus costs $40/month with higher limits.
+[*]
+Low cost subscription pricing
+[*]
+Generous limits and reliable access
+[*]
+Built for as many programmers as possible
+[*]
+A curated model lineup tested for agentic coding
+How Go works
+Go costs $10/month. You can use it with OpenCode or any agent.
+Go Plus costs $40/month with higher limits.
+[1]
+Create an account
+ - 
+follow the
+setup instructions
+[2]
+Subscribe to Go
+ - 
+$10/month
+with generous limits
+ · 
+Go Plus costs $40/month with higher limits.
+[3]
+Start coding
+ - 
+with reliable access to open-source models
+FAQ
+What is OpenCode Go?
+What models does Go include?
+What is the difference between free models and Go?
+Is Go the same as Zen?
+How much does Go cost?
+What about data and privacy?
+Can I top up credit?
+Can I cancel?
+Can I use Go with other coding agents?
+Can I get a refund?
+Be the first to know when we release new products
+Join the waitlist for early access.
+Subscribe
+GitHub
+[
+208K
+]
+Docs
+Changelog
+Discord
+X
+©
+2026
+Anomaly
+Brand
+Privacy
+Terms
+English
+
