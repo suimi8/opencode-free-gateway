@@ -19,19 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-## 附加声明 / Additional Notice
-
-本项目是**互操作性研究与本地网关工具**，用于把已有服务整理成本地可用的
-OpenAI / Responses 兼容接口。使用者需自行确保其使用方式符合上游服务的
-服务条款与所在地法律法规。作者不对任何滥用行为负责。
-
-This project is an interoperability study and a local gateway tool. It does
-NOT contain, redistribute, or bundle any third-party source code, application
-bundle, or proxy subscription credentials.
-
-- 第三方组件（如 mihomo 内核）**不随本仓库分发**，由 `10-代理节点管理/install-core.mjs`
-  在运行时从官方发布页下载，其许可（GPL-3.0）由其自身条款约束。
-- 机场/代理订阅链接由使用者自行提供，本仓库只提供填写模板。

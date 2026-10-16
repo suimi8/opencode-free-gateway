@@ -106,9 +106,10 @@ node scripts/package.mjs     # 产出 dist/*.tar.gz + *.zip + SHA256SUMS.txt
 
 | 文件 | 用途 |
 |------|------|
-| [`LICENSE`](LICENSE) | MIT（含第三方组件与合规附加声明） |
+| [`LICENSE`](LICENSE) | MIT |
 | [`package.json`](package.json) | 项目元信息、`engines`、npm scripts |
-| [`.gitignore`](.gitignore) | 排除凭据、运行时状态、内核二进制 |
+| [NOTICE.md](NOTICE.md) | 附加声明：项目性质、第三方组件（mihomo GPL-3.0）、安全与合规提示 |
+| [.gitignore](.gitignore) | 排除凭据、运行时状态、内核二进制 |
 | [`README.md`](README.md) | 本文件（总索引 + 结论 + 路径迁移对照） |
 | [`一键自检.cmd`](一键自检.cmd) | **双击即可**跑完下面 6 项全量可用性自检（Windows） |
 | [`自检全部.ps1`](自检全部.ps1) | 自检主脚本：结构 / JS 语法 / PS1 语法 / 失效路径 / 面板端到端 / 客户端直连 |
