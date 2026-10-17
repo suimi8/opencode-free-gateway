@@ -182,27 +182,46 @@ jobs:
           done
           [ "$(docker inspect -f '{{.State.Health.Status}}' ocgw-ci)" = healthy ]
 
-      - name: 容器内功能验证
-        run: |
-          set -e
-          curl -fsS http://127.0.0.1:8790/ -o /dev/null && echo "GET / ✅"
-          curl -fsS -X POST http://127.0.0.1:8790/api/login \
-            -H 'content-type: application/json' -d '{"password":"ci-pass"}' -c /tmp/ck | grep -q '"ok":true'
-          echo "登录（PANEL_PASSWORD 生效）✅"
-          curl -fsS http://127.0.0.1:8790/api/channels -b /tmp/ck | grep -q 'OpenCode' && echo "默认渠道已种子 ✅"
+        - name: 容器内功能验证
+          # 全新容器必须是空的（不内置渠道与模型），
+          # 再由「用户自己配一个渠道」验证整条链路。
+          # JSON 一律交给 node 解析，避免 grep 在 pipefail 下的坑。
+          run: |
+            set -e
+            curl -fsS http://127.0.0.1:8790/ -o /dev/null && echo "GET / OK"
+            curl -fsS -X POST http://127.0.0.1:8790/api/login \
+              -H 'content-type: application/json' -d '{"password":"ci-pass"}' -c /tmp/ck | grep -q '"ok":true'
+            echo "登录（PANEL_PASSWORD 生效）OK"
 
-          TOKEN=$(curl -fsS -X POST http://127.0.0.1:8790/api/tokens -b /tmp/ck \
-            -H 'content-type: application/json' -d '{"name":"ci","unlimited":true}' \
-            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).key))")
-          echo "令牌: ${TOKEN:0:10}…"
+            CH=$(curl -fsS http://127.0.0.1:8790/api/channels -b /tmp/ck)
+            CN=$(echo "$CH" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).rows.length))")
+            echo "渠道数 -> $CN"
+            if [ "$CN" != "0" ]; then echo "FAIL: 全新容器竟然有 $CN 个内置渠道"; exit 1; fi
+            echo "全新容器无内置渠道 OK"
 
-          N=$(curl -fsS http://127.0.0.1:8790/v1/models -H "Authorization: Bearer $TOKEN" \
-            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).data.length))")
-          echo "GET /v1/models -> $N 个模型"
-          [ "$N" -ge 1 ]
+            TOKEN=$(curl -fsS -X POST http://127.0.0.1:8790/api/tokens -b /tmp/ck \
+              -H 'content-type: application/json' -d '{"name":"ci","unlimited":true}' \
+              | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).key))")
+            echo "令牌已创建"
 
-          curl -fsS http://127.0.0.1:8790/api/protocols -b /tmp/ck -o /dev/null && echo "GET /api/protocols ✅"
-          curl -fsS http://127.0.0.1:8790/api/proxy-pool -b /tmp/ck | grep -q '"enabled":false' && echo "节点池默认关闭 ✅"
+            N0=$(curl -fsS http://127.0.0.1:8790/v1/models -H "Authorization: Bearer $TOKEN" \
+              | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).data.length))")
+            echo "未配渠道 /v1/models -> $N0 个"
+            if [ "$N0" != "0" ]; then echo "FAIL: 没配渠道却返回了 $N0 个模型"; exit 1; fi
+            echo "未配渠道时不返回任何模型 OK"
+
+            curl -fsS -X POST http://127.0.0.1:8790/api/channels -b /tmp/ck \
+              -H 'content-type: application/json' \
+              -d '{"name":"ci-chan","type":"openai","base_url":"https://example.com/v1/chat/completions","api_key":"x","models":["ci-a","ci-b"],"priority":1,"status":1}' \
+              -o /dev/null
+            N=$(curl -fsS http://127.0.0.1:8790/v1/models -H "Authorization: Bearer $TOKEN" \
+              | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).data.length))")
+            echo "自建渠道后 /v1/models -> $N 个模型"
+            if [ "$N" != "2" ]; then echo "FAIL: 期望 2 个（用户填的），实际 $N"; exit 1; fi
+            echo "用户自配渠道生效 OK"
+
+            curl -fsS http://127.0.0.1:8790/api/protocols -b /tmp/ck -o /dev/null && echo "GET /api/protocols OK"
+            curl -fsS http://127.0.0.1:8790/api/proxy-pool -b /tmp/ck | grep -q '"enabled":false' && echo "节点池默认关闭 OK"
 
       - name: 数据持久化验证（重启容器）
         run: |
