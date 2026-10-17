@@ -13,6 +13,7 @@ import * as DB from './db.mjs';
 import * as UP from './upstream.mjs';
 import * as BR from './bridge.mjs';
 import * as POOL from './proxy-pool.mjs';
+import * as CFG from './config-io.mjs';
 import * as REG from './model-registry.mjs';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -1172,6 +1173,64 @@ async function handle(req, res) {
         return { url: x, ok: s.ok, fail: s.fail, down: s.downUntil > Date.now(), downUntil: s.downUntil, lastError: s.lastError, inflight: s.inflight };
       });
       return json(res, 200, { default_proxy: spec, rows });
+    }
+
+    /* ══════════ 配置导出 / 导入 / Clash 迁移 ══════════
+     * 导出内容含渠道 API Key 与订阅 token，界面上有明确警告。
+     * 默认**不导出**令牌与任何密码哈希。
+     */
+    if (p === '/api/config/export' && req.method === 'GET') {
+      const includeTokens = u.searchParams.get('tokens') === '1';
+      const withPool = u.searchParams.get('pool') !== '0';
+      try {
+        const bundle = CFG.buildBundle({
+          subs: withPool ? POOL.M.loadSubs() : null,
+          includeTokens,
+        });
+        // download=1 时直接作为文件下载
+        if (u.searchParams.get('download') === '1') {
+          const body = Buffer.from(JSON.stringify(bundle, null, 2), 'utf8');
+          const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+          res.writeHead(200, {
+            'content-type': 'application/json; charset=utf-8',
+            'content-length': body.length,
+            'content-disposition': `attachment; filename="opencode-free-gateway-config-${stamp}.json"`,
+            'cache-control': 'no-store',
+          });
+          return res.end(body);
+        }
+        return json(res, 200, bundle);
+      } catch (e) { return err(res, 500, `导出失败: ${String(e.message).slice(0, 200)}`); }
+    }
+
+    if (p === '/api/config/import' && req.method === 'POST') {
+      try {
+        const b = await readJson(req);
+        const bundle = b && b.bundle ? b.bundle : b;
+        const mode = b && b.mode === 'replace' ? 'replace' : 'merge';
+        const r = CFG.applyBundle(bundle, {
+          mode,
+          saveSubs: (o) => POOL.M.saveSubs(o),
+          currentSubs: POOL.M.loadSubs(),
+        });
+        if (r.providers || r.manualProxies) { try { POOL.M.renderConfig(); } catch { /* 忽略 */ } }
+        return json(res, 200, { ok: true, ...r });
+      } catch (e) { return err(res, 400, String(e.message).slice(0, 300)); }
+    }
+
+    /* Clash / Clash Meta 的 config.yaml：proxy-providers → 订阅，proxies → 手加节点 */
+    if (p === '/api/config/import-clash' && req.method === 'POST') {
+      try {
+        const b = await readJson(req);
+        const text = String((b && b.yaml) || '');
+        const mode = b && b.mode === 'replace' ? 'replace' : 'merge';
+        const dryRun = !!(b && b.dryRun);
+        const parsed = CFG.parseClashConfig(text);
+        if (dryRun) return json(res, 200, { ok: true, dryRun: true, ...parsed.stats, preview: { providers: parsed.providers.slice(0, 20).map((p) => p.name), proxies: parsed.proxies.slice(0, 20).map((p) => p.name) } });
+        const r = CFG.mergeClashIntoSubs(parsed, POOL.M.loadSubs(), (o) => POOL.M.saveSubs(o), { mode });
+        try { POOL.M.renderConfig(); } catch { /* 忽略 */ }
+        return json(res, 200, { ok: true, ...parsed.stats, ...r });
+      } catch (e) { return err(res, 400, String(e.message).slice(0, 300)); }
     }
 
     if (p === '/api/settings') {

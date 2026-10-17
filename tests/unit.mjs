@@ -202,5 +202,69 @@ eq('installCore 缺 runtime 应报错', (await CORE.installCore({})).ok, false);
 eq('installCore 报错时 JOB 记下原因', typeof CORE.JOB.error === 'string' && CORE.JOB.error.length > 0, true);
 try { fsx.rmSync(EMPTYRT, { recursive: true, force: true }); } catch { /* 忽略 */ }
 
+
+/* ══════════════════════════════════════════════ 11) 配置导出/导入 + Clash 解析 */
+console.log('\n── 11) 配置迁移 ──');
+process.env.PANEL_DB = path.join(fsx.mkdtempSync(path.join(os.tmpdir(), 'ocgw-cfgtest-')), 'panel.db');
+const CFG = await import(pathToFileURL(path.join(ROOT, '01-管理面板', 'config-io.mjs')).href);
+const DBm = await import(pathToFileURL(path.join(ROOT, '01-管理面板', 'db.mjs')).href);
+DBm.ensureDefaults();
+
+eq('bundle kind 正确', CFG.buildBundle().kind, 'opencode-free-gateway/config');
+eq('空库导出渠道为空', CFG.buildBundle().channels.length, 0);
+eq('默认不导出令牌', CFG.buildBundle().tokens, undefined);
+eq('导出内容不含密码哈希', JSON.stringify(CFG.buildBundle()).includes('admin_password'), false);
+
+eq('拒绝非本项目 bundle', (() => { try { CFG.applyBundle({ kind: 'x' }); return false; } catch { return true; } })(), true);
+eq('拒绝更高版本', (() => { try { CFG.applyBundle({ kind: CFG.BUNDLE_KIND, version: 999 }); return false; } catch { return true; } })(), true);
+
+const rt = CFG.applyBundle({
+  kind: CFG.BUNDLE_KIND, version: 1,
+  site: { site_name: '导入的站点' },
+  channels: [{ name: 'c1', type: 'openai', base_url: 'https://x/v1/chat/completions', api_key: 'k', models: ['m1'] }],
+});
+eq('导入创建 1 个渠道', rt.channels, 1);
+eq('渠道已落库', DBm.listChannels().length, 1);
+eq('站点名已写', DBm.getSetting('site_name'), '导入的站点');
+const rt2 = CFG.applyBundle({ kind: CFG.BUNDLE_KIND, version: 1, channels: [{ name: 'c1', models: ['m1', 'm2'] }] });
+eq('按名合并不新建', DBm.listChannels().length, 1);
+// listChannels() 返回的是原始行，models 是 JSON 字符串（server 层的 publicChannel 才解析）
+eq('合并更新了模型', JSON.parse(DBm.listChannels()[0].models).length, 2);
+
+const CLASH = `proxy-providers:
+  pa:
+    type: http
+    url: "https://a.example/sub?token=T"
+proxies:
+  - { name: "流", type: ss, server: 1.1.1.1, port: 8388, cipher: aes-128-gcm, password: "p" }
+  - name: 块
+    type: vmess
+    server: 2.2.2.2
+    port: 443
+    uuid: u-1
+  - name: 废
+    type: ss
+rules:
+  - MATCH,G
+`;
+const P = CFG.parseClashConfig(CLASH);
+eq('Clash: 1 个 provider', P.providers.length, 1);
+eq('Clash: provider 名', P.providers[0].name, 'pa');
+eq('Clash: provider url', P.providers[0].url, 'https://a.example/sub?token=T');
+eq('Clash: 2 个有效节点（废节点被跳过）', P.proxies.length, 2);
+eq('Clash: 流式节点 server', P.proxies.find((x) => x.name === '流').server, '1.1.1.1');
+eq('Clash: 流式节点 port 为数字', P.proxies.find((x) => x.name === '流').port, 8388);
+eq('Clash: 块式节点 server', P.proxies.find((x) => x.name === '块').server, '2.2.2.2');
+eq('Clash: 块式节点 uuid', P.proxies.find((x) => x.name === '块').uuid, 'u-1');
+eq('Clash: 跳过统计', P.stats.skippedProxies, 1);
+eq('Clash: 拒绝空内容', (() => { try { CFG.parseClashConfig(''); return false; } catch { return true; } })(), true);
+eq('Clash: 拒绝非 Clash', (() => { try { CFG.parseClashConfig('hello'); return false; } catch { return true; } })(), true);
+
+let saved = null;
+const mr = CFG.mergeClashIntoSubs(P, { providers: [], manualProxies: [], excludedNodes: [], _参数: {} }, (o) => { saved = o; });
+eq('Clash 合并：订阅 +1', mr.addedProviders, 1);
+eq('Clash 合并：节点 +2', mr.addedProxies, 2);
+eq('Clash 合并：写回了 saveSubs', saved && saved.manualProxies.length, 2);
+
 console.log(`\n单元测试: ${pass} 通过, ${fail} 失败`);
 process.exit(fail ? 1 : 0);

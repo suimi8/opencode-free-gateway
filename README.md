@@ -271,6 +271,45 @@ node 10-代理节点管理/manage.mjs apply      # 重渲染配置并重载
 
 </details>
 
+### 配置备份与迁移
+
+面板 → **「系统设置」** → 「配置备份 / 恢复」。
+
+| 功能 | 说明 |
+|---|---|
+| **⬇ 导出配置** | 下载一份 JSON：渠道（含 API Key）、代理订阅（含链接里的 token）、手动节点、剔除清单、下载镜像、站点设置 |
+| **⬇ 导出（含令牌明文）** | 额外带上 `sk-oc-…`，换机器后不用重新发令牌 |
+| **恢复** | 选 JSON 文件导入；默认按**名字合并**，勾「整份替换」才会先清空 |
+| **导入 Clash 配置** | 直接粘 `config.yaml`：`proxy-providers` → 订阅，`proxies` → 手动节点。支持「先预览」 |
+
+**不会导出**：管理密码哈希、session 密钥、请求日志。
+
+> 导出的文件含凭据，别往公开仓库放。仓库的 `.gitignore` 也拦不住你手动放进去的文件。
+
+<details>
+<summary>Clash 迁移能搬什么 / 不搬什么</summary>
+
+会搬：
+
+```yaml
+proxy-providers:        # → 变成面板里的「订阅源」
+  airport-a:
+    url: https://…      #   只取 name + url，其余（interval/health-check 等）由本项目管理
+
+proxies:                # → 变成面板里的「手动节点」
+  - { name: 节点1, type: ss, server: 1.2.3.4, port: 8388, cipher: aes-128-gcm, password: x }
+  - name: 节点2          #   流式 { … } 与块式两种写法都认
+    type: vmess
+    server: 5.6.7.8
+    port: 443
+    uuid: …
+```
+
+**不会搬**：`rules`、`proxy-groups`、`dns`、`tun` 等 —— 本项目只做「模型请求的出口」，
+不接管你的系统代理。字段不全的节点（缺 `type`/`server`/`port`）会被跳过并计数。
+
+</details>
+
 ### 打包
 
 ```bash

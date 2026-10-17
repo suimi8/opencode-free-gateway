@@ -520,6 +520,32 @@ async function viewSettings() {
     <div style="margin-top:14px"><button class="primary" onclick="saveSettings()">保存</button></div>
   </div></div>
 
+  <div class="panel"><h3>配置备份 / 恢复</h3><div class="body">
+    <div class="sub">导出包含渠道（含 API Key）、代理订阅（含链接里的 token）、站点设置。<b>不含</b>管理密码与 session 密钥。</div>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" onclick="exportCfg(false)">⬇ 导出配置</button>
+      <button onclick="exportCfg(true)">⬇ 导出（含令牌明文）</button>
+    </div>
+
+    <h4 style="margin-top:20px">从备份恢复</h4>
+    <label>选择 .json 备份文件</label>
+    <input id="cfgFile" type="file" accept=".json,application/json">
+    <label style="display:flex;align-items:center;gap:8px;margin-top:10px">
+      <input type="checkbox" id="cfgReplace" style="width:auto;margin:0"> 整份替换（会先清空现有渠道与订阅）
+    </label>
+    <div style="margin-top:12px"><button class="primary" onclick="importCfg()">恢复</button></div>
+
+    <h4 style="margin-top:22px">导入 Clash 配置（config.yaml）</h4>
+    <div class="sub">把 <code class="mono">proxy-providers</code> 变成订阅、<code class="mono">proxies</code> 变成手动节点。
+      只读这两段，不动你的规则和其它设置。</div>
+    <textarea id="clashText" rows="8" class="mono" placeholder="把 Clash / Clash Meta 的 config.yaml 内容粘到这里…"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button onclick="importClash(true)">先预览</button>
+      <button class="primary" onclick="importClash(false)">导入</button>
+    </div>
+    <div id="clashResult" class="sub" style="margin-top:8px"></div>
+  </div></div>
+
   <div class="panel"><h3>代理节点健康</h3><div class="tbl-wrap"><table>
     <thead><tr><th>节点</th><th>成功</th><th>失败</th><th>在途</th><th>状态</th><th>最近错误</th></tr></thead>
     <tbody>${px.rows.length ? px.rows.map((r) => `<tr>
@@ -960,6 +986,62 @@ async function useExistingCore() {
     toast('已启用：' + (r.version || 'ok'), 'ok');
     viewProxy();
   } catch (e) { toast(e.message, 'bad'); }
+}
+
+
+/* ══════════════════════════════════════════════ 配置备份 / 恢复 / Clash 迁移 */
+function exportCfg(withTokens) {
+  const q = '/api/config/export?download=1&pool=1&tokens=' + (withTokens ? '1' : '0');
+  if (withTokens && !confirm('导出内容会包含**令牌明文**（sk-oc-…），拿到文件的人可以直接用你的额度。\n\n确定要导出吗？')) return;
+  toast(withTokens ? '正在导出（含令牌）…' : '正在导出…');
+  // 用 a[download] 走浏览器下载，避免整页跳转
+  const a = document.createElement('a');
+  a.href = q;
+  a.download = '';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+async function importCfg() {
+  const f = $('#cfgFile');
+  if (!f || !f.files || !f.files[0]) return toast('先选一个 .json 备份文件', 'bad');
+  const replace = $('#cfgReplace').checked;
+  if (replace && !confirm('整份替换会**先清空现有渠道与订阅**再导入。\n\n确定继续？')) return;
+  let bundle = null;
+  try { bundle = JSON.parse(await f.files[0].text()); }
+  catch { return toast('文件不是合法 JSON', 'bad'); }
+  if (bundle && bundle.kind && bundle.kind !== 'opencode-free-gateway/config') return toast('不是本项目的配置文件', 'bad');
+  try {
+    toast('正在恢复…');
+    const r = await api('/api/config/import', { method: 'POST', body: { bundle, mode: replace ? 'replace' : 'merge' } });
+    toast(`恢复完成：渠道 ${r.channels} · 令牌 ${r.tokens} · 订阅 ${r.providers} · 手加节点 ${r.manualProxies}${r.tokensSkipped ? ' · 跳过重复令牌 ' + r.tokensSkipped : ''}`, 'ok');
+    viewSettings();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
+async function importClash(dryRun) {
+  const ta = $('#clashText');
+  const box = $('#clashResult');
+  const text = ta ? ta.value : '';
+  if (!text.trim()) return toast('先粘贴 Clash 配置内容', 'bad');
+  if (!dryRun && !confirm('会把这些条目写进「代理订阅」页，然后重渲染内核配置。\n\n继续？')) return;
+  if (box) box.textContent = dryRun ? '正在解析…' : '正在导入…';
+  try {
+    const r = await api('/api/config/import-clash', { method: 'POST', body: { yaml: text, dryRun, mode: 'merge' } });
+    if (dryRun) {
+      if (box) box.innerHTML = `<span class="b ok">解析成功</span> 订阅 ${r.providers} 个 · 节点 ${r.proxies} 个${r.skippedProxies ? '（跳过 ' + r.skippedProxies + ' 个字段不全的）' : ''}
+        ${r.preview && r.preview.providers.length ? '<div class="mono" style="margin-top:6px;font-size:11px">订阅：' + r.preview.providers.map((x) => esc(x)).join(', ') + '</div>' : ''}
+        ${r.preview && r.preview.proxies.length ? '<div class="mono" style="margin-top:4px;font-size:11px">节点：' + r.preview.proxies.map((x) => esc(x)).join(', ') + (r.proxies > 20 ? ' …' : '') + '</div>' : ''}`;
+      toast('解析完成，确认无误后点「导入」', 'ok');
+    } else {
+      toast(`已导入：订阅 +${r.addedProviders} · 节点 +${r.addedProxies}（现共 订阅 ${r.totalProviders} / 节点 ${r.totalManual}）`, 'ok');
+      if (box) box.innerHTML = '<span class="b ok">已导入</span> 到「代理订阅」页后点「应用改动」让内核重载';
+    }
+  } catch (e) {
+    if (box) box.innerHTML = `<span class="b bad">${esc(e.message)}</span>`;
+    toast(e.message, 'bad');
+  }
 }
 
 

@@ -132,6 +132,8 @@ await check('内核安装：缺 runtime 不会崩（接口健在）', async () =
   if (r.status < 400) throw new Error('空路径竟然通过了');
   return '已拒绝空路径';
 });
+
+
 cleanup();
   process.exit(1);
 }
@@ -329,6 +331,47 @@ await check('内核安装：缺 runtime 不会崩（接口健在）', async () =
   if (r.status < 400) throw new Error('空路径竟然通过了');
   return '已拒绝空路径';
 });
+await check('配置导出：默认不含令牌与密码', async () => {
+  const r = await J('/api/config/export');
+  if (r.status !== 200) throw new Error('HTTP ' + r.status);
+  if (r.json.kind !== 'opencode-free-gateway/config') throw new Error('kind 不对: ' + r.json.kind);
+  if (r.json.tokens) throw new Error('默认不应导出令牌');
+  if (JSON.stringify(r.json).includes('admin_password')) throw new Error('不应含密码哈希');
+  return 'channels=' + (r.json.channels || []).length;
+});
+
+await check('配置导出：download=1 带 attachment 头', async () => {
+  const r = await fetch(BASE + '/api/config/export?download=1&tokens=0', { headers: { cookie } });
+  const cd = r.headers.get('content-disposition') || '';
+  if (!cd.includes('attachment')) throw new Error('缺 content-disposition: ' + cd);
+  return cd.slice(0, 50);
+});
+
+await check('配置导入：拒绝非本项目格式', async () => {
+  const r = await J('/api/config/import', { method: 'POST', body: { bundle: { kind: 'nope' } } });
+  if (r.status < 400) throw new Error('竟然通过了');
+  return 'HTTP ' + r.status;
+});
+
+await check('Clash 导入：预览不写库', async () => {
+  const yaml = 'proxy-providers:\n  p1:\n    type: http\n    url: "https://a.example/sub"\nproxies:\n  - { name: n1, type: ss, server: 1.1.1.1, port: 8388 }\n';
+  const before = (await J('/api/proxy-pool/providers')).json.rows.length;
+  const r = await J('/api/config/import-clash', { method: 'POST', body: { yaml, dryRun: true } });
+  if (!r.json.ok) throw new Error('解析失败');
+  const after = (await J('/api/proxy-pool/providers')).json.rows.length;
+  if (after !== before) throw new Error('预览竟然写入了库');
+  return 'providers=' + r.json.providers + ' proxies=' + r.json.proxies;
+});
+
+await check('Clash 导入：真写入并渲染配置', async () => {
+  const yaml = 'proxies:\n  - { name: smoke-clash-node, type: ss, server: 3.3.3.3, port: 443, cipher: aes-128-gcm, password: x }\n';
+  const r = await J('/api/config/import-clash', { method: 'POST', body: { yaml, mode: 'merge' } });
+  if (!r.json.ok) throw new Error('导入失败: ' + JSON.stringify(r.json).slice(0, 120));
+  const nodes = await J('/api/proxy-pool/nodes?all=1');
+  if (!nodes.json.rows.some((x) => x.name === 'smoke-clash-node')) throw new Error('节点没进库');
+  return 'added=' + r.json.addedProxies;
+});
+
 cleanup();
 await new Promise((r) => setTimeout(r, 400));
 
