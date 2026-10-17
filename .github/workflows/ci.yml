@@ -74,50 +74,67 @@ jobs:
           if ($bad) { exit 1 } else { Write-Host "PowerShell 脚本语法全部通过" }
 
       # 全新数据库必须是**空的**：不内置渠道、模型、订阅、镜像。
-      # 这些值一旦由程序塞进去，用户就分不清哪些是自己配的。
+      # 这些值一旦由程序塞进去，用户就分不清哪些是自己配的、哪些是程序配的。
+      #
+      # ⚠️ 写法注意：GitHub Actions 用 `bash -e -o pipefail` 执行，
+      #    `grep -o ... | wc -l` 在**没匹配到**时 grep 返回 1，
+      #    pipefail 会让整条管道失败，再被 -e 直接中止脚本（实测踩过）。
+      #    所以所有「统计类」管道后面都跟 `|| true`，只取输出不取状态。
       - name: 全新安装不内置任何东西
         if: runner.os == 'Linux'
         shell: bash
         run: |
           set -e
           WORK="$(mktemp -d)"
+          export WORK
           PANEL_DB="$WORK/panel.db" PANEL_PORT=18901 PANEL_NODE_POOL=0 \
             MIHOMO_RUNTIME="$WORK/mihomo" \
             node 01-管理面板/server.mjs & SRV=$!
           trap 'kill $SRV 2>/dev/null || true' EXIT
           for i in $(seq 1 80); do sleep 0.25; curl -fsS --max-time 2 http://127.0.0.1:18901/ -o /dev/null && break; done
 
+          CK="$WORK/ck.txt"
           curl -fsS -X POST http://127.0.0.1:18901/api/login -H 'content-type: application/json' \
-            -d '{"password":"admin123"}' -c "$WORK/ck.txt" | grep -q '"ok":true'
+            -d '{"password":"admin123"}' -c "$CK" | grep -q '"ok":true'
+          echo "✅ 登录成功"
 
-          # 1) 渠道必须是 0 个（不再种默认渠道）
-          N=$(curl -fsS http://127.0.0.1:18901/api/channels -b "$WORK/ck.txt" | grep -o '"id":[0-9]*' | wc -l)
+          # 1) 渠道必须 0 个（不再种默认渠道）
+          N=$(curl -fsS http://127.0.0.1:18901/api/channels -b "$CK" | grep -o '"id":[0-9]*' | wc -l || true)
+          N=$(echo "$N" | tr -d '[:space:]')
           if [ "$N" != "0" ]; then echo "❌ 全新安装竟然有 $N 个内置渠道"; exit 1; fi
           echo "✅ 全新安装渠道数 = 0"
 
-          # 2) /v1/models 必须为空（没配渠道就不该有模型）
-          KEY=$(curl -fsS -X POST http://127.0.0.1:18901/api/tokens -H 'content-type: application/json' \
-            -b "$WORK/ck.txt" -d '{"name":"ci","unlimited":true}' | sed -n 's/.*"key":"\([^"]*\)".*/\1/p')
-          M=$(curl -fsS http://127.0.0.1:18901/v1/models -H "Authorization: Bearer $KEY" | grep -o '"id"' | wc -l)
+          # 2) 拿个令牌（后续查 /v1/models 用）
+          TK=$(curl -fsS -X POST http://127.0.0.1:18901/api/tokens -b "$CK" \
+            -H 'content-type: application/json' -d '{"name":"ci","unlimited":true}' || true)
+          KEY=$(echo "$TK" | sed -n 's/.*"key" *: *"\([^"]*\)".*/\1/p')
+          if [ -z "$KEY" ]; then echo "❌ 没拿到令牌，响应: $TK"; exit 1; fi
+          echo "✅ 已创建令牌"
+
+          # 3) 没配渠道 → /v1/models 必须为空
+          M=$(curl -fsS http://127.0.0.1:18901/v1/models -H "Authorization: Bearer $KEY" | grep -o '"id"' | wc -l || true)
+          M=$(echo "$M" | tr -d '[:space:]')
           if [ "$M" != "0" ]; then echo "❌ 没配渠道却返回了 $M 个模型"; exit 1; fi
           echo "✅ 全新安装模型数 = 0"
 
-          # 3) 代理订阅与节点也必须为空
-          P=$(curl -fsS http://127.0.0.1:18901/api/proxy-pool/providers -b "$WORK/ck.txt" | grep -o '"name"' | wc -l)
+          # 4) 代理订阅也必须为空
+          P=$(curl -fsS http://127.0.0.1:18901/api/proxy-pool/providers -b "$CK" | grep -o '"name"' | wc -l || true)
+          P=$(echo "$P" | tr -d '[:space:]')
           if [ "$P" != "0" ]; then echo "❌ 竟然内置了 $P 个订阅"; exit 1; fi
           echo "✅ 全新安装订阅数 = 0"
 
-          # 4) 内核未安装 + 无内置镜像
-          curl -fsS http://127.0.0.1:18901/api/proxy-pool/core -b "$WORK/ck.txt" | grep -q '"installed":false' \
-            || { echo "❌ 临时目录里竟然有内核"; exit 1; }
+          # 5) 内核未安装（临时 runtime 是空目录）
+          CORE=$(curl -fsS http://127.0.0.1:18901/api/proxy-pool/core -b "$CK" || true)
+          echo "$CORE" | grep -q '"installed":false' || { echo "❌ 临时目录里竟然有内核: $CORE"; exit 1; }
           echo "✅ 全新安装未装内核"
 
-          # 5) 用户自己建渠道后，模型列表立刻反映（且正好等于填的那几个）
-          curl -fsS -X POST http://127.0.0.1:18901/api/channels -b "$WORK/ck.txt" \
+          # 6) 用户自己建渠道后，/v1/models 正好等于他填的两个
+          CH=$(curl -fsS -X POST http://127.0.0.1:18901/api/channels -b "$CK" \
             -H 'content-type: application/json' \
-            -d '{"name":"ci-chan","type":"openai","base_url":"https://example.com/v1/chat/completions","api_key":"x","models":["ci-model-1","ci-model-2"],"priority":1,"status":1}' \
-            | grep -q 'ci-model-1' || { echo "❌ 自建渠道失败"; exit 1; }
-          M2=$(curl -fsS http://127.0.0.1:18901/v1/models -H "Authorization: Bearer $KEY" | grep -o '"id"' | wc -l)
+            -d '{"name":"ci-chan","type":"openai","base_url":"https://example.com/v1/chat/completions","api_key":"x","models":["ci-model-1","ci-model-2"],"priority":1,"status":1}' || true)
+          echo "$CH" | grep -q 'ci-model-1' || { echo "❌ 自建渠道失败: $CH"; exit 1; }
+          M2=$(curl -fsS http://127.0.0.1:18901/v1/models -H "Authorization: Bearer $KEY" | grep -o '"id"' | wc -l || true)
+          M2=$(echo "$M2" | tr -d '[:space:]')
           if [ "$M2" != "2" ]; then echo "❌ /v1/models 期望 2 个，实际 $M2"; exit 1; fi
           echo "✅ 自建渠道后 /v1/models = $M2 个（正好是用户填的）"
 
