@@ -26,11 +26,22 @@ const ROOT = import.meta.dirname;
 // 桌面版（Electron）把内核与数据放到用户数据目录，用 MIHOMO_RUNTIME 覆盖。
 export const RUNTIME = process.env.MIHOMO_RUNTIME || path.join(ROOT, 'runtime');
 const CONFIG_PATH = path.join(RUNTIME, 'config.yaml');
-const SUBS_PATH = path.join(ROOT, 'subscriptions.json');
 const TEMPLATE_PATH = path.join(ROOT, 'config.template.yaml');
 const SECRET_PATH = path.join(RUNTIME, '.secret');
 const PID_PATH = path.join(RUNTIME, 'mihomo.pid');
 const LOG_PATH = path.join(RUNTIME, 'mihomo.log');
+
+/**
+ * 订阅配置文件的位置。
+ *
+ * ⚠️ 必须落在**可写**的运行时目录，不能放程序目录：
+ *   桌面版装在 Program Files / Applications 里是只读的，Docker 镜像也是；
+ *   面板要能从这里增删改订阅。
+ * 兼容老版本：模块目录下的 subscriptions.json 会被**自动迁移**过来。
+ */
+export const SUBS_PATH = process.env.MIHOMO_SUBS || path.join(RUNTIME, 'subscriptions.json');
+const LEGACY_SUBS_PATH = path.join(ROOT, 'subscriptions.json');
+const SUBS_EXAMPLE = path.join(ROOT, 'subscriptions.example.json');
 
 /**
  * 内核位置（**不写死绝对路径**）：
@@ -58,18 +69,154 @@ export function findBinary() {
   for (const c of binaryCandidates()) if (c && fs.existsSync(c)) return c;
   return null;
 }
+/* ══════════════════════════════════════════════════ 订阅存储（可增删改查）
+ *
+ * subscriptions.json 结构：
+ * {
+ *   providers:      [ { name, url, enabled } ]      // 机场订阅
+ *   manualProxies:  [ { name, type, server, port, ... } ]  // 手加的单节点
+ *   excludedNodes:  [ "节点名" ]                    // 从池子里剔除的节点
+ *   _参数:          { mixedPort, controllerPort, groupName, logLevel, interfaceName }
+ * }
+ */
+const PROVIDER_NAME_RE = /^[A-Za-z0-9_-]{1,40}$/;
+
+/** 补齐缺省字段，防止老文件/手改文件把调用方搞崩 */
+function normalizeSubs(j) {
+  const o = (j && typeof j === 'object') ? j : {};
+  return {
+    ...o,
+    providers: Array.isArray(o.providers) ? o.providers.filter((p) => p && p.name && p.url) : [],
+    manualProxies: Array.isArray(o.manualProxies) ? o.manualProxies.filter((p) => p && p.name) : [],
+    excludedNodes: Array.isArray(o.excludedNodes) ? o.excludedNodes.filter((x) => typeof x === 'string') : [],
+    _参数: (o._参数 && typeof o._参数 === 'object') ? o._参数 : {},
+  };
+}
+
 /**
  * 读订阅配置。
- * subscriptions.json 不存在时**不抛异常** —— 退回 subscriptions.example.json，
- * 再不行返回空壳。否则「刚 clone 还没填订阅」会让 /api/proxy-pool 直接 500。
+ * 顺序：MIHOMO_SUBS / runtime 目录 → 老位置的 subscriptions.json（并**自动迁移**）→ 示例文件 → 空壳。
+ * 任何一步失败都不抛异常，否则「刚 clone / 刚装好还没填订阅」会让 /api/proxy-pool 直接 500。
  */
 export function loadSubs() {
-  for (const p of [SUBS_PATH, path.join(ROOT, 'subscriptions.example.json')]) {
-    try {
-      if (fs.existsSync(p)) return { providers: [], ...JSON.parse(fs.readFileSync(p, 'utf8')) };
-    } catch { /* 坏文件继续往下试 */ }
+  fs.mkdirSync(RUNTIME, { recursive: true });
+  // 老版本把文件放在程序目录（只读），迁移到运行时目录
+  try {
+    if (!fs.existsSync(SUBS_PATH) && fs.existsSync(LEGACY_SUBS_PATH)) {
+      fs.copyFileSync(LEGACY_SUBS_PATH, SUBS_PATH);
+    }
+  } catch { /* 迁移失败不影响读取 */ }
+
+  // ⚠️ 不再 fallback 到 subscriptions.example.json：
+  //    那里面是占位订阅，会让全新安装的界面上凭空多出一个假 provider。
+  //    _参数 的默认值已经硬编码在 params() 里，不需要示例文件兜底。
+  try {
+    if (fs.existsSync(SUBS_PATH)) return normalizeSubs(JSON.parse(fs.readFileSync(SUBS_PATH, 'utf8')));
+  } catch { /* 文件坏了按空处理，界面里能改 */ }
+  return normalizeSubs({});
+}
+
+/** 原子写：先写临时文件再 rename，避免写一半把配置弄坏 */
+export function saveSubs(obj) {
+  const data = normalizeSubs(obj);
+  fs.mkdirSync(path.dirname(SUBS_PATH), { recursive: true });
+  const tmp = `${SUBS_PATH}.tmp-${process.pid}`;
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2) + '\n', 'utf8');
+  fs.renameSync(tmp, SUBS_PATH);
+  return data;
+}
+
+/** 订阅列表（URL 打码，日志/界面上不暴露完整 token） */
+export function maskUrl(u) {
+  try {
+    const x = new URL(u);
+    for (const k of ['token', 'sub', 'key', 'code']) {
+      if (x.searchParams.get(k)) x.searchParams.set(k, '***');
+    }
+    return x.href;
+  } catch {
+    return String(u).replace(/([?&](token|sub|key|code)=)[^&]+/gi, '$1***');
   }
-  return { providers: [], _参数: {} };
+}
+export function listProviders() {
+  const j = loadSubs();
+  return j.providers.map((p) => ({ ...p, urlMasked: maskUrl(p.url) }));
+}
+
+export function upsertProvider({ name, url, enabled = true }) {
+  const n = String(name || '').trim();
+  if (!PROVIDER_NAME_RE.test(n)) throw new Error('订阅名只能用字母/数字/下划线/短横线，长度 1-40（例如 airport-a）');
+  const j = loadSubs();
+  const i = j.providers.findIndex((p) => p.name === n);
+  const existing = i >= 0 ? j.providers[i] : null;
+  const u = String(url || '').trim();
+  // 编辑时链接留空 = 保留原链接（前端只拿到打码版，不会回传完整 token）
+  if (u && !/^https?:\/\//i.test(u)) throw new Error('订阅链接必须是 http(s) 地址');
+  if (!u && !existing) throw new Error('订阅链接不能为空');
+  const rec = { name: n, url: u || existing.url, enabled: enabled === undefined ? true : !!enabled };
+  if (i >= 0) j.providers[i] = rec;
+  else j.providers.push(rec);
+  saveSubs(j);
+  return { ...rec, urlMasked: maskUrl(rec.url) };
+}
+export function deleteProvider(name) {
+  const j = loadSubs();
+  const before = j.providers.length;
+  j.providers = j.providers.filter((p) => p.name !== name);
+  // 顺手把该 provider 的缓存文件删掉
+  try { fs.rmSync(path.join(RUNTIME, 'providers', `${name}.yaml`), { force: true }); } catch { /* 忽略 */ }
+  saveSubs(j);
+  return { removed: before - j.providers.length };
+}
+export function setProviderEnabled(name, on) {
+  const j = loadSubs();
+  const p = j.providers.find((x) => x.name === name);
+  if (!p) throw new Error(`没有这个订阅：${name}`);
+  p.enabled = !!on;
+  saveSubs(j);
+  return p;
+}
+
+/* ── 手加节点（manualProxies）── */
+/** 校验一个 Clash proxy 定义的最小必要字段 */
+export function validateManualProxy(p) {
+  const name = String(p?.name || '').trim();
+  if (!name) throw new Error('节点名不能为空');
+  const type = String(p?.type || '').trim().toLowerCase();
+  if (!type) throw new Error('缺少 type（ss / vmess / trojan / vless / socks5 / http）');
+  const server = String(p?.server || '').trim();
+  if (!server) throw new Error('缺少 server（服务器地址）');
+  const port = Number(p?.port);
+  if (!Number.isInteger(port) || port <= 0 || port > 65535) throw new Error('port 必须是 1-65535 的整数');
+  return { ...p, name, type, server, port };
+}
+export function addManualProxy(p) {
+  const rec = validateManualProxy(p);
+  const j = loadSubs();
+  if (j.manualProxies.some((x) => x.name === rec.name)) throw new Error(`已存在同名节点：${rec.name}`);
+  j.manualProxies.push(rec);
+  saveSubs(j);
+  return rec;
+}
+export function removeManualProxy(name) {
+  const j = loadSubs();
+  const before = j.manualProxies.length;
+  j.manualProxies = j.manualProxies.filter((x) => x.name !== name);
+  saveSubs(j);
+  return { removed: before - j.manualProxies.length };
+}
+
+/* ── 节点剔除（excludedNodes）── */
+export function setNodeExcluded(name, on) {
+  const j = loadSubs();
+  const has = j.excludedNodes.includes(name);
+  if (on && !has) j.excludedNodes.push(name);
+  if (!on && has) j.excludedNodes = j.excludedNodes.filter((x) => x !== name);
+  saveSubs(j);
+  return { name, excluded: !!on, total: j.excludedNodes.length };
+}
+export function excludedSet() {
+  return new Set(loadSubs().excludedNodes);
 }
 export function readSecret() {
   if (fs.existsSync(SECRET_PATH)) return fs.readFileSync(SECRET_PATH, 'utf8').trim();
@@ -119,7 +266,23 @@ export function detectInterface() {
   return cands.length ? cands[0].name : null;
 }
 
-/** 用订阅 + 模板渲染 runtime/config.yaml */
+/** 把一个 Clash proxy 对象渲染成 YAML 流式映射行；跳过内部字段 */
+function proxyToYamlLine(p) {
+  const SKIP = new Set(['_note', '_comment']);
+  const parts = [];
+  for (const [k, v] of Object.entries(p)) {
+    if (SKIP.has(k) || v === undefined || v === null || v === '') continue;
+    const key = k;
+    let val;
+    if (typeof v === 'number' || typeof v === 'boolean') val = String(v);
+    else if (Array.isArray(v)) val = `[${v.map((x) => (typeof x === 'number' || typeof x === 'boolean' ? x : `'${String(x).replace(/'/g, "''")}'`)).join(', ')}]`;
+    else val = `'${String(v).replace(/'/g, "''")}'`;
+    parts.push(`${key}: ${val}`);
+  }
+  return `  - { ${parts.join(', ')} }`;
+}
+
+/** 用订阅 + 手加节点 + 模板渲染 runtime/config.yaml */
 export function renderConfig() {
   fs.mkdirSync(path.join(RUNTIME, 'providers'), { recursive: true });
   const j = loadSubs();
@@ -127,6 +290,7 @@ export function renderConfig() {
   const secret = readSecret();
   const enabled = (j.providers || []).filter((p) => p && p.enabled !== false && p.url);
   const iface = detectInterface();
+  const excluded = new Set(j.excludedNodes);
 
   const providers = enabled.map((p) => {
     const lines = [
@@ -147,6 +311,15 @@ export function renderConfig() {
   }).join('\n');
   const uses = enabled.map((p) => `      - ${p.name}`).join('\n');
 
+  /* 手加节点：写成 proxies: 段，并作为组的显式成员 */
+  const manual = (j.manualProxies || []).filter((m) => m && m.name && !excluded.has(m.name));
+  const manualBlock = manual.length
+    ? `\nproxies:\n${manual.map(proxyToYamlLine).join('\n')}\n`
+    : '';
+  const groupProxies = manual.length
+    ? `    proxies:\n${manual.map((m) => `      - '${String(m.name).replace(/'/g, "''")}'`).join('\n')}`
+    : '';
+
   let y = fs.readFileSync(TEMPLATE_PATH, 'utf8');
   y = y.replaceAll('{{MIXED_PORT}}', String(mixedPort))
        .replaceAll('{{CONTROLLER_PORT}}', String(controllerPort))
@@ -155,9 +328,17 @@ export function renderConfig() {
        .replaceAll('{{GROUP_NAME}}', groupName)
        .replaceAll('{{PROVIDERS}}', providers || '  {}')
        .replaceAll('{{GROUP_USES}}', uses)
+       .replaceAll('{{MANUAL_PROXIES}}', manualBlock)
+       .replaceAll('{{GROUP_PROXIES}}', groupProxies)
        .replaceAll('{{INTERFACE}}', iface || '');
   fs.writeFileSync(CONFIG_PATH, y, 'utf8');
-  return { configPath: CONFIG_PATH, providers: enabled.map((p) => p.name), mixedPort, controllerPort, groupName, interfaceName: iface };
+  return {
+    configPath: CONFIG_PATH,
+    providers: enabled.map((p) => p.name),
+    manualProxies: manual.map((m) => m.name),
+    excluded: [...excluded],
+    mixedPort, controllerPort, groupName, interfaceName: iface,
+  };
 }
 
 /* ══════════════════════════════════════════════════ 节点清单
@@ -237,21 +418,48 @@ function parseProviderFile(file, provider) {
   return out;
 }
 
-/** 全部 provider 节点（含有效性与剔除原因） */
+/**
+ * 全部节点（含有效性与剔除原因）。
+ * 来源两种：机场订阅（providers） + 面板里手动添加的（manualProxies）。
+ * 另外会应用 excludedNodes：被面板「剔除」的节点标记 valid=false 并给出原因。
+ */
 export function providerNodes() {
   const dir = path.join(RUNTIME, 'providers');
   const j = loadSubs();
+  const excluded = new Set(j.excludedNodes);
   const out = [];
+
   for (const p of (j.providers || [])) {
+    if (p.enabled === false) continue;
     const f = path.join(dir, `${p.name}.yaml`);
     if (!fs.existsSync(f)) continue;
     try { out.push(...parseProviderFile(f, p.name)); } catch { /* 坏文件跳过 */ }
+  }
+
+  // 手加节点
+  for (const m of (j.manualProxies || [])) {
+    const server = String(m.server || '');
+    const port = Number(m.port || 0);
+    const badSrv = BAD_SERVER(server);
+    const baseValid = !badSrv && port > 0 && port < 65536;
+    out.push({
+      provider: 'manual', name: m.name, type: String(m.type || '?').toLowerCase(),
+      server, port, manual: true,
+      valid: baseValid && !excluded.has(m.name),
+      reason: !baseValid ? (badSrv ? `server=${server || '空'}` : 'port 缺失') : (excluded.has(m.name) ? '已被面板剔除' : null),
+    });
+  }
+
+  // 应用剔除清单
+  for (const n of out) {
+    if (n.manual) continue;                    // 手加节点上面已处理
+    if (excluded.has(n.name)) { n.valid = false; n.reason = '已被面板剔除'; n.excluded = true; }
   }
   return out;
 }
 
 /** name -> { provider, type, server, port, valid }（带 5 秒缓存，避免每次探测都读文件） */
-const IDX_CACHE = { m: null, at: 0 };
+export const IDX_CACHE = { m: null, at: 0 };
 export function nodeIndex() {
   const now = Date.now();
   if (!IDX_CACHE.m || now - IDX_CACHE.at > 5000) {
@@ -263,6 +471,23 @@ export function nodeIndex() {
 }
 
 /** 刷新订阅（让 mihomo 重新拉 provider） */
+/**
+ * 渲染配置并让**运行中的**实例重载；实例没起来就只渲染。
+ * 面板里增删改订阅 / 手加节点之后调这个，改动才真正生效。
+ */
+export async function applyConfig() {
+  const r = renderConfig();
+  let reloaded = false;
+  try {
+    if (await alive()) {
+      await api('/configs?force=true', { method: 'PUT', body: { path: CONFIG_PATH } });
+      reloaded = true;
+    }
+  } catch { /* 重载失败不影响渲染，调用方按 reloaded=false 提示 */ }
+  IDX_CACHE.m = null;            // 节点清单变了，清掉 5 秒缓存
+  return { ...r, reloaded };
+}
+
 export async function refreshProviders() {
   const dir = path.join(RUNTIME, 'providers');
   const j = loadSubs();

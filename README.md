@@ -172,11 +172,64 @@ CI 每次都会**真构建镜像、真起容器**，验证健康检查 / 登录 
 内核不入库，运行时下载（mihomo 为 GPL-3.0，与本项目 MIT 相互独立）：
 
 ```bash
-cp 10-代理节点管理/subscriptions.example.json 10-代理节点管理/subscriptions.json
-# 编辑 subscriptions.json，填你自己的 Clash 订阅链接
-node 10-代理节点管理/install-core.mjs     # 下载 mihomo 内核
-node 10-代理节点管理/manage.mjs status    # 看当前出口节点 / 租约
+PANEL_NODE_POOL=1 node 01-管理面板/server.mjs    # 启用节点池
+node 10-代理节点管理/install-core.mjs            # 下载 mihomo 内核（只需一次）
+node 10-代理节点管理/manage.mjs status           # 命令行看当前出口节点 / 租约
 ```
+
+#### 🖱️ 订阅与节点都在面板里管理（不用改文件）
+
+启动面板 → 左侧 **「代理订阅」**：
+
+| 能做什么 | 怎么做 |
+|---|---|
+| **填订阅** | 「＋ 添加订阅」→ 起个名字（如 `airport-a`）+ 贴机场的 **Clash 订阅链接** |
+| **改订阅** | 「编辑」→ 链接留空表示不修改（界面上永远只显示打码后的 URL，不回显 token） |
+| **删订阅** | 「删除」→ 点「应用改动」生效 |
+| **测订阅** | 「测试」→ 现场拉一次，报告 HTTP 状态、体积、能解析出多少节点 |
+| **改完生效** | 「应用改动」→ 重渲染 `config.yaml` + 让运行中的内核重载 |
+| **手加节点** | 节点区「＋ 手动添加节点」→ 填类型/地址/端口 + JSON 参数（订阅里没有的单个节点用这个） |
+| **剔除节点** | 节点行「剔除」→ 永久排除（不删订阅，但不再进池子）；顶部「已剔除」处可「恢复」 |
+| **搜索节点** | 按名称 / 来源 / 地址 / 类型搜；可勾选「显示被剔除 / 无效」 |
+| **测速 / 轮换** | 「全池测速」「立即轮换」 |
+
+订阅配置文件现在落在**可写**的运行时目录：
+
+```
+10-代理节点管理/runtime/subscriptions.json
+```
+
+> 老版本放在程序目录 `10-代理节点管理/subscriptions.json`，启动时会**自动迁移**过来。
+> 桌面版 / Docker 里程序目录只读，所以配置文件必须放运行时目录。
+
+<details>
+<summary>命令行等价操作（不想开面板时用）</summary>
+
+```bash
+node 10-代理节点管理/manage.mjs status     # 状态 / 当前出口 / 租约
+node 10-代理节点管理/manage.mjs start      # 起内核
+node 10-代理节点管理/manage.mjs stop       # 停内核
+node 10-代理节点管理/manage.mjs rotate     # 立即轮换
+node 10-代理节点管理/manage.mjs apply      # 重渲染配置并重载
+```
+
+手改 `runtime/subscriptions.json` 同样有效，改完跑一次 `apply`：
+
+```jsonc
+{
+  "providers": [
+    { "name": "airport-a", "url": "https://…/clash?token=xxx", "enabled": true }
+  ],
+  "manualProxies": [
+    { "name": "我的节点", "type": "ss", "server": "1.2.3.4", "port": 8388,
+      "cipher": "aes-128-gcm", "password": "xxx" }
+  ],
+  "excludedNodes": ["广告节点-1"],
+  "_参数": { "mixedPort": 17897, "controllerPort": 19097, "groupName": "OCGW" }
+}
+```
+
+</details>
 
 ### 打包
 

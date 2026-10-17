@@ -40,6 +40,7 @@ const child = spawn(process.execPath, [path.join(PANEL, 'server.mjs')], {
     PANEL_PASSWORD: 'smoke-pass',
     PANEL_NODE_POOL: '0',            // CI 里不起代理池
     PANEL_MODEL_DISCOVERY: '0',      // CI 里不连上游
+    MIHOMO_RUNTIME: path.join(WORK, 'mihomo'),  // 订阅/内核数据也放临时目录，别写进仓库
   },
 });
 
@@ -60,7 +61,63 @@ for (let i = 0; i < 80; i++) {
 if (!up) {
   console.log('  [FAIL] 服务未在 20s 内监听');
   console.log(logs.split('\n').slice(-20).map((l) => '         ' + l).join('\n'));
-  cleanup();
+  
+const J = (p, o = {}) => fetch(BASE + p, { ...o, headers: { cookie, 'content-type': 'application/json', ...(o.headers || {}) }, body: o.body ? JSON.stringify(o.body) : undefined }).then(async (r) => ({ status: r.status, json: await r.json().catch(() => ({})) }));
+
+await check('代理订阅：全新安装为空', async () => {
+  const r = await J('/api/proxy-pool/providers');
+  if (r.status !== 200) throw new Error('HTTP ' + r.status);
+  if (r.json.rows.length !== 0) throw new Error('竟然预置了 ' + r.json.rows.length + ' 个订阅');
+  return '0 个';
+});
+
+await check('代理订阅：添加 + URL 打码 + 删除', async () => {
+  const c = await J('/api/proxy-pool/providers', { method: 'POST', body: { name: 'smoke-p', url: 'https://example.com/sub?token=SECRET' } });
+  if (!c.json.provider) throw new Error('添加失败: ' + JSON.stringify(c.json).slice(0, 100));
+  if (String(c.json.provider.urlMasked).includes('SECRET')) throw new Error('URL 未打码，泄漏 token');
+  const l = await J('/api/proxy-pool/providers');
+  if (!l.json.rows.some((x) => x.name === 'smoke-p')) throw new Error('列表里没有');
+  const d = await J('/api/proxy-pool/providers?name=smoke-p', { method: 'DELETE' });
+  if (!d.json.ok) throw new Error('删除失败');
+  const l2 = await J('/api/proxy-pool/providers');
+  if (l2.json.rows.length !== 0) throw new Error('删除后仍有残留');
+  return '增/查/删 全通';
+});
+
+await check('代理订阅：拒绝非法名与非 http 链接', async () => {
+  const a = await J('/api/proxy-pool/providers', { method: 'POST', body: { name: '中文名', url: 'https://a.com/x' } });
+  if (a.status < 400) throw new Error('非法名竟然通过了');
+  const b = await J('/api/proxy-pool/providers', { method: 'POST', body: { name: 'ok', url: 'ftp://a.com/x' } });
+  if (b.status < 400) throw new Error('非 http 链接竟然通过了');
+  return '校验生效';
+});
+
+await check('手动节点：添加 → 列表可见 → 剔除 → 恢复 → 删除', async () => {
+  const c = await J('/api/proxy-pool/nodes/manual', { method: 'POST', body: { name: 'smoke-node', type: 'ss', server: '1.2.3.4', port: 8388, cipher: 'aes-128-gcm', password: 'pw' } });
+  if (!c.json.ok) throw new Error('添加失败: ' + JSON.stringify(c.json).slice(0, 100));
+  const l = await J('/api/proxy-pool/nodes?all=1');
+  const n = l.json.rows.find((x) => x.name === 'smoke-node');
+  if (!n) throw new Error('手加节点未出现在列表');
+  if (!n.valid) throw new Error('手加节点被判无效: ' + n.invalidReason);
+  if (!n.manual) throw new Error('manual 标记缺失');
+  await J('/api/proxy-pool/nodes/exclude?name=smoke-node&on=1', { method: 'POST' });
+  const l2 = await J('/api/proxy-pool/nodes?all=1');
+  if (l2.json.rows.find((x) => x.name === 'smoke-node').valid) throw new Error('剔除没生效');
+  await J('/api/proxy-pool/nodes/exclude?name=smoke-node&on=0', { method: 'POST' });
+  const l2b = await J('/api/proxy-pool/nodes?all=1');
+  if (!l2b.json.rows.find((x) => x.name === 'smoke-node').valid) throw new Error('恢复没生效');
+  await J('/api/proxy-pool/nodes/manual?name=smoke-node', { method: 'DELETE' });
+  const l3 = await J('/api/proxy-pool/nodes?all=1');
+  if (l3.json.rows.some((x) => x.name === 'smoke-node')) throw new Error('删除后仍在');
+  return '增/查/剔除/恢复/删 全通';
+});
+
+await check('应用配置：渲染 config.yaml', async () => {
+  const r = await J('/api/proxy-pool/apply', { method: 'POST' });
+  if (!r.json.ok) throw new Error('apply 失败: ' + JSON.stringify(r.json).slice(0, 120));
+  return '订阅 ' + (r.json.providers || []).length + ' 个';
+});
+cleanup();
   process.exit(1);
 }
 ok(`服务已监听 ${BASE}`);
@@ -165,6 +222,62 @@ await check('未知路径应 404', async () => {
   return 'HTTP 404';
 });
 
+
+const J = (p, o = {}) => fetch(BASE + p, { ...o, headers: { cookie, 'content-type': 'application/json', ...(o.headers || {}) }, body: o.body ? JSON.stringify(o.body) : undefined }).then(async (r) => ({ status: r.status, json: await r.json().catch(() => ({})) }));
+
+await check('代理订阅：全新安装为空', async () => {
+  const r = await J('/api/proxy-pool/providers');
+  if (r.status !== 200) throw new Error('HTTP ' + r.status);
+  if (r.json.rows.length !== 0) throw new Error('竟然预置了 ' + r.json.rows.length + ' 个订阅');
+  return '0 个';
+});
+
+await check('代理订阅：添加 + URL 打码 + 删除', async () => {
+  const c = await J('/api/proxy-pool/providers', { method: 'POST', body: { name: 'smoke-p', url: 'https://example.com/sub?token=SECRET' } });
+  if (!c.json.provider) throw new Error('添加失败: ' + JSON.stringify(c.json).slice(0, 100));
+  if (String(c.json.provider.urlMasked).includes('SECRET')) throw new Error('URL 未打码，泄漏 token');
+  const l = await J('/api/proxy-pool/providers');
+  if (!l.json.rows.some((x) => x.name === 'smoke-p')) throw new Error('列表里没有');
+  const d = await J('/api/proxy-pool/providers?name=smoke-p', { method: 'DELETE' });
+  if (!d.json.ok) throw new Error('删除失败');
+  const l2 = await J('/api/proxy-pool/providers');
+  if (l2.json.rows.length !== 0) throw new Error('删除后仍有残留');
+  return '增/查/删 全通';
+});
+
+await check('代理订阅：拒绝非法名与非 http 链接', async () => {
+  const a = await J('/api/proxy-pool/providers', { method: 'POST', body: { name: '中文名', url: 'https://a.com/x' } });
+  if (a.status < 400) throw new Error('非法名竟然通过了');
+  const b = await J('/api/proxy-pool/providers', { method: 'POST', body: { name: 'ok', url: 'ftp://a.com/x' } });
+  if (b.status < 400) throw new Error('非 http 链接竟然通过了');
+  return '校验生效';
+});
+
+await check('手动节点：添加 → 列表可见 → 剔除 → 恢复 → 删除', async () => {
+  const c = await J('/api/proxy-pool/nodes/manual', { method: 'POST', body: { name: 'smoke-node', type: 'ss', server: '1.2.3.4', port: 8388, cipher: 'aes-128-gcm', password: 'pw' } });
+  if (!c.json.ok) throw new Error('添加失败: ' + JSON.stringify(c.json).slice(0, 100));
+  const l = await J('/api/proxy-pool/nodes?all=1');
+  const n = l.json.rows.find((x) => x.name === 'smoke-node');
+  if (!n) throw new Error('手加节点未出现在列表');
+  if (!n.valid) throw new Error('手加节点被判无效: ' + n.invalidReason);
+  if (!n.manual) throw new Error('manual 标记缺失');
+  await J('/api/proxy-pool/nodes/exclude?name=smoke-node&on=1', { method: 'POST' });
+  const l2 = await J('/api/proxy-pool/nodes?all=1');
+  if (l2.json.rows.find((x) => x.name === 'smoke-node').valid) throw new Error('剔除没生效');
+  await J('/api/proxy-pool/nodes/exclude?name=smoke-node&on=0', { method: 'POST' });
+  const l2b = await J('/api/proxy-pool/nodes?all=1');
+  if (!l2b.json.rows.find((x) => x.name === 'smoke-node').valid) throw new Error('恢复没生效');
+  await J('/api/proxy-pool/nodes/manual?name=smoke-node', { method: 'DELETE' });
+  const l3 = await J('/api/proxy-pool/nodes?all=1');
+  if (l3.json.rows.some((x) => x.name === 'smoke-node')) throw new Error('删除后仍在');
+  return '增/查/剔除/恢复/删 全通';
+});
+
+await check('应用配置：渲染 config.yaml', async () => {
+  const r = await J('/api/proxy-pool/apply', { method: 'POST' });
+  if (!r.json.ok) throw new Error('apply 失败: ' + JSON.stringify(r.json).slice(0, 120));
+  return '订阅 ' + (r.json.providers || []).length + ' 个';
+});
 cleanup();
 await new Promise((r) => setTimeout(r, 400));
 

@@ -118,5 +118,68 @@ console.log('\n── 8) 非流式聚合 ──');
 const rs = B.aggregateResponsesSSE(`event: response.completed\ndata: ${JSON.stringify({ type: 'response.completed', response: { id: 'r', status: 'completed' } })}\n`);
 eq('聚合出最终 response', rs?.status, 'completed');
 
+/* ══════════════════════════════════════════════ 9) 代理订阅存储
+ * 用临时 runtime 目录，绝不碰真实的订阅/内核数据。
+ */
+console.log('\n── 9) 代理订阅存储 ──');
+const os = await import('node:os');
+const fsx = await import('node:fs');
+const TMPRT = fsx.mkdtempSync(path.join(os.tmpdir(), 'ocgw-substest-'));
+process.env.MIHOMO_RUNTIME = TMPRT;
+process.env.PANEL_NODE_POOL = '0';
+const M = await import(pathToFileURL(path.join(ROOT, '10-代理节点管理', 'mihomo.mjs')).href);
+
+eq('maskUrl 打码 token', M.maskUrl('https://a.com/sub?token=SECRET123&x=1').includes('SECRET123'), false);
+eq('maskUrl 保留主机与路径', M.maskUrl('https://a.com/sub?token=SECRET123').startsWith('https://a.com/sub'), true);
+eq('maskUrl 非 URL 也能打码', M.maskUrl('not-a-url?token=ABC').includes('ABC'), false);
+
+eq('全新安装 providers 为空', M.listProviders().length, 0);
+let threw = false;
+try { M.upsertProvider({ name: '中文名', url: 'https://a.com/x' }); } catch { threw = true; }
+eq('拒绝非法订阅名', threw, true);
+threw = false;
+try { M.upsertProvider({ name: 'ok', url: 'ftp://a.com/x' }); } catch { threw = true; }
+eq('拒绝非 http 链接', threw, true);
+
+M.upsertProvider({ name: 'p1', url: 'https://a.com/sub?token=ZZZ999' });
+eq('添加订阅成功', M.listProviders().length, 1);
+eq('列表里 URL 已打码', M.listProviders()[0].urlMasked.includes('ZZZ999'), false);
+M.upsertProvider({ name: 'p1', enabled: false });
+eq('编辑时省略 url 保留原链接', M.listProviders()[0].url.includes('ZZZ999'), true);
+eq('编辑可改 enabled', M.listProviders()[0].enabled, false);
+M.setProviderEnabled('p1', true);
+eq('切换启用', M.listProviders()[0].enabled, true);
+
+threw = false;
+try { M.addManualProxy({ name: 'n1', type: 'ss', port: 1 }); } catch { threw = true; }
+eq('手加节点缺 server 应拒绝', threw, true);
+threw = false;
+try { M.addManualProxy({ name: 'n1', type: 'ss', server: '1.2.3.4', port: 0 }); } catch { threw = true; }
+eq('手加节点 port 非法应拒绝', threw, true);
+M.addManualProxy({ name: 'n1', type: 'ss', server: '1.2.3.4', port: 8388, cipher: 'aes-128-gcm', password: 'pw' });
+eq('手加节点成功', M.loadSubs().manualProxies.length, 1);
+threw = false;
+try { M.addManualProxy({ name: 'n1', type: 'ss', server: '5.6.7.8', port: 1 }); } catch { threw = true; }
+eq('拒绝重名手加节点', threw, true);
+
+eq('providerNodes 含手加节点', M.providerNodes().some((n) => n.name === 'n1' && n.manual), true);
+eq('手加节点默认有效', M.providerNodes().find((n) => n.name === 'n1').valid, true);
+M.setNodeExcluded('n1', true);
+eq('剔除后 invalid', M.providerNodes().find((n) => n.name === 'n1').valid, false);
+eq('剔除原因正确', M.providerNodes().find((n) => n.name === 'n1').reason, '已被面板剔除');
+M.setNodeExcluded('n1', false);
+eq('恢复后 valid', M.providerNodes().find((n) => n.name === 'n1').valid, true);
+
+const rendered = M.renderConfig();
+const cfg = fsx.readFileSync(rendered.configPath, 'utf8');
+eq('config 出现手加节点 proxies 段', /^proxies:/m.test(cfg), true);
+eq('组里包含手加节点', cfg.includes("'n1'"), true);
+eq('applyConfig 已导出', typeof M.applyConfig, 'function');
+
+M.removeManualProxy('n1');
+eq('删除手加节点', M.loadSubs().manualProxies.length, 0);
+M.deleteProvider('p1');
+eq('删除订阅', M.listProviders().length, 0);
+try { fsx.rmSync(TMPRT, { recursive: true, force: true }); } catch { /* 忽略 */ }
 console.log(`\n单元测试: ${pass} 通过, ${fail} 失败`);
 process.exit(fail ? 1 : 0);

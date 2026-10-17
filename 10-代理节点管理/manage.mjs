@@ -30,6 +30,9 @@ switch (cmd) {
   }
   case 'stop': console.log(JSON.stringify(await M.stop(), null, 2)); break;
 
+  /* 改完订阅 / 手加节点后让改动生效：重渲染 config.yaml + 内核重载 */
+  case 'apply': console.log(JSON.stringify(await M.applyConfig(), null, 2)); break;
+
   case 'refresh': {
     const r = await M.refreshProviders();
     for (const x of r) console.log(`  ${x.ok ? 'OK  ' : 'FAIL'} ${pad(x.name, 20)} ${x.ok ? x.bytes + ' B' : x.error}`);
@@ -131,6 +134,6 @@ switch (cmd) {
 
   default:
     console.log(`未知命令: ${cmd}\n`);
-    console.log('用法: node manage.mjs <status|nodes|test|verify|rotate|switch|events|refresh|start|stop> [选项]');
+    console.log('用法: node manage.mjs <status|nodes|test|verify|rotate|switch|events|refresh|apply|start|stop> [选项]');
     process.exit(2);
 }

@@ -122,6 +122,7 @@ pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:
       <a data-r="channels"><span>☰</span>渠道管理</a>
       <a data-r="tokens"><span>⚿</span>令牌管理</a>
       <a data-r="models"><span>✦</span>模型列表</a>
+      <a data-r="proxy"><span>⇄</span>代理订阅</a>
       <a data-r="logs"><span>≡</span>请求日志</a>
       <a data-r="settings"><span>⚙</span>系统设置</a>
     </nav>
@@ -196,7 +197,7 @@ document.addEventListener('click', (e) => {
 });
 function route() {
   document.querySelectorAll('nav a').forEach((x) => x.classList.toggle('on', x.dataset.r === ROUTE));
-  ({ dashboard: viewDashboard, channels: viewChannels, tokens: viewTokens, models: viewModels, logs: viewLogs, settings: viewSettings }[ROUTE] || viewDashboard)();
+  ({ dashboard: viewDashboard, channels: viewChannels, tokens: viewTokens, models: viewModels, proxy: viewProxy, logs: viewLogs, settings: viewSettings }[ROUTE] || viewDashboard)();
 }
 const M = (html) => { $('#main').innerHTML = html; };
 
@@ -541,6 +542,298 @@ async function savePw() {
 function openModal(html) { $('#modal').innerHTML = `<div class="box">${html}</div>`; $('#modal').classList.remove('hidden'); }
 function closeModal() { $('#modal').classList.add('hidden'); $('#modal').innerHTML = ''; }
 function copy(t) { navigator.clipboard.writeText(t).then(() => toast('已复制', 'ok'), () => toast('复制失败', 'bad')); }
+
+/* ══════════════════════════════════════════════ 代理订阅 / 节点池
+ *
+ * 为什么需要这个页面：以前填订阅得手改 subscriptions.json，
+ * 而那个文件在桌面版 / Docker 里还是只读的。现在订阅与节点全部走界面。
+ */
+let POOL = { st: null, prov: null, nodes: [], excluded: [], nodeFilter: '', showInvalid: false };
+
+async function viewProxy() {
+  M('<h2>代理订阅</h2><div class="sub">加载中…</div>');
+  let st = null, prov = null, nd = null;
+  try { st = await api('/api/proxy-pool'); } catch (e) { st = { error: e.message, counts: {} }; }
+  try { prov = await api('/api/proxy-pool/providers'); } catch (e) { prov = { rows: [], error: e.message }; }
+  try { nd = await api('/api/proxy-pool/nodes?all=1'); } catch (e) { nd = { rows: [], excluded: [] }; }
+  POOL.st = st; POOL.prov = prov; POOL.nodes = nd.rows || []; POOL.excluded = nd.excluded || [];
+
+  const c = st.counts || {};
+  const a = st.active;
+  const inst = st.instance || {};
+  const provRows = (prov.rows || []);
+
+  const hdr = `
+  <h2>代理订阅 / 节点池</h2>
+  <div class="sub">只有<b>模型请求</b>会走这里的节点；浏览器 / 系统代理完全不受影响。</div>
+
+  <div class="panel" style="padding:14px 16px;margin:14px 0">
+    <div style="display:flex;gap:22px;flex-wrap:wrap;align-items:center">
+      <div><div class="sub" style="margin:0">节点池</div><b class="${st.enabled ? 'ok' : 'dim'}">${st.enabled ? '已启用' : '已关闭'}</b></div>
+      <div><div class="sub" style="margin:0">出口代理</div><code class="mono">${esc(st.proxy || '-')}</code></div>
+      <div><div class="sub" style="margin:0">mihomo 内核</div><b>${inst.pid ? 'PID ' + inst.pid : '未运行'}</b>${inst.interfaceName ? ` <span class="sub">网卡 ${esc(inst.interfaceName)}</span>` : ''}</div>
+      <div><div class="sub" style="margin:0">节点</div><b>有效 ${c.valid ?? 0}/${c.total ?? 0}</b> <span class="sub">可用 ${c.available ?? 0} · 租用 ${c.inUse ?? 0} · 失效 ${c.dead ?? 0} · 剔除 ${POOL.excluded.length}</span></div>
+      ${a ? `<div><div class="sub" style="margin:0">当前出口</div><b>${esc(a.name)}</b> <span class="b dim">${esc(a.exitIp || '无 IP')}</span> <span class="sub">${a.delay != null ? a.delay + 'ms · ' : ''}租约剩 ${a.remainH}h</span></div>`
+        : '<div><div class="sub" style="margin:0">当前出口</div><b class="warn">无</b></div>'}
+    </div>
+    ${st.error ? `<div style="margin-top:8px;color:var(--warn);font-size:12px">${esc(st.error)}</div>` : ''}
+    ${!st.enabled ? '<div style="margin-top:8px;font-size:12px;color:var(--dim)">节点池已关闭：设环境变量 <code class="mono">PANEL_NODE_POOL=1</code> 后重启面板即可启用。</div>' : ''}
+  </div>`;
+
+  const provTable = `
+  <h3 style="margin:18px 0 8px">订阅源 <span class="sub" style="font-weight:400">共 ${provRows.length} 个</span></h3>
+  <div class="sub" style="margin-bottom:8px">配置文件：<code class="mono">${esc(prov.subsPath || '')}</code> —— 在这里改了立刻生效，不用手改文件</div>
+  <div class="toolbar">
+    <button class="primary" onclick="editProvider()">＋ 添加订阅</button>
+    <button onclick="applyPoolConfig()">应用改动</button>
+    <button onclick="refreshPoolSubs()">拉取订阅</button>
+    <button onclick="viewProxy()">刷新</button>
+  </div>
+  <div class="panel"><div class="tbl-wrap"><table>
+    <thead><tr><th>名称</th><th>订阅链接</th><th>状态</th><th style="width:230px">操作</th></tr></thead>
+    <tbody>${provRows.length ? provRows.map((p) => `<tr>
+      <td><b>${esc(p.name)}</b></td>
+      <td class="mono" style="font-size:11px;word-break:break-all">${esc(p.urlMasked || '')}</td>
+      <td>${p.enabled === false ? '<span class="b dim">已停用</span>' : '<span class="b ok">启用</span>'}</td>
+      <td>
+        <button class="sm" onclick="testProvider('${esc(p.name)}')">测试</button>
+        <button class="sm" onclick="editProvider('${esc(p.name)}')">编辑</button>
+        <button class="sm" onclick="toggleProvider('${esc(p.name)}', ${p.enabled === false})">${p.enabled === false ? '启用' : '停用'}</button>
+        <button class="sm danger" onclick="delProvider('${esc(p.name)}')">删除</button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="4" class="empty">还没有订阅 —— 点「＋ 添加订阅」把机场的 Clash 订阅链接贴进来</td></tr>'}</tbody>
+  </table></div></div>`;
+
+  const nodeArea = `
+  <h3 style="margin:22px 0 8px">节点 <span class="sub" style="font-weight:400">共 ${POOL.nodes.length} 个（含剔除的）</span></h3>
+  <div class="toolbar">
+    <input id="nodeQ" placeholder="搜索：名称 / 来源 / 地址 / 类型" value="${esc(POOL.nodeFilter)}"
+           oninput="POOL.nodeFilter=this.value;renderNodeTable()" style="max-width:280px;margin:0">
+    <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:12px">
+      <input type="checkbox" id="nodeAll" ${POOL.showInvalid ? 'checked' : ''}
+             onchange="POOL.showInvalid=this.checked;renderNodeTable()" style="width:auto;margin:0">显示被剔除 / 无效
+    </label>
+    <button onclick="editManualNode()">＋ 手动添加节点</button>
+    <button onclick="poolTestAll()">全池测速</button>
+    <button onclick="poolRotate()">立即轮换</button>
+  </div>
+  <div id="nodeBox"></div>`;
+
+  const exclArea = POOL.excluded.length ? `
+  <h3 style="margin:22px 0 8px">已剔除 <span class="sub" style="font-weight:400">${POOL.excluded.length} 个</span></h3>
+  <div class="panel" style="padding:12px 16px">
+    ${POOL.excluded.map((x, i) => `<span class="b dim" style="margin:3px 6px 3px 0;display:inline-block">${esc(x)}
+      <a style="cursor:pointer;margin-left:6px;color:var(--acc)" onclick="unexcludeByIndex(${i})">恢复</a></span>`).join('')}
+  </div>` : '';
+
+  M(hdr + provTable + nodeArea + exclArea);
+  renderNodeTable();
+}
+
+function nodeStatus(r) {
+  if (!r.valid) return `<span class="b bad" title="${esc(r.invalidReason || '')}">剔除</span>`;
+  if (r.status === 'in_use') return '<span class="b ok">租用中</span>';
+  if (r.status === 'dead') return `<span class="b warn" title="${esc(r.last_error || '')}">失效</span>`;
+  return '<span class="b dim">可用</span>';
+}
+
+function renderNodeTable() {
+  const box = $('#nodeBox');
+  if (!box) return;
+  const q = (POOL.nodeFilter || '').trim().toLowerCase();
+  let rows = POOL.nodes;
+  if (q) rows = rows.filter((r) => [r.name, r.provider, r.server, r.type].some((v) => String(v || '').toLowerCase().includes(q)));
+  if (!POOL.showInvalid) rows = rows.filter((r) => r.valid);
+  const rank = (r) => (r.status === 'in_use' ? 0 : r.valid ? 1 : r.status === 'dead' ? 2 : 3);
+  rows = rows.slice().sort((x, y) => rank(x) - rank(y) || (x.delay_ms ?? 99999) - (y.delay_ms ?? 99999));
+
+  const MAX = 300;
+  const shown = rows.slice(0, MAX);
+  box.innerHTML = `<div class="panel"><div class="tbl-wrap"><table>
+    <thead><tr><th>名称</th><th>来源</th><th>类型</th><th>地址</th><th>延迟</th><th>状态</th><th style="width:150px">操作</th></tr></thead>
+    <tbody>${shown.length ? shown.map((r) => {
+      const i = POOL.nodes.indexOf(r);
+      return `<tr>
+        <td><b>${esc(r.name)}</b>${r.manual ? ' <span class="b acc">手加</span>' : ''}</td>
+        <td class="sub">${esc(r.provider || '-')}</td>
+        <td><span class="b dim">${esc(r.type || '?')}</span></td>
+        <td class="mono" style="font-size:11px">${esc((r.server || '-') + ':' + (r.port || '-'))}</td>
+        <td>${r.delay_ms != null ? r.delay_ms + 'ms' : '-'}</td>
+        <td>${nodeStatus(r)}</td>
+        <td>
+          ${r.valid
+            ? `<button class="sm danger" onclick="excludeByIndex(${i})">剔除</button>`
+            : `<button class="sm" onclick="unexcludeNode('${esc(r.name)}')">恢复</button>`}
+          ${r.manual ? `<button class="sm danger" onclick="delManualNodeByIndex(${i})">删除</button>` : ''}
+        </td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="7" class="empty">没有匹配的节点</td></tr>'}</tbody>
+  </table></div>
+  ${rows.length > MAX ? `<div class="sub" style="padding:8px 14px">只显示前 ${MAX} 个，共 ${rows.length} 个 —— 用搜索缩小范围</div>` : ''}
+  </div>`;
+}
+
+/* ── 订阅增删改 ── */
+function editProvider(name) {
+  let p = { name: '', url: '', enabled: true };
+  if (name) {
+    const found = ((POOL.prov || {}).rows || []).find((x) => x.name === name);
+    if (found) p = found;
+  }
+  openModal(`
+    <h3>${name ? '编辑' : '添加'}订阅</h3>
+    <label>订阅名（仅字母 / 数字 / 下划线 / 短横线）</label>
+    <input id="p_name" value="${esc(p.name)}" placeholder="airport-a" ${name ? 'readonly' : ''}>
+    <label>Clash 订阅链接</label>
+    <input id="p_url" value="" placeholder="https://example.com/api/v1/client/subscribe?token=xxxx">
+    ${name ? '<div class="sub" style="margin-top:6px">出于安全，链接不显示；**留空表示不修改**</div>' : ''}
+    <label style="display:flex;align-items:center;gap:8px;margin-top:14px">
+      <input type="checkbox" id="p_en" ${p.enabled === false ? '' : 'checked'} style="width:auto;margin:0"> 启用这个订阅
+    </label>
+    <div class="sub" style="margin-top:10px;font-size:12px">支持 Clash / Clash Meta 订阅地址（机场面板里的「Clash」或「Clash Meta」那一项）。</div>
+    <div class="toolbar" style="margin-top:16px">
+      <button class="primary" onclick="saveProvider(${name ? JSON.stringify(name).replace(/"/g, '&quot;') : 'null'})">保存</button>
+      <button onclick="closeModal()">取消</button>
+    </div>`);
+}
+
+async function saveProvider(name) {
+  const n = $('#p_name').value.trim();
+  const url = $('#p_url').value.trim();
+  const enabled = $('#p_en').checked;
+  if (!n) return toast('订阅名不能为空', 'bad');
+  try {
+    const body = { name: n, enabled };
+    if (url) body.url = url;
+    else if (name) {
+      // 后端会保留原链接：不传 url 即可
+      toast('链接留空 → 保持原链接', '');
+    } else {
+      return toast('订阅链接不能为空', 'bad');
+    }
+    await api('/api/proxy-pool/providers', { method: 'POST', body });
+    closeModal(); toast('已保存，点「应用改动」生效', 'ok'); viewProxy();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
+async function delProvider(name) {
+  if (!confirm('删除订阅「' + name + '」？节点会一起消失，点「应用改动」后生效。')) return;
+  try { await api('/api/proxy-pool/providers?name=' + encodeURIComponent(name), { method: 'DELETE' }); toast('已删除', 'ok'); viewProxy(); }
+  catch (e) { toast(e.message, 'bad'); }
+}
+async function toggleProvider(name, on) {
+  try {
+    await api('/api/proxy-pool/providers/toggle?name=' + encodeURIComponent(name) + '&on=' + (on ? 1 : 0), { method: 'POST' });
+    toast(on ? '已启用' : '已停用', 'ok'); viewProxy();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+async function testProvider(name) {
+  toast('正在拉取订阅…');
+  try {
+    const r = await api('/api/proxy-pool/providers/test?name=' + encodeURIComponent(name), { method: 'POST' });
+    if (!r.ok) return toast('拉取失败：' + (r.error || ('HTTP ' + r.status)), 'bad');
+    toast(`连通 ✅ HTTP ${r.status} · ${(r.bytes / 1024).toFixed(1)} KB · 约 ${r.nodes} 个节点 · ${r.ms}ms${r.isClashYaml ? '' : '（⚠ 不像 Clash 格式）'}`, 'ok');
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
+async function applyPoolConfig() {
+  toast('正在应用（重渲染配置 + 重载内核）…');
+  try {
+    const r = await api('/api/proxy-pool/apply', { method: 'POST' });
+    toast(`已应用：订阅 ${(r.providers || []).length} 个 · 手加 ${(r.manualProxies || []).length} 个 · 剔除 ${(r.excluded || []).length} 个${r.reloaded ? ' · 内核已重载' : ' · 内核未运行，仅渲染配置'}`, 'ok');
+    viewProxy();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+async function refreshPoolSubs() {
+  toast('正在拉取订阅…');
+  try {
+    const r = await api('/api/proxy-pool/refresh', { method: 'POST' });
+    const subs = r.subs || [];
+    toast(`拉取完成：${subs.filter((x) => x.ok).length}/${subs.length} 成功`, subs.every((x) => x.ok) ? 'ok' : 'warn');
+    viewProxy();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+async function poolTestAll() {
+  toast('全池测速中（可能要十几秒）…');
+  try {
+    const r = await api('/api/proxy-pool/test', { method: 'POST' });
+    toast(`测速完成：${r.reachable}/${(r.results || []).length} 可达`, 'ok');
+    viewProxy();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+async function poolRotate() {
+  try {
+    const r = await api('/api/proxy-pool/rotate', { method: 'POST' });
+    if (r.ok) { toast(`已切到 ${r.node}${r.exitIp ? '（出口 ' + r.exitIp + '）' : ''}`, 'ok'); viewProxy(); }
+    else toast('轮换失败：' + (r.reason || '未知'), 'bad');
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
+/* ── 节点剔除 / 恢复 / 手加 ── */
+function excludeByIndex(i) { const r = POOL.nodes[i]; if (r) excludeNode(r.name); }
+function unexcludeByIndex(i) { const n = POOL.excluded[i]; if (n) unexcludeNode(n); }
+async function excludeNode(name) {
+  try {
+    await api('/api/proxy-pool/nodes/exclude?name=' + encodeURIComponent(name) + '&on=1', { method: 'POST' });
+    toast('已剔除「' + name + '」，点「应用改动」生效', 'ok'); viewProxy();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+async function unexcludeNode(name) {
+  try {
+    await api('/api/proxy-pool/nodes/exclude?name=' + encodeURIComponent(name) + '&on=0', { method: 'POST' });
+    toast('已恢复「' + name + '」', 'ok'); viewProxy();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
+function editManualNode() {
+  openModal(`
+    <h3>手动添加节点</h3>
+    <div class="sub" style="margin-bottom:10px">订阅里没有、但你手头有单个节点信息时用这个。字段对应 Clash 的 proxies 定义。</div>
+    <label>节点名</label><input id="m_name" placeholder="我的节点-01">
+    <label>类型</label>
+    <select id="m_type">
+      <option value="ss">ss（Shadowsocks）</option>
+      <option value="vmess">vmess</option>
+      <option value="vless">vless</option>
+      <option value="trojan">trojan</option>
+      <option value="socks5">socks5</option>
+      <option value="http">http</option>
+    </select>
+    <label>服务器地址</label><input id="m_server" placeholder="1.2.3.4 或 node.example.com">
+    <label>端口</label><input id="m_port" type="number" placeholder="443">
+    <label>其余参数（JSON，可选）</label>
+    <textarea id="m_extra" rows="4" placeholder='{"cipher":"aes-128-gcm","password":"xxx","udp":true}'></textarea>
+    <div class="sub" style="margin-top:8px;font-size:12px">
+      ss 需要 <code>cipher</code> + <code>password</code>；vmess / vless 需要 <code>uuid</code>；
+      trojan 需要 <code>password</code>；TLS 节点加 <code>"tls":true</code>。
+    </div>
+    <div class="toolbar" style="margin-top:16px">
+      <button class="primary" onclick="saveManualNode()">保存</button>
+      <button onclick="closeModal()">取消</button>
+    </div>`);
+}
+
+async function saveManualNode() {
+  const name = $('#m_name').value.trim();
+  const type = $('#m_type').value;
+  const server = $('#m_server').value.trim();
+  const port = Number($('#m_port').value);
+  let extra = {};
+  const ex = $('#m_extra').value.trim();
+  if (ex) { try { extra = JSON.parse(ex); } catch { return toast('其余参数不是合法 JSON', 'bad'); } }
+  try {
+    await api('/api/proxy-pool/nodes/manual', { method: 'POST', body: { name, type, server, port, ...extra } });
+    closeModal(); toast('已添加，点「应用改动」生效', 'ok'); viewProxy();
+  } catch (e) { toast(e.message, 'bad'); }
+}
+async function delManualNodeByIndex(i) {
+  const r = POOL.nodes[i];
+  if (!r || !r.manual) return;
+  if (!confirm('删除手加节点「' + r.name + '」？')) return;
+  try { await api('/api/proxy-pool/nodes/manual?name=' + encodeURIComponent(r.name), { method: 'DELETE' }); toast('已删除', 'ok'); viewProxy(); }
+  catch (e) { toast(e.message, 'bad'); }
+}
+
 
 boot();
 </script>

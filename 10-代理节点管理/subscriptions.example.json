@@ -1,6 +1,7 @@
 {
-  "_说明": "复制成 subscriptions.json 再填你自己的机场订阅。mihomo 会用 proxy-providers 直接拉取并解析 Clash YAML；这里只放订阅本身，不要把节点抄进来。",
-  "_安全": "subscriptions.json 已在 .gitignore 里，不会被提交。",
+  "_说明": "这是示例。**推荐直接在管理面板左侧「代理订阅」里填**，那里支持增删改查、测试、剔除节点，不用手改文件。",
+  "_位置": "面板实际读写的文件是 10-代理节点管理/runtime/subscriptions.json（可写的数据目录）。程序目录下的 subscriptions.json 会在启动时自动迁移过去。",
+  "_安全": "subscriptions.json 已在 .gitignore 里，不会被提交。面板接口返回的 URL 一律打码，不回显 token。",
   "providers": [
     {
       "name": "airport-a",
@@ -13,6 +14,24 @@
       "enabled": false
     }
   ],
+
+  "_manualProxies说明": "订阅里没有、但你手头有单个节点信息时，写在这里（面板里「＋ 手动添加节点」等价）。字段对应 Clash 的 proxies 定义。",
+  "manualProxies": [
+    {
+      "_注释": "ss 需要 cipher + password；vmess/vless 需要 uuid；trojan 需要 password；TLS 节点加 \"tls\": true",
+      "name": "我的节点-01",
+      "type": "ss",
+      "server": "1.2.3.4",
+      "port": 8388,
+      "cipher": "aes-128-gcm",
+      "password": "PUT_YOUR_PASSWORD",
+      "udp": true
+    }
+  ],
+
+  "_excludedNodes说明": "从池子里永久剔除的节点名（面板里点「剔除」等价）。不会删订阅，只是不再参与轮换。",
+  "excludedNodes": ["广告节点-示例", "到期提醒-示例"],
+
   "_参数": {
     "mixedPort": 17897,
     "controllerPort": 19097,
@@ -24,6 +43,6 @@
     "mixedPort": "本实例的 HTTP/SOCKS5 混合端口，Clash Verge 默认用 7897，别撞",
     "controllerPort": "RESTful 控制器端口，用于切节点/测延迟",
     "groupName": "面板只操作这一个 select 分组",
-    "interfaceName": "留空则自动探测物理网卡（用于绕过 Clash Verge 的 TUN）。换网络后网卡名变了可在这里写死，如 WLAN / Ethernet"
+    "interfaceName": "留空则自动探测物理网卡（用于绕过 Clash Verge 的 TUN）。容器里设 OCGW_NO_INTERFACE_BIND=1 或写 none 关闭绑定。换网络后网卡名变了可在这里写死，如 WLAN / Ethernet"
   }
 }

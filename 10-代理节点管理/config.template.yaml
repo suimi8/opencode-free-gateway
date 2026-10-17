@@ -48,13 +48,17 @@ dns:
 proxy-providers:
 {{PROVIDERS}}
 
+# 手动添加的节点（subscriptions.json 里的 manualProxies）。
+# 没有手加节点时这一整段会被渲染成空字符串。
+{{MANUAL_PROXIES}}
+
 proxy-groups:
   # 面板只认这一个组，用控制器 API 在里面切换节点
   - name: {{GROUP_NAME}}
     type: select
     use:
 {{GROUP_USES}}
-
+{{GROUP_PROXIES}}
 rules:
   # 本实例只给面板用，全部流量走选定节点
   - MATCH,{{GROUP_NAME}}

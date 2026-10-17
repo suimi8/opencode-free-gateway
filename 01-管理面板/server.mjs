@@ -887,12 +887,118 @@ async function handle(req, res) {
       REG.setModelEnabled(id, u.searchParams.get('on') !== '0');
       return json(res, 200, { ok: true, id, enabled: u.searchParams.get('on') !== '0' });
     }
+    /* ══════════ 代理订阅（增删改查）══════════
+     * 这些接口直接读写运行时目录里的 subscriptions.json，
+     * 面板里填的订阅立刻能生效，不用再手改文件。
+     */
+    if (p === '/api/proxy-pool/providers') {
+      if (req.method === 'GET') {
+        const subs = POOL.M.loadSubs();
+        return json(res, 200, {
+          rows: POOL.M.listProviders(),
+          subsPath: POOL.M.SUBS_PATH,
+          manualProxies: subs.manualProxies,
+          excludedNodes: subs.excludedNodes,
+          settings: subs._参数 || {},
+        });
+      }
+      if (req.method === 'POST') {
+        try { return json(res, 200, { ok: true, provider: POOL.M.upsertProvider(await readJson(req)) }); }
+        catch (e) { return err(res, 400, String(e.message).slice(0, 200)); }
+      }
+      if (req.method === 'DELETE') {
+        const name = u.searchParams.get('name');
+        if (!name) return err(res, 400, '缺少 name');
+        return json(res, 200, { ok: true, ...POOL.M.deleteProvider(name) });
+      }
+    }
+    if (p === '/api/proxy-pool/providers/toggle' && req.method === 'POST') {
+      const name = u.searchParams.get('name');
+      try { return json(res, 200, { ok: true, provider: POOL.M.setProviderEnabled(name, u.searchParams.get('on') !== '0') }); }
+      catch (e) { return err(res, 400, String(e.message).slice(0, 200)); }
+    }
+    /* 试拉一次订阅：能不能通、能解析出多少个节点 */
+    if (p === '/api/proxy-pool/providers/test' && req.method === 'POST') {
+      const name = u.searchParams.get('name');
+      const rec = POOL.M.listProviders().find((x) => x.name === name);
+      if (!rec) return err(res, 404, '订阅不存在');
+      const t0 = Date.now();
+      try {
+        const r = await fetch(rec.url, { headers: { 'user-agent': 'clash-verge/v2.0.0' }, signal: AbortSignal.timeout(60000) });
+        const txt = await r.text();
+        // 粗略统计 proxies 段里的条目数（流式 + 块式都算）
+        const nodes = (txt.match(/^\s*-\s*\{/gm) || []).length + (txt.match(/^\s*-\s*$/gm) || []).length + (txt.match(/^\s*-\s+name:/gm) || []).length;
+        return json(res, 200, {
+          ok: r.ok, status: r.status, bytes: txt.length, nodes,
+          ms: Date.now() - t0,
+          isClashYaml: /^proxies:/m.test(txt) || /^\s*proxy-groups:/m.test(txt),
+          subInfo: r.headers.get('subscription-userinfo') || null,
+        });
+      } catch (e) {
+        return json(res, 200, { ok: false, error: String(e.message).slice(0, 200), ms: Date.now() - t0 });
+      }
+    }
+    /* 应用改动：重渲染配置 + 让运行中的实例重载 + 重新同步节点清单 */
+    if (p === '/api/proxy-pool/apply' && req.method === 'POST') {
+      try {
+        const r = await POOL.M.applyConfig();
+        let synced = null;
+        try { synced = await POOL.P.syncNodes(); } catch { /* 内核没起时同步会失败，不算错 */ }
+        return json(res, 200, { ok: true, ...r, synced });
+      } catch (e) { return err(res, 500, `应用配置失败: ${String(e.message).slice(0, 200)}`); }
+    }
+    /* ══════════ 节点：手加 / 剔除 ══════════ */
+    if (p === '/api/proxy-pool/nodes/manual') {
+      if (req.method === 'POST') {
+        try { return json(res, 200, { ok: true, proxy: POOL.M.addManualProxy(await readJson(req)) }); }
+        catch (e) { return err(res, 400, String(e.message).slice(0, 200)); }
+      }
+      if (req.method === 'DELETE') {
+        const name = u.searchParams.get('name');
+        if (!name) return err(res, 400, '缺少 name');
+        return json(res, 200, { ok: true, ...POOL.M.removeManualProxy(name) });
+      }
+    }
+    if (p === '/api/proxy-pool/nodes/exclude' && req.method === 'POST') {
+      const name = u.searchParams.get('name');
+      if (!name) return err(res, 400, '缺少 name');
+      const r = POOL.M.setNodeExcluded(name, u.searchParams.get('on') !== '0');
+      POOL.M.IDX_CACHE.m = null;
+      return json(res, 200, { ok: true, ...r });
+    }
     if (p === '/api/proxy-pool' || p === '/api/proxy-pool/') {
       await POOL.resync().catch(() => {});
       const st = await POOL.state();
       return json(res, 200, { enabled: POOL.enabled(), proxy: POOL.proxyUrl(), instance: POOL.instance(), ...st });
     }
-    if (p === '/api/proxy-pool/nodes') return json(res, 200, { rows: POOL.listNodes({ includeInvalid: u.searchParams.get('all') === '1' }) });
+    if (p === '/api/proxy-pool/nodes') {
+      const all = u.searchParams.get('all') === '1';
+      const q = (u.searchParams.get('q') || '').trim().toLowerCase();
+      /* 以**节点定义**为准（provider 缓存 + 手加节点 + 剔除标记），
+       * 再叠加池子里的运行状态（status / delay_ms / lease）。
+       * 不能只读池子 DB —— 那要内核起来同步过才有数据，
+       * 没起内核时界面上就看不到任何节点，连刚手加的也看不到。 */
+      const defs = POOL.M.providerNodes();
+      const stMap = new Map(POOL.P.listNodes({ includeInvalid: true }).map((r) => [r.name, r]));
+      let rows = defs.map((d) => {
+        const st = stMap.get(d.name) || {};
+        return {
+          ...st,
+          name: d.name, provider: d.provider, type: d.type, server: d.server, port: d.port,
+          manual: !!d.manual,
+          valid: d.valid, invalidReason: d.reason,
+          excluded: !!d.excluded,
+          status: st.status || (d.valid ? 'available' : 'excluded'),
+          delay_ms: st.delay_ms ?? null,
+        };
+      });
+      if (!all) rows = rows.filter((r) => r.valid);
+      if (q) {
+        rows = rows.filter((r) => [r.name, r.provider, r.server, r.type]
+          .some((v) => String(v || '').toLowerCase().includes(q)));
+      }
+      return json(res, 200, { rows, total: rows.length, excluded: POOL.M.loadSubs().excludedNodes });
+    }
     if (p === '/api/proxy-pool/events') return json(res, 200, { rows: POOL.events(Number(u.searchParams.get('limit')) || 50) });
     if (p === '/api/proxy-pool/rotate' && req.method === 'POST') return json(res, 200, await POOL.rotate());
     if (p === '/api/proxy-pool/verify' && req.method === 'POST') return json(res, 200, await POOL.verifyNow());
