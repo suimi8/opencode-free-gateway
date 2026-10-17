@@ -581,6 +581,8 @@ async function viewProxy() {
   </div>`;
 
   const provTable = `
+  <div id="coreBox" style="margin:16px 0"></div>
+
   <h3 style="margin:18px 0 8px">订阅源 <span class="sub" style="font-weight:400">共 ${provRows.length} 个</span></h3>
   <div class="sub" style="margin-bottom:8px">配置文件：<code class="mono">${esc(prov.subsPath || '')}</code> —— 在这里改了立刻生效，不用手改文件</div>
   <div class="toolbar">
@@ -628,6 +630,7 @@ async function viewProxy() {
 
   M(hdr + provTable + nodeArea + exclArea);
   renderNodeTable();
+  loadCore();
 }
 
 function nodeStatus(r) {
@@ -832,6 +835,101 @@ async function delManualNodeByIndex(i) {
   if (!confirm('删除手加节点「' + r.name + '」？')) return;
   try { await api('/api/proxy-pool/nodes/manual?name=' + encodeURIComponent(r.name), { method: 'DELETE' }); toast('已删除', 'ok'); viewProxy(); }
   catch (e) { toast(e.message, 'bad'); }
+}
+
+
+/* ══════════════════════════════════════════════ 内核一键安装
+ *
+ * 桌面版 / Docker 里不预装 mihomo（GPL-3.0，61 MB），
+ * 这里点一下就从官方发布页下载到数据目录，装完自动启用。
+ */
+let CORE_TIMER = null;
+
+function corePct(j) {
+  const p = Math.max(0, Math.min(100, Number(j && j.pct) || 0));
+  return `<div style="height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:10px">
+    <div style="height:100%;width:${p}%;background:linear-gradient(90deg,var(--acc),#34d399);transition:width .3s"></div>
+  </div>`;
+}
+
+function renderCore(st) {
+  const box = $('#coreBox');
+  if (!box) return;
+  const j = (st && st.job) || {};
+  const installed = !!(st && st.installed);
+  const running = !!j.running;
+
+  const badge = installed
+    ? `<span class="b ok">已安装</span> <span class="mono" style="font-size:11px">${esc(st.version || '')}</span>`
+    : (st && st.exists
+        ? '<span class="b warn">文件存在但无法执行</span>'
+        : '<span class="b dim">未安装</span>');
+
+  const info = installed
+    ? `<div class="sub" style="margin-top:6px;font-size:11px" class="mono">${esc(st.path)} · ${(st.sizeBytes / 1048576).toFixed(1)} MB · ${esc(st.platform)}</div>`
+    : `<div class="sub" style="margin-top:6px;font-size:11px">装好后才能启用节点池。mihomo 为 GPL-3.0，与本项目 MIT 相互独立。</div>`;
+
+  const progress = running
+    ? `<div style="margin-top:6px"><span class="sub">${esc(j.message || '准备中…')}</span>${corePct(j)}</div>
+       ${(j.log && j.log.length) ? `<div class="mono" style="margin-top:8px;font-size:11px;color:var(--dim);max-height:120px;overflow:auto">${j.log.slice(-8).map((l) => esc(l)).join('<br>')}</div>` : ''}`
+    : (j.error ? `<div style="margin-top:6px;color:var(--warn);font-size:12px">✗ ${esc(j.error)}</div>` : '')
+      + (j.ok ? `<div style="margin-top:6px;color:var(--acc);font-size:12px">✓ ${esc(j.message || '安装成功')}</div>` : '');
+
+  box.innerHTML = `<div class="panel" style="padding:14px 16px">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="font-weight:600">mihomo 内核</div>
+      <div>${badge}</div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        ${installed
+          ? '<button class="sm" onclick="loadCore()">刷新</button>'
+          : `<button class="sm primary" ${running ? 'disabled' : ''} onclick="installCoreNow()">${running ? '安装中…' : '⬇ 一键安装内核'}</button>`}
+        <button class="sm" onclick="useExistingCore()">使用已有内核</button>
+      </div>
+    </div>
+    ${info}${progress}
+  </div>`;
+
+  if (running && !CORE_TIMER) CORE_TIMER = setTimeout(pollCore, 900);
+}
+
+async function pollCore() {
+  CORE_TIMER = null;
+  if (!$('#coreBox')) return;                 // 已经离开这一页，停止轮询
+  let st = null;
+  try { st = await api('/api/proxy-pool/core'); } catch { /* 忽略，下次再试 */ }
+  if (!st) { CORE_TIMER = setTimeout(pollCore, 2000); return; }
+  renderCore(st);
+  if (st.job && st.job.running) { CORE_TIMER = setTimeout(pollCore, 900); return; }
+  // 装完了：让节点池用上新内核
+  if (st.job && st.job.ok) { toast('内核已就绪，正在启用节点池…', 'ok'); setTimeout(() => viewProxy(), 1200); }
+}
+
+async function loadCore() {
+  const box = $('#coreBox');
+  if (!box) return;
+  box.innerHTML = '<div class="panel" style="padding:14px 16px"><span class="sub">读取内核状态…</span></div>';
+  try { renderCore(await api('/api/proxy-pool/core')); }
+  catch (e) { box.innerHTML = `<div class="panel" style="padding:14px 16px"><b>mihomo 内核</b> <span class="b bad">状态获取失败：${esc(e.message)}</span></div>`; }
+}
+
+async function installCoreNow() {
+  if (!confirm('将从 GitHub 官方发布页下载 mihomo 内核（约 15-30 MB，具体看平台）到数据目录。\n\nmihomo 为 GPL-3.0 授权，与本项目 MIT 相互独立。继续？')) return;
+  try {
+    const r = await api('/api/proxy-pool/core/install', { method: 'POST', body: {} });
+    if (r.busy) { toast('已经在安装了', 'warn'); }
+    else toast('开始下载…', 'ok');
+    if (!CORE_TIMER) CORE_TIMER = setTimeout(pollCore, 700);
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
+async function useExistingCore() {
+  const p = prompt('填入已有 mihomo / verge-mihomo 可执行文件的完整路径\n（例如 Clash Verge 自带的 verge-mihomo.exe）');
+  if (!p) return;
+  try {
+    const r = await api('/api/proxy-pool/core/use', { method: 'POST', body: { path: p.trim() } });
+    toast('已启用：' + (r.version || 'ok'), 'ok');
+    viewProxy();
+  } catch (e) { toast(e.message, 'bad'); }
 }
 
 

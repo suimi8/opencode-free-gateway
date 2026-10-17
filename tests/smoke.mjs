@@ -117,6 +117,21 @@ await check('应用配置：渲染 config.yaml', async () => {
   if (!r.json.ok) throw new Error('apply 失败: ' + JSON.stringify(r.json).slice(0, 120));
   return '订阅 ' + (r.json.providers || []).length + ' 个';
 });
+await check('内核状态接口（不触发下载）', async () => {
+  const r = await J('/api/proxy-pool/core');
+  if (r.status !== 200) throw new Error('HTTP ' + r.status);
+  if (typeof r.json.installed !== 'boolean') throw new Error('缺 installed 字段');
+  if (r.json.installed) throw new Error('临时运行时目录里不该有内核');
+  if (!/^(windows|linux|darwin)-(amd64|arm64|armv7)$/.test(r.json.platform)) throw new Error('platform 异常: ' + r.json.platform);
+  if (!r.json.job) throw new Error('缺 job 字段（界面要靠它轮询进度）');
+  return 'platform=' + r.json.platform + ' installed=false';
+});
+
+await check('内核安装：缺 runtime 不会崩（接口健在）', async () => {
+  const r = await J('/api/proxy-pool/core/use', { method: 'POST', body: { path: '' } });
+  if (r.status < 400) throw new Error('空路径竟然通过了');
+  return '已拒绝空路径';
+});
 cleanup();
   process.exit(1);
 }
@@ -277,6 +292,21 @@ await check('应用配置：渲染 config.yaml', async () => {
   const r = await J('/api/proxy-pool/apply', { method: 'POST' });
   if (!r.json.ok) throw new Error('apply 失败: ' + JSON.stringify(r.json).slice(0, 120));
   return '订阅 ' + (r.json.providers || []).length + ' 个';
+});
+await check('内核状态接口（不触发下载）', async () => {
+  const r = await J('/api/proxy-pool/core');
+  if (r.status !== 200) throw new Error('HTTP ' + r.status);
+  if (typeof r.json.installed !== 'boolean') throw new Error('缺 installed 字段');
+  if (r.json.installed) throw new Error('临时运行时目录里不该有内核');
+  if (!/^(windows|linux|darwin)-(amd64|arm64|armv7)$/.test(r.json.platform)) throw new Error('platform 异常: ' + r.json.platform);
+  if (!r.json.job) throw new Error('缺 job 字段（界面要靠它轮询进度）');
+  return 'platform=' + r.json.platform + ' installed=false';
+});
+
+await check('内核安装：缺 runtime 不会崩（接口健在）', async () => {
+  const r = await J('/api/proxy-pool/core/use', { method: 'POST', body: { path: '' } });
+  if (r.status < 400) throw new Error('空路径竟然通过了');
+  return '已拒绝空路径';
 });
 cleanup();
 await new Promise((r) => setTimeout(r, 400));

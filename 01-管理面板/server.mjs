@@ -966,6 +966,45 @@ async function handle(req, res) {
       POOL.M.IDX_CACHE.m = null;
       return json(res, 200, { ok: true, ...r });
     }
+    /* ══════════ 代理内核（mihomo）一键安装 ══════════
+     * 桌面版 / Docker 里没预装内核（GPL-3.0，61 MB），这里点一下自动下。
+     * 安装是**后台任务**：POST 立刻返回，界面轮询 GET 拿进度。
+     */
+    if (p === '/api/proxy-pool/core') {
+      if (req.method === 'GET') {
+        return json(res, 200, { ...POOL.CORE.coreStatus(POOL.runtimeDir()), job: POOL.CORE.JOB });
+      }
+    }
+    if (p === '/api/proxy-pool/core/install' && req.method === 'POST') {
+      if (POOL.CORE.JOB.running) return json(res, 200, { ok: false, busy: true, job: POOL.CORE.JOB });
+      let body = {};
+      try { body = await readJson(req); } catch { /* 允许空 body */ }
+      // 故意不 await：下载几十 MB，让界面轮询进度
+      POOL.CORE.installCore({ runtime: POOL.runtimeDir(), tag: body && body.tag ? String(body.tag) : null })
+        .then((r) => {
+          if (!r.ok) return;
+          // 装好之后顺手让池子用上新内核（失败不影响安装结果）
+          try { POOL.M.renderConfig(); } catch { /* 忽略 */ }
+        })
+        .catch(() => { /* installCore 内部已记录 */ });
+      return json(res, 202, { ok: true, started: true, job: POOL.CORE.JOB });
+    }
+    /* 用已有的内核文件（比如 Clash Verge 自带的 verge-mihomo.exe） */
+    if (p === '/api/proxy-pool/core/use' && req.method === 'POST') {
+      try {
+        const b = await readJson(req);
+        const src = String(b && b.path || '').trim();
+        if (!src) return err(res, 400, '缺少 path');
+        if (!fs.existsSync(src)) return err(res, 400, `文件不存在: ${src}`);
+        const target = POOL.CORE.corePath(POOL.runtimeDir());
+        fs.mkdirSync(POOL.runtimeDir(), { recursive: true });
+        fs.copyFileSync(src, target);
+        if (process.platform !== 'win32') fs.chmodSync(target, 0o755);
+        const st = POOL.CORE.coreStatus(POOL.runtimeDir());
+        if (!st.installed) return err(res, 400, '复制完成但内核无法执行（架构不匹配？）');
+        return json(res, 200, { ok: true, ...st });
+      } catch (e) { return err(res, 400, String(e.message).slice(0, 200)); }
+    }
     if (p === '/api/proxy-pool' || p === '/api/proxy-pool/') {
       await POOL.resync().catch(() => {});
       const st = await POOL.state();

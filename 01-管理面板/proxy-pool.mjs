@@ -12,6 +12,10 @@
  */
 import * as P from '../10-代理节点管理/pool.mjs';
 import * as M from '../10-代理节点管理/mihomo.mjs';
+import * as CORE from '../10-代理节点管理/core-install.mjs';
+export { CORE };
+/** 内核与订阅数据所在的运行时目录（桌面版/Docker 里是可写的数据目录） */
+export const runtimeDir = () => M.RUNTIME;
 
 export const enabled = () => String(process.env.PANEL_NODE_POOL ?? '1') !== '0';
 /** 池子实例的代理地址（HTTP 代理，mixed-port 同时支持 HTTP 与 SOCKS5） */

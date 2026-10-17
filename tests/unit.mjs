@@ -181,5 +181,26 @@ eq('删除手加节点', M.loadSubs().manualProxies.length, 0);
 M.deleteProvider('p1');
 eq('删除订阅', M.listProviders().length, 0);
 try { fsx.rmSync(TMPRT, { recursive: true, force: true }); } catch { /* 忽略 */ }
+
+/* ══════════════════════════════════════════════ 10) 内核安装（core-install.mjs） */
+console.log('\n── 10) 内核安装 ──');
+const CORE = await import(pathToFileURL(path.join(ROOT, '10-代理节点管理', 'core-install.mjs')).href);
+eq('platformTag 形状正确', /^(windows|linux|darwin)-(amd64|arm64|armv7)$/.test(CORE.platformTag()), true);
+eq('platformTag 可按参数覆盖', CORE.platformTag('linux', 'arm64'), 'linux-arm64');
+eq('platformTag 拒绝未知平台', (() => { try { CORE.platformTag('aix', 'x64'); return false; } catch { return true; } })(), true);
+eq('platformTag 拒绝未知架构', (() => { try { CORE.platformTag('linux', 'mips'); return false; } catch { return true; } })(), true);
+
+const EMPTYRT = fsx.mkdtempSync(path.join(os.tmpdir(), 'ocgw-coretest-'));
+const cst = CORE.coreStatus(EMPTYRT);
+eq('空目录：未安装', cst.installed, false);
+eq('空目录：exists=false', cst.exists, false);
+eq('空目录：size=0', cst.sizeBytes, 0);
+eq('coreStatus 带平台标记', /^(windows|linux|darwin)-/.test(cst.platform), true);
+eq('haveCore 空目录返回 null', CORE.haveCore(EMPTYRT), null);
+eq('JOB 初始不运行', CORE.JOB.running, false);
+eq('installCore 缺 runtime 应报错', (await CORE.installCore({})).ok, false);
+eq('installCore 报错时 JOB 记下原因', typeof CORE.JOB.error === 'string' && CORE.JOB.error.length > 0, true);
+try { fsx.rmSync(EMPTYRT, { recursive: true, force: true }); } catch { /* 忽略 */ }
+
 console.log(`\n单元测试: ${pass} 通过, ${fail} 失败`);
 process.exit(fail ? 1 : 0);

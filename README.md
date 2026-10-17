@@ -45,6 +45,7 @@
 | 托盘菜单 | 显示/隐藏窗口 · 在浏览器打开 · 打开数据目录 · 查看日志 · 退出 |
 | 数据位置 | Windows `%APPDATA%\opencode-free-gateway` · macOS `~/Library/Application Support/opencode-free-gateway` · Linux `~/.config/opencode-free-gateway` |
 | 服务隔离 | 面板跑在**子进程**里，它崩了不会带走窗口，并会弹窗给出日志尾部 |
+| 完全自包含 | 代理内核也能在界面里一键装（「代理订阅」→「⬇ 一键安装内核」），装完不用开命令行 |
 | 安全 | `contextIsolation` + `sandbox` 开启、`nodeIntegration` 关闭，外链一律交给系统浏览器 |
 
 > **macOS 未签名**：首次打开请 **右键 → 打开**（或在「系统设置 → 隐私与安全性」里允许）。
@@ -173,8 +174,24 @@ CI 每次都会**真构建镜像、真起容器**，验证健康检查 / 登录 
 
 ```bash
 PANEL_NODE_POOL=1 node 01-管理面板/server.mjs    # 启用节点池
-node 10-代理节点管理/install-core.mjs            # 下载 mihomo 内核（只需一次）
-node 10-代理节点管理/manage.mjs status           # 命令行看当前出口节点 / 租约
+```
+
+然后打开面板 → **「代理订阅」** → 点 **「⬇ 一键安装内核」**：
+
+从 GitHub 官方发布页下载 mihomo（Windows 约 24 MB → 解出 66 MB），
+自动解压到数据目录、校验可执行、装完直接可用。**国内网络会自动回退镜像**
+（`ghproxy.net` / `gh-proxy.com` / `ghfast.top`），也可自己指定：
+
+```bash
+MIHOMO_MIRROR='https://ghproxy.net/{}' PANEL_NODE_POOL=1 node 01-管理面板/server.mjs
+```
+
+不想让它下载？面板里有 **「使用已有内核」**，填 Clash Verge 自带
+`verge-mihomo.exe` 的路径就行；命令行等价写法：
+
+```bash
+MIHOMO_BIN="C:\Program Files\Clash Verge\verge-mihomo.exe" node 10-代理节点管理/install-core.mjs
+node 10-代理节点管理/install-core.mjs --check   # 只看装没装、什么版本
 ```
 
 #### 🖱️ 订阅与节点都在面板里管理（不用改文件）
@@ -192,6 +209,7 @@ node 10-代理节点管理/manage.mjs status           # 命令行看当前出�
 | **剔除节点** | 节点行「剔除」→ 永久排除（不删订阅，但不再进池子）；顶部「已剔除」处可「恢复」 |
 | **搜索节点** | 按名称 / 来源 / 地址 / 类型搜；可勾选「显示被剔除 / 无效」 |
 | **测速 / 轮换** | 「全池测速」「立即轮换」 |
+| **装内核** | 「⬇ 一键安装内核」→ 自动下载解压校验，带实时进度条；或「使用已有内核」填现成路径 |
 
 订阅配置文件现在落在**可写**的运行时目录：
 

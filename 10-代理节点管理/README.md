@@ -1,3 +1,31 @@
+## ⬇ 内核安装（两种方式，都支持）
+
+**方式 A：面板里点**（推荐）
+
+启动面板 → 左侧「代理订阅」→ 顶栏 **「⬇ 一键安装内核」**。
+带实时进度条，国内网络自动回退镜像，装完自动可用。
+
+**方式 B：命令行**
+
+```bash
+node install-core.mjs                 # 下最新版
+node install-core.mjs --check         # 只看状态（未装退出码 1）
+node install-core.mjs --tag v1.19.32  # 指定版本
+
+# 走镜像（GitHub 直连慢/被墙时）
+MIHOMO_MIRROR='https://ghproxy.net/{}' node install-core.mjs
+
+# 用已有内核（比如 Clash Verge 自带的）
+MIHOMO_BIN="C:\Program Files\Clash Verge\verge-mihomo.exe" node install-core.mjs
+
+# 内核放哪也能改（桌面版/Docker 用这个把内核放进数据目录）
+MIHOMO_RUNTIME=/app/data/mihomo node install-core.mjs
+```
+
+> 内核装在 `MIHOMO_RUNTIME`（默认本目录的 `runtime/`）。
+> mihomo 是 **GPL-3.0**，与本仓库 MIT 相互独立，故不入库、运行时下载。
+
+---
 # 10 · 代理节点管理（独立 mihomo 实例 + 节点池）
 
 把两个机场订阅变成**只有模型请求才走**的出口节点池：每日轮换、24h 租约、请求前连通性验证。
