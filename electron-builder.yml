@@ -60,6 +60,11 @@ win:
 linux:
   icon: build/icon.png
   category: Network
+  # .deb 必须提供 maintainer，否则 fpm 直接报错退出
+  maintainer: suimi8 <suimi8@users.noreply.github.com>
+  # 桌面环境的窗口关联（WM_CLASS），否则任务栏可能认不出窗口属于哪个应用
+  desktopName: opencode-free-gateway.desktop
+  syncDesktopName: true
   synopsis: OpenCode 免费层网关
   description: 把 OpenCode 免费层整理成本地 OpenAI / Responses 兼容网关
   target:
