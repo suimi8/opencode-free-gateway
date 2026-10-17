@@ -284,27 +284,29 @@ async function viewChannels() {
   </table></div></div>`);
 }
 
-const FREE_MODELS = ['deepseek-v4.1-flash-free','longcat-2.5-preview-free','space-bunny-free','mimo-v2.6-flash-free','nemotron-3.5-lightning-free','nemotron-3.5-super-vl-free','nemotron-3-ultra-free','big-pickle','muse-spark-1.3-contributor-free','cat-jam-free'];
-
+/* ⚠️ 不再内置模型清单。
+ * 以前这里有个 FREE_MODELS 常量并预填进「添加渠道」弹窗，
+ * 导致用户根本没配过的模型名出现在自己的渠道里。
+ * 现在输入框是空的，由用户自己粘贴；不想手打就点「从上游拉取」。
+ */
 async function editChannel(id) {
-  let c = { name: '', type: 'opencode', base_url: 'https://opencode.ai/inference/v1/chat/completions', api_key: 'public', models: FREE_MODELS.slice(), proxy: '', priority: 0, extra: {} };
+  let c = { name: '', type: 'opencode', base_url: '', api_key: '', models: [], proxy: '', priority: 0, extra: {} };
   if (id) c = await api('/api/channels/' + id);
   openModal(`
     <h3>${id ? '编辑' : '添加'}渠道</h3>
-    <label>名称</label><input id="f_name" value="${esc(c.name)}" placeholder="OpenCode 免费层">
+    <label>名称</label><input id="f_name" value="${esc(c.name)}" placeholder="比如：我的上游">
     <label>类型</label>
     <select id="f_type">
       <option value="opencode"${c.type === 'opencode' ? ' selected' : ''}>opencode（免费层形状请求）</option>
       <option value="openai"${c.type === 'openai' ? ' selected' : ''}>openai（通用 OpenAI 兼容）</option>
     </select>
-    <label>上游地址</label>
-    <input id="f_url" value="${esc(c.base_url || '')}" placeholder="https://opencode.ai/inference/v1/chat/completions">
-    <label>API Key（opencode 类型填 public 即可）</label><input id="f_key" value="${esc(c.api_key || '')}">
+    <label>上游地址（chat/completions 完整地址）</label>
+    <input id="f_url" value="${esc(c.base_url || '')}" placeholder="https://你的上游/v1/chat/completions">
+    <label>API Key</label><input id="f_key" value="${esc(c.api_key || '')}" placeholder="opencode 类型填 public；其它填你的 key">
     <label>模型列表（每行一个）</label>
-    <textarea id="f_models" rows="7" class="mono">${esc(c.models.join('\n'))}</textarea>
+    <textarea id="f_models" rows="7" class="mono" placeholder="model-name-1&#10;model-name-2">${esc((c.models || []).join('\n'))}</textarea>
     <div class="row" style="margin-top:8px">
-      <button class="sm" onclick="fillFree()">填入免费模型</button>
-      <button class="sm" onclick="fillFree(true)">只填已探明可用</button>
+      <button class="sm" onclick="pullModels()">⤓ 从上游拉取模型</button>
     </div>
     <label>代理（可逗号分隔多节点，留空直连）</label>
     <input id="f_proxy" class="mono" value="${esc(c.proxy || '')}" placeholder="http://127.0.0.1:7897,socks5://127.0.0.1:7897">
@@ -313,11 +315,20 @@ async function editChannel(id) {
     <div class="foot"><button onclick="closeModal()">取消</button><button class="primary" onclick="saveChannel(${id || 0})">保存</button></div>
   `);
 }
-function fillFree(proven) {
-  const list = proven
-    ? ['deepseek-v4.1-flash-free','longcat-2.5-preview-free']
-    : FREE_MODELS;
-  $('#f_models').value = list.join('\n');
+/** 用当前填的上游地址去拉一次模型列表，填进输入框。不内置任何模型名。 */
+async function pullModels() {
+  const base_url = $('#f_url').value.trim();
+  const api_key = $('#f_key').value.trim();
+  const type = $('#f_type').value;
+  if (!base_url) return toast('先填上游地址', 'bad');
+  toast('正在从上游拉取模型列表…');
+  try {
+    const r = await api('/api/channels/probe-models', { method: 'POST', body: { base_url, api_key, type } });
+    if (!r.models || !r.models.length) return toast('上游没返回模型（HTTP ' + (r.status || '?') + '）', 'bad');
+    const cur = $('#f_models').value.trim();
+    $('#f_models').value = cur ? cur + '\n' + r.models.join('\n') : r.models.join('\n');
+    toast(`拉到 ${r.models.length} 个模型（HTTP ${r.status}${r.note ? ' · ' + r.note : ''}）`, 'ok');
+  } catch (e) { toast('拉取失败：' + e.message, 'bad'); }
 }
 async function saveChannel(id) {
   const body = {
@@ -887,6 +898,15 @@ function renderCore(st) {
       </div>
     </div>
     ${info}${progress}
+    <details style="margin-top:10px"${(st && st.mirrors) ? '' : ' open'}>
+      <summary style="cursor:pointer;font-size:12px;color:var(--dim)">下载镜像${(st && st.mirrors) ? '（已配置）' : '（未配置 —— 只走 GitHub 官方直连）'}</summary>
+      <div class="sub" style="margin-top:6px;font-size:11px">
+        网络慢或被墙时在这里填加速地址；<code class="mono">{}</code> 代表原始 URL 的位置。
+        <b>本项目不预置任何第三方镜像</b> —— 流量经过谁的服务器应该由你自己决定。
+      </div>
+      <textarea id="coreMirrors" rows="2" class="mono" style="width:100%;margin-top:6px" placeholder="https://你的镜像前缀/{}">${esc((st && st.mirrors) || '')}</textarea>
+      <button class="sm" style="margin-top:6px" onclick="saveMirrors()">保存镜像</button>
+    </details>
   </div>`;
 
   if (running && !CORE_TIMER) CORE_TIMER = setTimeout(pollCore, 900);
@@ -919,6 +939,16 @@ async function installCoreNow() {
     if (r.busy) { toast('已经在安装了', 'warn'); }
     else toast('开始下载…', 'ok');
     if (!CORE_TIMER) CORE_TIMER = setTimeout(pollCore, 700);
+  } catch (e) { toast(e.message, 'bad'); }
+}
+
+/** 保存下载镜像（不内置任何镜像，全由用户填） */
+async function saveMirrors() {
+  const raw = $('#coreMirrors').value;
+  try {
+    const r = await api('/api/proxy-pool/core', { method: 'POST', body: { mirrors: raw } });
+    toast(r.mirrors.length ? `已保存 ${r.mirrors.length} 个镜像` : '已清空镜像（只走官方直连）', 'ok');
+    loadCore();
   } catch (e) { toast(e.message, 'bad'); }
 }
 

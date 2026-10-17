@@ -19,20 +19,29 @@ const REPO = 'MetaCubeX/mihomo';
 const EXE = process.platform === 'win32' ? 'mihomo.exe' : 'mihomo';
 
 /**
- * 下载镜像。GitHub 直连在国内经常很慢或直接失败，
- * 所以失败后依次尝试几个公共反代（只是**转发**官方 URL，不改内容）。
- * 可用 MIHOMO_MIRROR 自定义，多个用逗号分隔，{} 会替换成原始 URL。
+ * 下载镜像。
+ *
+ * ⚠️ **不内置任何镜像**：默认只走 GitHub 官方直连。
+ * 国内网络需要加速时，由用户自己配置 —— 面板里有一栏「下载镜像」，
+ * 或设环境变量 MIHOMO_MIRROR（多个用逗号/换行分隔）。
+ * 每一项里 {} 会被替换成原始 URL；没写 {} 就当作前缀。
+ *
+ * 之所以不预置第三方反代：那些站点随时可能失效、可能被投毒，
+ * 也不该由本项目的作者替用户决定流量经过谁的服务器。
  */
-const DEFAULT_MIRRORS = [
-  '',
-  'https://ghproxy.net/{}',
-  'https://gh-proxy.com/{}',
-  'https://ghfast.top/{}',
-];
-function mirrors() {
-  const custom = (process.env.MIHOMO_MIRROR || '').trim();
-  if (!custom) return DEFAULT_MIRRORS;
-  return custom.split(',').map((s) => s.trim()).filter(Boolean).map((s) => (s.includes('{}') ? s : s.replace(/\/?$/, '/') + '{}'));
+export function parseMirrors(raw) {
+  if (!raw) return [];
+  return String(raw)
+    .split(/[\n,]+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => (s.includes('{}') ? s : s.replace(/\/?$/, '/') + '{}'));
+}
+
+/** 生效的镜像列表（不含直连那一次） */
+export function effectiveMirrors(explicit) {
+  if (Array.isArray(explicit)) return explicit.map((s) => String(s).trim()).filter(Boolean);
+  return parseMirrors(process.env.MIHOMO_MIRROR);
 }
 
 /** GitHub 资产名里的平台标记，如 windows-amd64 / linux-arm64 / darwin-arm64 */
@@ -65,6 +74,7 @@ export function coreStatus(runtime) {
   const version = haveCore(runtime);
   return {
     installed: !!version && !version.startsWith('('),
+    mirrors: effectiveMirrors().join('\n'),
     version: version || null,
     path: target,
     exists: fs.existsSync(target),
@@ -172,8 +182,8 @@ async function downloadWithProgress(url, { onProgress, timeoutMs = 600000 } = {}
 }
 
 /** 依次尝试各个镜像，第一个成功的就用 */
-async function downloadAny(originalUrl, opts) {
-  const list = mirrors();
+async function downloadAny(originalUrl, opts, mirrorList = []) {
+  const list = ['', ...mirrorList];   // '' = 官方直连，永远排第一
   let lastErr = null;
   for (const m of list) {
     const url = m ? m.replace('{}', originalUrl) : originalUrl;
@@ -191,9 +201,9 @@ async function downloadAny(originalUrl, opts) {
 }
 
 /** 取 release 元数据；API 失败时退回已知可用的 tag */
-async function releaseInfo(tag) {
+async function releaseInfo(tag, mirrorList = []) {
   const api = `https://api.github.com/repos/${REPO}/releases${tag ? `/tags/${tag}` : '/latest'}`;
-  for (const m of ['', 'https://ghproxy.net/{}', 'https://gh-proxy.com/{}']) {
+  for (const m of ['', ...mirrorList]) {
     const url = m ? m.replace('{}', api) : api;
     try {
       const r = await fetch(url, {
@@ -213,7 +223,7 @@ async function releaseInfo(tag) {
  * 安装内核。会把进度写进导出的 JOB 对象，界面轮询 /api/proxy-pool/core 拿。
  * @returns {Promise<{ok:boolean, version?:string, tag?:string, bytes?:number, error?:string}>}
  */
-export async function installCore({ runtime, tag = null } = {}) {
+export async function installCore({ runtime, tag = null, mirrors: mirrorInput = null } = {}) {
   if (JOB.running) return { ok: false, error: '已经在安装了', busy: true };
   setJob({ ...JOB, running: true, phase: 'resolve', message: '查询最新版本…', pct: 3, ok: null, error: null, log: [], startedAt: Date.now(), finishedAt: 0, bytes: 0, total: 0 });
   const target0 = runtime ? corePath(runtime) : null;   // 先算好；runtime 缺失时留空，由下面统一报错
@@ -222,8 +232,10 @@ export async function installCore({ runtime, tag = null } = {}) {
     const target = target0;
     fs.mkdirSync(runtime, { recursive: true });
 
-    /* 1) 版本 */
-    let rel = await releaseInfo(tag);
+    /* 1) 版本（镜像也用于取 release 元数据） */
+    const mirrorList = effectiveMirrors(mirrorInput);
+    if (!mirrorList.length) pushLog('未配置镜像，只走官方直连（可在面板「代理订阅」页填下载镜像）');
+    let rel = await releaseInfo(tag, mirrorList);
     let ver = rel?.tag_name || tag || null;
     let assets = rel?.assets || [];
 
@@ -250,7 +262,7 @@ export async function installCore({ runtime, tag = null } = {}) {
         const pct = t ? 12 + (got / t) * 68 : 12 + Math.min(68, got / 2e5);
         setJob({ pct, bytes: got, total: t, message: `下载中 ${(got / 1048576).toFixed(1)}${t ? '/' + (t / 1048576).toFixed(1) : ''} MB` });
       },
-    });
+    }, mirrorList);
     setJob({ pct: 82, message: '解压中…', bytes: buf.length });
     pushLog(`已下载 ${(buf.length / 1048576).toFixed(1)} MB`);
 

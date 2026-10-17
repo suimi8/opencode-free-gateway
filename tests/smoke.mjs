@@ -159,10 +159,30 @@ await check('POST /api/login', async () => {
   return '{"ok":true} + cookie';
 });
 
-await check('GET /api/channels (默认种子渠道)', async () => {
+await check('GET /api/channels (全新安装应为空，不内置任何渠道)', async () => {
   const j = await (await fetch(BASE + '/api/channels', { headers: { cookie } })).json();
-  if (!j.rows) throw new Error('无 rows');
-  return `${j.rows.length} 个渠道`;
+  if (j.rows.length !== 0) throw new Error('竟然内置了 ' + j.rows.length + ' 个渠道: ' + j.rows.map((r) => r.name).join(','));
+  return '0 个渠道（由用户自己添加）';
+});
+
+await check('POST /api/channels (用户自己填渠道 + 模型)', async () => {
+  const r = await fetch(BASE + '/api/channels', {
+    method: 'POST',
+    headers: { cookie, 'content-type': 'application/json' },
+    body: JSON.stringify({
+      name: 'smoke-channel',
+      type: 'openai',
+      base_url: 'https://example.com/v1/chat/completions',
+      api_key: 'public',
+      models: ['smoke-model-a', 'smoke-model-b'],
+      priority: 50,
+      status: 1,
+    }),
+  });
+  const j = await r.json();
+  if (!j.id) throw new Error('创建失败: ' + JSON.stringify(j).slice(0, 120));
+  if (j.models.length !== 2) throw new Error('模型数不对: ' + j.models.length);
+  return 'id=' + j.id + ' 模型 ' + j.models.join(',');
 });
 
 await check('POST /api/tokens 建令牌', async () => {
@@ -181,9 +201,10 @@ await check('GET /v1/models (OpenAI 兼容)', async () => {
   const j = await r.json();
   if (!Array.isArray(j.data)) throw new Error('data 不是数组');
   if (j.data.length < 1) throw new Error('模型列表为空');
-  // 默认渠道种子有 11 个模型；少于 10 个说明「动态发现结果替换了手配清单」的
-  // 截断问题回归了（探测异步跑，跑到一半时列表会变短）
-  if (j.data.length < 10) throw new Error(`模型被截断，只有 ${j.data.length} 个（预期 >= 10）`);
+  // 不再内置模型：列表必须正好等于用户在那个渠道里填的 2 个
+  if (j.data.length !== 2) throw new Error(`模型数不对，期望 2 个（用户填的），实际 ${j.data.length}`);
+  const ids = j.data.map((m) => m.id).sort();
+  if (ids.join(',') !== 'smoke-model-a,smoke-model-b') throw new Error('模型 id 不对: ' + ids.join(','));
   return `${j.data.length} 个模型`;
 });
 

@@ -20,7 +20,22 @@ import * as UP from './upstream.mjs';
 const CATALOG_URL = process.env.MODEL_CATALOG_URL || 'https://opencode.ai/inference/v1/models';
 const UA = 'opencode/1.19.2';
 
-export const enabled = () => String(process.env.PANEL_MODEL_DISCOVERY ?? '1') !== '0';
+/**
+ * 动态模型发现是否启用。
+ *
+ * 除了环境变量，还**必须存在一个启用的 opencode 类型渠道**才真正跑 ——
+ * 否则「没配任何渠道」的面板也会去拉 CATALOG_URL，把上游的几十个模型
+ * 直接灌进 /v1/models。那等于换个地方内置模型清单，和「一切由用户自己配」冲突。
+ */
+export function enabled() {
+  if (String(process.env.PANEL_MODEL_DISCOVERY ?? '1') === '0') return false;
+  try {
+    const row = DB.db.prepare("SELECT COUNT(*) AS n FROM channels WHERE status = 1 AND type = 'opencode'").get();
+    return (row?.n || 0) > 0;
+  } catch {
+    return false;
+  }
+}
 const REFRESH_MS = Number(process.env.MODEL_REFRESH_MS || 30 * 60e3);
 const PROBE_TIMEOUT = Number(process.env.MODEL_PROBE_TIMEOUT || 45000);
 

@@ -803,6 +803,36 @@ async function handle(req, res) {
       return json(res, 200, { ...DB.stats(since), range, channels: DB.listChannels().length, tokens: DB.listTokens().length, cooldowns: cooldownSnapshot() });
     }
 
+    /* 从用户填的上游地址拉一次模型列表（不内置任何模型名） */
+    if (p === '/api/channels/probe-models' && req.method === 'POST') {
+      const b = await readJson(req);
+      const base = String((b && b.base_url) || '').trim();
+      const key = String((b && b.api_key) || '').trim();
+      const type = String((b && b.type) || 'openai');
+      if (!base) return err(res, 400, '缺少 base_url');
+      if (!/^https?:\/\//i.test(base)) return err(res, 400, 'base_url 必须是 http(s) 地址');
+      // 从 chat/completions 地址推导 models 地址
+      let modelsUrl = base.replace(/\/chat\/completions\/?$/i, '/models').replace(/\/responses\/?$/i, '/models');
+      if (modelsUrl === base) modelsUrl = base.replace(/\/+$/, '') + '/models';
+      const headers = { accept: 'application/json' };
+      // opencode 类型的 /models 是公开的；其它上游有 key 就带上
+      if (key && key !== 'public') headers.authorization = 'Bearer ' + key;
+      try {
+        const r = await fetch(modelsUrl, { headers, signal: AbortSignal.timeout(30000) });
+        const text = await r.text();
+        let j = null;
+        try { j = JSON.parse(text); } catch { /* 非 JSON */ }
+        const list = Array.isArray(j?.data) ? j.data : (Array.isArray(j?.models) ? j.models : []);
+        const models = list.map((x) => (typeof x === 'string' ? x : (x && (x.id || x.name)))).filter(Boolean);
+        return json(res, 200, {
+          ok: r.ok, status: r.status, models, count: models.length,
+          note: models.length ? undefined : `响应里没有 models 数组`,
+          url: modelsUrl,
+        });
+      } catch (e) {
+        return err(res, 502, `拉取模型失败: ${String(e.message).slice(0, 200)}`);
+      }
+    }
     if (p === '/api/channels') {
       if (req.method === 'GET') return json(res, 200, { rows: DB.listChannels().map(publicChannel) });
       if (req.method === 'POST') { const b = await readJson(req); return json(res, 200, publicChannel(DB.createChannel(b))); }
@@ -972,7 +1002,22 @@ async function handle(req, res) {
      */
     if (p === '/api/proxy-pool/core') {
       if (req.method === 'GET') {
-        return json(res, 200, { ...POOL.CORE.coreStatus(POOL.runtimeDir()), job: POOL.CORE.JOB });
+        return json(res, 200, {
+          ...POOL.CORE.coreStatus(POOL.runtimeDir()),
+          mirrors: DB.getSetting('mihomo_mirrors', '') || '',
+          job: POOL.CORE.JOB,
+        });
+      }
+      /* 保存下载镜像（不内置任何镜像，由用户自己填） */
+      if (req.method === 'POST') {
+        const b = await readJson(req);
+        const raw = String((b && b.mirrors) || '').trim();
+        const parsed = POOL.CORE.parseMirrors(raw);
+        for (const m of parsed) {
+          if (!/^https?:\/\//i.test(m)) return err(res, 400, `镜像必须是 http(s) 地址: ${m}`);
+        }
+        DB.setSetting('mihomo_mirrors', parsed.join('\n'));
+        return json(res, 200, { ok: true, mirrors: parsed, text: parsed.join('\n') });
       }
     }
     if (p === '/api/proxy-pool/core/install' && req.method === 'POST') {
@@ -980,7 +1025,11 @@ async function handle(req, res) {
       let body = {};
       try { body = await readJson(req); } catch { /* 允许空 body */ }
       // 故意不 await：下载几十 MB，让界面轮询进度
-      POOL.CORE.installCore({ runtime: POOL.runtimeDir(), tag: body && body.tag ? String(body.tag) : null })
+      POOL.CORE.installCore({
+        runtime: POOL.runtimeDir(),
+        tag: body && body.tag ? String(body.tag) : null,
+        mirrors: POOL.CORE.parseMirrors(DB.getSetting('mihomo_mirrors', '') || ''),
+      })
         .then((r) => {
           if (!r.ok) return;
           // 装好之后顺手让池子用上新内核（失败不影响安装结果）

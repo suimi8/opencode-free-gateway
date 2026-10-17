@@ -118,26 +118,12 @@ export function ensureDefaults() {
     updated_at  INTEGER NOT NULL
   )`);
 
-  // 首次运行**种子渠道**：保证 clone 下来直接就能用，不用手工配渠道。
-  // 这里的模型清单只是初始值；开着动态发现时会自动跟上游增删。
-  if (!db.prepare('SELECT COUNT(*) AS n FROM channels').get().n) {
-    createChannel({
-      name: 'OpenCode 免费层',
-      type: 'opencode',
-      base_url: 'https://opencode.ai/inference/v1/chat/completions',
-      api_key: 'public',
-      models: [
-        'deepseek-v4.1-flash-free', 'longcat-2.5-preview-free', 'space-bunny-free',
-        'mimo-v2.6-flash-free', 'nemotron-3.5-lightning-free', 'nemotron-3.5-super-vl-free',
-        'big-pickle', 'muse-spark-1.3-contributor-free', 'muse-spark-1.2-contributor-free',
-        'beam-free', 'glm-5.3-flash-free',
-      ],
-      proxy: process.env.PANEL_DEFAULT_PROXY || '',
-      priority: 100,
-      status: 1,
-      extra: {},
-    });
-  }
+  // ⚠️ **不再种入默认渠道**。
+  // 早期版本首次运行会自动建一个「OpenCode 免费层」渠道并写死 11 个模型，
+  // 结果面板一打开就有用户没配过的上游和模型名 —— 出了问题时很难分辨
+  // 哪些是用户自己填的、哪些是程序塞的。现在一律空着，由用户在「渠道管理」
+  // 里自己填名称、上游地址和模型列表（「模型列表」页可以从上游拉取）。
+  // 具体该填什么见 README「快速开始」。这里只保证表结构就绪。
 }
 
 /* ══════════════════════════════════════════════════ 模型协议兼容
