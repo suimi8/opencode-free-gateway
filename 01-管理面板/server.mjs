@@ -629,7 +629,12 @@ async function handleResponses(req, res, body, auth) {
       };
       const emit = (fin) => {
         if (wantStream) { res.write(fin.sse); res.end(); }
-        else { res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(fin.response)); }
+        else {
+          res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+          // withOutputText：补上官方 SDK 才有的 output_text 便捷字段，
+          // 很多第三方客户端直接读它，拿不到就当模型没输出
+          res.end(JSON.stringify(BR.withOutputText(fin.response)));
+        }
         done(fin.response && fin.response.usage);
       };
       if (wantStream) {
@@ -743,37 +748,63 @@ async function handle(req, res) {
   if (p === '/v1/models' || p === '/v1/models/') {
     const auth = tokenAuth(req);
     if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
-    /* 合并「渠道手配」与「动态发现」—— 不能二选一。
-     * 动态探测是**异步**的：启动 5 秒后才开始，第一轮跑完要几十秒。
-     * 早期写法是「有动态结果就替换手配清单」，于是探测跑到一半时
-     * /v1/models 只返回那几个已探测完的模型，列表被截断。 */
+    /* ══════════ /v1/models ══════════
+     * 两条来源，优先级不同：
+     *   1. **用户在自己渠道里显式配置的模型** —— 必须永远列出来。
+     *      哪怕探测说它现在不可用，也要返回（只标 available:false），
+     *      因为「用户配了却被程序藏起来」是最难排查的一类问题：
+     *      客户端拿到空列表，看起来像整个网关坏了。
+     *   2. 动态发现额外找到的模型 —— 只列可用的，作为补充。
+     */
     const includeUnusable = u.searchParams.get('all') === '1';
-    const rows = new Map();
-    for (const m of allModels()) {
-      rows.set(m.id, { id: m.id, owned_by: m.owned_by, protocols: m.protocols || null, available: true, status: 'configured' });
+    const regOn = REG.enabled();
+    const regMap = new Map();
+    if (regOn) {
+      for (const m of REG.downstreamModels({ includeUnusable: true })) regMap.set(m.id, m);
     }
-    if (REG.enabled()) {
-      for (const m of REG.downstreamModels({ includeUnusable: true })) {
-        rows.set(m.id, { ...(rows.get(m.id) || {}), ...m });
-      }
-    }
-    // 剔除「上游已下架且探测确认不可用」的；下架但仍可用的要留着（实测有这种）
-    const gone = new Set(REG.enabled() ? REG.goneModelIds() : []);
-    const data = [...rows.values()]
-      .filter((m) => !gone.has(m.id) || m.available)
-      .filter((m) => includeUnusable || m.available !== false)
-      .map((m) => ({
-      id: m.id,
+    const gone = new Set(regOn ? REG.goneModelIds() : []);
+
+    const shape = (id, m, extra) => ({
+      id,
       object: 'model',
       created: m.created || Math.floor(Date.now() / 1000),
       owned_by: m.owned_by || 'opencode-free',
-      available: m.available !== undefined ? m.available : true,
+      available: m.available !== false,
       status: m.status || 'unknown',
       protocols: m.protocols || null,
-      endpoints: m.protocols
+      endpoints: (m.protocols || null)
         ? m.protocols.map((p) => (p === 'chat' ? '/v1/chat/completions' : '/v1/responses'))
         : null,
-    }));
+      ...extra,
+    });
+
+    const data = [];
+    const seen = new Set();
+
+    // ① 渠道里配置的：一定出现
+    for (const m of allModels()) {
+      const reg = regMap.get(m.id) || {};
+      data.push(shape(m.id, {
+        created: reg.created,
+        owned_by: m.owned_by,
+        // 探测过就以探测结果为准，没探测过按可用显示
+        available: reg.probed ? reg.available !== false : true,
+        status: reg.status || 'configured',
+        protocols: reg.protocols || m.protocols || null,
+      }, { source: 'channel' }));
+      seen.add(m.id);
+    }
+
+    // ② 动态发现的：只补用户没配过的，且默认不列不可用的
+    if (regOn) {
+      for (const m of REG.downstreamModels({ includeUnusable })) {
+        if (seen.has(m.id)) continue;
+        if (gone.has(m.id) && !m.available) continue;
+        data.push(shape(m.id, m, { source: 'discovered' }));
+        seen.add(m.id);
+      }
+    }
+
     return json(res, 200, { object: 'list', data });
   }
   if (p === '/v1/chat/completions' && req.method === 'POST') {

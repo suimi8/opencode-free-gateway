@@ -63,7 +63,17 @@ export function responsesToChat(body) {
   if (typeof body.instructions === 'string' && body.instructions.trim()) {
     msgs.push({ role: 'system', content: body.instructions });
   }
-  const input = Array.isArray(body.input) ? body.input : [];
+  /* Responses API 的 input 允许三种写法，都要认：
+   *   1. 纯字符串                     {"input": "你好"}
+   *   2. 字符串数组                   {"input": ["你好", "再说一遍"]}
+   *   3. 结构化的 message 数组        {"input": [{"type":"message","role":"user","content":[{"type":"input_text","text":"你好"}]}]}
+   *
+   * ⚠️ 只认数组会让第 1 种（也是**最常见**的写法）直接变成空 messages，
+   *    上游报 "Empty input messages" 400 —— 实测踩过。
+   */
+  const input = Array.isArray(body.input)
+    ? body.input
+    : (typeof body.input === 'string' ? [body.input] : []);
   // 同一个 assistant 回合里的 function_call 要合成一条带 tool_calls 的 assistant 消息
   let pendingCalls = [];
   const flushCalls = () => {
@@ -407,5 +417,29 @@ export function aggregateResponsesSSE(text) {
     if (o.type === 'response.completed' && o.response) final = o.response;
     else if (o.response && o.response.status === 'completed') final = o.response;
   }
-  return final;
+  return final ? withOutputText(final) : final;
+}
+
+/**
+ * 补上 output_text 便捷字段。
+ *
+ * 严格按 OpenAI 的 HTTP 协议，/v1/responses 的正文里只有
+ * `output: [{ type:'message', content:[{type:'output_text', text:'…'}] }]`；
+ * `output_text` 是**官方 SDK 在客户端拼出来的**，不在响应体里。
+ *
+ * 但现实是很多第三方客户端 / 手写脚本直接读 `response.output_text`，
+ * 拿不到就当「模型没输出」。所以这里服务端也拼一份 —— 有则不动，
+ * 没有就用 output 里的 output_text 片段连起来。
+ */
+export function withOutputText(resp) {
+  if (!resp || typeof resp !== 'object') return resp;
+  if (typeof resp.output_text === 'string' && resp.output_text.length) return resp;
+  const parts = [];
+  for (const item of (Array.isArray(resp.output) ? resp.output : [])) {
+    for (const c of (Array.isArray(item?.content) ? item.content : [])) {
+      if (c && (c.type === 'output_text' || c.type === 'text') && typeof c.text === 'string') parts.push(c.text);
+    }
+  }
+  resp.output_text = parts.join('');
+  return resp;
 }

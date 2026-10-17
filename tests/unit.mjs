@@ -266,5 +266,27 @@ eq('Clash 合并：订阅 +1', mr.addedProviders, 1);
 eq('Clash 合并：节点 +2', mr.addedProxies, 2);
 eq('Clash 合并：写回了 saveSubs', saved && saved.manualProxies.length, 2);
 
+
+/* ══════════════════════════════════════════════ 12) Responses 协议的两种兼容点 */
+console.log('\n── 12) Responses 兼容 ──');
+
+// OpenAI 的 /v1/responses 允许 input 是**纯字符串**（最常见写法），
+// 只认数组会让上游收到空 messages 并 400。实测踩过。
+eq('input 为纯字符串 → 1 条 user', B.responsesToChat({ model: 'm', input: '你好' }).messages.length, 1);
+eq('input 纯字符串内容正确', B.responsesToChat({ model: 'm', input: '你好' }).messages[0].content, '你好');
+eq('input 为字符串数组 → 2 条', B.responsesToChat({ model: 'm', input: ['a', 'b'] }).messages.length, 2);
+eq('input 结构化 message → 1 条', B.responsesToChat({ model: 'm', input: [{ type: 'message', role: 'user', content: [{ type: 'input_text', text: 'x' }] }] }).messages.length, 1);
+eq('instructions 变成 system', B.responsesToChat({ model: 'm', instructions: 'sys', input: 'hi' }).messages[0].role, 'system');
+eq('input 缺失 → 0 条（不崩）', B.responsesToChat({ model: 'm' }).messages.length, 0);
+
+// output_text 是官方 SDK 在客户端拼的字段，不在 HTTP 响应体里；
+// 但很多第三方客户端直接读它，所以服务端补一份。
+const onlyOutput = { output: [{ type: 'message', content: [{ type: 'output_text', text: 'AB' }, { type: 'output_text', text: 'CD' }] }] };
+eq('withOutputText 拼出 output_text', B.withOutputText(onlyOutput).output_text, 'ABCD');
+eq('withOutputText 不覆盖已有值', B.withOutputText({ output_text: 'X', output: [] }).output_text, 'X');
+eq('withOutputText 容忍空对象', B.withOutputText({}).output_text, '');
+eq('withOutputText 容忍 null', B.withOutputText(null), null);
+eq('withOutputText 跳过非 output_text 类型', B.withOutputText({ output: [{ content: [{ type: 'reasoning', text: 'no' }, { type: 'text', text: 'yes' }] }] }).output_text, 'yes');
+
 console.log(`\n单元测试: ${pass} 通过, ${fail} 失败`);
 process.exit(fail ? 1 : 0);
