@@ -25,6 +25,7 @@ verge-mihomo-alpha.exe
 # ── Node / 构建产物 ──
 node_modules/
 dist/
+dist-desktop/
 *.tgz
 *.zip
 !package.json
@@ -43,3 +44,8 @@ tmp/
 temp/
 .cache/
 _sanitize.mjs
+
+# ── 桌面应用构建产物 ──
+dist-desktop/
+build/icon-256.png
+build/icon-64.png

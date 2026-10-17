@@ -1,0 +1,93 @@
+name: Desktop
+
+# 三平台桌面应用构建。Electron 的原生安装包最好在**各自平台上**打
+# （macOS 的 dmg 必须在 macOS 上构建；Windows 的 exe 在 Windows 上最稳），
+# 所以这里用矩阵跑三个 runner，各自产出自己平台的产物。
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: 打包 · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: dist:win
+            artifact: win-x64
+          - os: ubuntu-latest
+            script: dist:linux
+            artifact: linux-x64
+          - os: macos-latest
+            script: dist:mac
+            artifact: mac
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 构建前面板可用性检查
+        run: |
+          node tests/unit.mjs
+          node tests/smoke.mjs
+
+      - name: Linux 打包依赖
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends rpm fakeroot dpkg
+
+      - name: 打包 ${{ matrix.artifact }}
+        run: npm run ${{ matrix.script }}
+        env:
+          # 没有签名证书：明确告诉 electron-builder 跳过签名/公证
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: 产物列表
+        shell: bash
+        run: |
+          ls -lh dist-desktop/ || true
+          echo "::group::disk"
+          du -sh dist-desktop/* 2>/dev/null || true
+          echo "::endgroup::"
+
+      - name: 上传 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.artifact }}
+          path: |
+            dist-desktop/*.exe
+            dist-desktop/*.AppImage
+            dist-desktop/*.deb
+            dist-desktop/*.dmg
+            dist-desktop/*.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: 挂到 GitHub Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            dist-desktop/*.exe
+            dist-desktop/*.AppImage
+            dist-desktop/*.deb
+            dist-desktop/*.dmg
+            dist-desktop/*.zip
+          fail_on_unmatched_files: false
+          token: ${{ secrets.GITHUB_TOKEN }}

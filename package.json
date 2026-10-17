@@ -1,7 +1,7 @@
 {
   "name": "opencode-free-gateway",
-  "version": "1.0.0",
-  "description": "把 OpenCode 免费层整理成本地 OpenAI / Responses 兼容网关：协议互转、模型动态发现、代理节点池、可部署管理面板",
+  "version": "1.1.0",
+  "description": "把 OpenCode 免费层整理成本地 OpenAI / Responses 兼容网关：协议互转、模型动态发现、代理节点池、可部署管理面板、跨平台桌面应用",
   "type": "module",
   "license": "MIT",
   "author": "suimi8",
@@ -17,7 +17,9 @@
     "proxy-pool",
     "clash",
     "mihomo",
-    "codex"
+    "codex",
+    "electron",
+    "desktop"
   ],
   "scripts": {
     "start": "node 01-管理面板/server.mjs",
@@ -28,8 +30,19 @@
     "test:unit": "node tests/unit.mjs",
     "test:smoke": "node tests/smoke.mjs",
     "check": "node scripts/check-syntax.mjs",
-    "package": "node scripts/package.mjs"
+    "package": "node scripts/package.mjs",
+    "make-icon": "node scripts/make-icon.mjs",
+    "desktop": "electron .",
+    "desktop:dev": "electron . --dev",
+    "dist": "electron-builder --publish never",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:linux": "electron-builder --linux --publish never",
+    "dist:mac": "electron-builder --mac --publish never"
   },
+  "main": "desktop/main.mjs",
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "electron": "^44.8.0",
+    "electron-builder": "^26.0.12"
+  }
 }

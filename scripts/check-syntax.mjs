@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ONLY_SYNTAX = process.argv.includes('--syntax');
 
-const SKIP_DIR = new Set(['node_modules', '.git', 'dist', 'runtime', '08-上游源码快照', '99-解包产物与运行时残留', 'tmp', 'temp']);
+const SKIP_DIR = new Set(['node_modules', '.git', 'dist', 'dist-desktop', 'runtime', '08-上游源码快照', '99-解包产物与运行时残留', 'tmp', 'temp']);
 const exts = new Set(['.mjs', '.js', '.cjs']);
 
 function walk(dir, out = []) {

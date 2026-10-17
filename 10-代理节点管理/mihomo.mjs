@@ -22,7 +22,9 @@ import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 
 const ROOT = import.meta.dirname;
-export const RUNTIME = path.join(ROOT, 'runtime');
+// 运行时目录：默认在模块旁边的 runtime/。
+// 桌面版（Electron）把内核与数据放到用户数据目录，用 MIHOMO_RUNTIME 覆盖。
+export const RUNTIME = process.env.MIHOMO_RUNTIME || path.join(ROOT, 'runtime');
 const CONFIG_PATH = path.join(RUNTIME, 'config.yaml');
 const SUBS_PATH = path.join(ROOT, 'subscriptions.json');
 const TEMPLATE_PATH = path.join(ROOT, 'config.template.yaml');

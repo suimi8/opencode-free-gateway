@@ -13,7 +13,74 @@
 
 ---
 
-## 🚀 快速开始
+## 🖥️ 桌面应用（下载即用，三平台）
+
+不想装 Node、不想开命令行？直接下安装包，**双击运行**：
+
+| 平台 | 文件 | 说明 |
+|---|---|---|
+| **Windows** | `OpenCode-Free-Gateway-<版本>-win-x64.exe` | **单文件便携版**，双击即用，不安装、不写注册表 |
+| **Linux** | `OpenCode-Free-Gateway-<版本>-linux-x64.AppImage` | 下载后 `chmod +x` 再双击；另有 `.deb` |
+| **macOS** | `OpenCode-Free-Gateway-<版本>-mac-arm64.dmg` / `-x64.dmg` | Intel 与 Apple Silicon 各一份 |
+
+全部在 [**Releases**](https://github.com/suimi8/opencode-free-gateway/releases) 页面。
+
+**应用是什么样**：一个原生窗口（不是浏览器标签页），带托盘图标和菜单栏：
+
+```
+┌─ OpenCode 免费层网关 ────────────────────────┐
+│  ┌────────┬──────────────────────────────┐  │
+│  │ 概览    │   渠道 / 令牌 / 日志 / 统计    │  │
+│  │ 渠道    │   模型动态发现 / 协议互转       │  │
+│  │ 令牌    │   代理节点池（可选）            │  │
+│  │ 日志    │                              │  │
+│  └────────┴──────────────────────────────┘  │
+└─────────────────────────────────────────────┘
+```
+
+| 特性 | 说明 |
+|---|---|
+| 自动选端口 | 优先 8790，被占用就自动换一个空闲端口，不会和已在跑的面板冲突 |
+| 单实例 | 重复双击只会把已有窗口叫到前面，不会起两个 |
+| 托盘菜单 | 显示/隐藏窗口 · 在浏览器打开 · 打开数据目录 · 查看日志 · 退出 |
+| 数据位置 | Windows `%APPDATA%\opencode-free-gateway` · macOS `~/Library/Application Support/opencode-free-gateway` · Linux `~/.config/opencode-free-gateway` |
+| 服务隔离 | 面板跑在**子进程**里，它崩了不会带走窗口，并会弹窗给出日志尾部 |
+| 安全 | `contextIsolation` + `sandbox` 开启、`nodeIntegration` 关闭，外链一律交给系统浏览器 |
+
+> **macOS 未签名**：首次打开请 **右键 → 打开**（或在「系统设置 → 隐私与安全性」里允许）。
+> 没有 Apple 开发者证书，做不了公证，这是唯一的影响。
+
+### 自己构建桌面应用
+
+```bash
+npm ci
+npm run make-icon     # 可选：重新生成图标（需要 Python + Pillow）
+npm run desktop       # 开发模式跑起来（Ctrl+Shift+I 开 DevTools）
+npm run dist:win      # Windows  → 单文件便携 exe
+npm run dist:linux    # Linux    → AppImage + deb
+npm run dist:mac      # macOS    → dmg + zip（x64 / arm64）
+```
+
+> Electron 的原生包**最好在各自平台上打**（macOS 的 dmg 必须在 macOS 上构建）。
+> CI 里用三个 runner 分别构建，见 [`.github/workflows/desktop.yml`](.github/workflows/desktop.yml)。
+
+<details>
+<summary>⚠️ 一个坑：<code>ELECTRON_RUN_AS_NODE</code>（排查用）</summary>
+
+如果你从**已经设置了 `ELECTRON_RUN_AS_NODE=1` 的父进程**里启动 Electron，
+它会退化成纯 Node 运行，于是出现这种莫名其妙的报错：
+
+```
+TypeError: Cannot read properties of undefined (reading 'requestSingleInstanceLock')
+```
+
+启动前把该环境变量清掉即可。普通用户双击 exe 不会遇到（他们的环境里没有这个变量）。
+
+</details>
+
+---
+
+## 🚀 从源码运行
 
 **唯一依赖是 Node.js ≥ 22.5**（用到内置的 `node:sqlite`）。**零第三方依赖**，不需要 `npm install`。
 
@@ -148,9 +215,11 @@ node scripts/package.mjs     # 产出 dist/*.tar.gz + *.zip + SHA256SUMS.txt
 | [`07-原始证据/`](07-原始证据/) | 捕获的请求形状、官方文档存档、模型清单导出（已脱敏） | ✅ |
 | [`09-服务端部署/`](09-服务端部署/) | **Linux 服务器部署**：start/stop/status、systemd、Docker、nginx 反代、Linux 自检 | ✅ 已在 WSL 实测 |
 | [`10-代理节点管理/`](10-代理节点管理/) | **代理节点池**：独立 mihomo 实例 + 订阅解析 + 24h 租约每日轮换 + 请求前连通性验证 | ✅ 76/79 节点可达 |
+| [`desktop/`](desktop/) | **Electron 桌面外壳**：原生窗口 + 托盘 + 单实例 + 面板子进程管理 | ✅ 三平台 |
+| [`build/`](build/) | 应用图标（`icon.png`，electron-builder 自动派生 .ico / .icns） | ✅ |
 | [`tests/`](tests/) | CI 用的无凭据测试：协议互转单元测试 + 面板冒烟测试 | ✅ |
-| [`scripts/`](scripts/) | `check-syntax.mjs`（语法+泄漏扫描）、`package.mjs`（跨平台打包） | ✅ |
-| [`.github/workflows/`](.github/workflows/) | CI：三平台 × Node 22/24 矩阵；Release：打标签自动打包发布 | ✅ |
+| [`scripts/`](scripts/) | `check-syntax.mjs`（语法+泄漏扫描）、`package.mjs`（跨平台打包）、`make-icon.py`（生成图标） | ✅ |
+| [`.github/workflows/`](.github/workflows/) | CI：三平台 × Node 22/24 矩阵 + Docker 构建运行；Desktop：三平台打安装包；Release：自动发布 | ✅ |
 
 > 每个功能目录都有自己的 `README.md`，说明里面每个文件是干什么的、怎么跑、依赖谁。
 > 不确定从哪看起时，点进目录先读它的 README。
@@ -160,9 +229,10 @@ node scripts/package.mjs     # 产出 dist/*.tar.gz + *.zip + SHA256SUMS.txt
 | 文件 | 用途 |
 |------|------|
 | [`LICENSE`](LICENSE) | MIT |
-| [`package.json`](package.json) | 项目元信息、`engines`、npm scripts |
+| [`package.json`](package.json) | 项目元信息、`engines`、npm scripts、Electron 构建脚本 |
+| [`electron-builder.yml`](electron-builder.yml) | 三平台安装包配置（`asar: false` 是必须的，原因见文件注释） |
 | [NOTICE.md](NOTICE.md) | 附加声明：项目性质、第三方组件（mihomo GPL-3.0）、安全与合规提示 |
-| [.gitignore](.gitignore) | 排除凭据、运行时状态、内核二进制 |
+| [.gitignore](.gitignore) | 排除凭据、运行时状态、内核二进制、构建产物 |
 | [`README.md`](README.md) | 本文件（总索引 + 结论 + 路径迁移对照） |
 | [`一键自检.cmd`](一键自检.cmd) | **双击即可**跑完下面 6 项全量可用性自检（Windows） |
 | [`自检全部.ps1`](自检全部.ps1) | 自检主脚本：结构 / JS 语法 / PS1 语法 / 失效路径 / 面板端到端 / 客户端直连 |
