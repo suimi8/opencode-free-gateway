@@ -392,6 +392,10 @@ export function buildOpenCodeRequest(channel, req) {
   if (req.stream) body.stream_options = { include_usage: true };
   else delete body.stream_options;
   if (req.temperature !== undefined) body.temperature = req.temperature;
+  /* 思考强度透传：客户端按目录里的 reasoning_efforts 传 low/medium/high */
+  if (req.reasoning_effort !== undefined && req.reasoning_effort !== null) {
+    body.reasoning_effort = req.reasoning_effort;
+  }
 
   return {
     url: channel.base_url || 'https://opencode.ai/inference/v1/chat/completions',
@@ -490,7 +494,11 @@ export function buildOpenCodeResponsesRequest(channel, req) {
   // 注意：Responses API 不接受 max_tokens，只接受 max_output_tokens
   if (req.max_output_tokens) body.max_output_tokens = req.max_output_tokens;
   if (req.temperature !== undefined) body.temperature = req.temperature;
+  /* 思考强度：Responses 协议用 reasoning.effort */
   if (req.reasoning !== undefined) body.reasoning = req.reasoning;
+  else if (req.reasoning_effort !== undefined && req.reasoning_effort !== null) {
+    body.reasoning = { effort: req.reasoning_effort };
+  }
 
   return { url: responsesUrl(channel), headers: openCodeHeaders(channel), body };
 }

@@ -16,6 +16,7 @@ import * as POOL from './proxy-pool.mjs';
 import * as CFG from './config-io.mjs';
 import * as SESS from './sessions.mjs';
 import * as TOOLS from './tools.mjs';
+import * as CATALOG from './model-catalog.mjs';
 import * as REG from './model-registry.mjs';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -32,6 +33,35 @@ DB.ensureDefaults();
     const v = DB.getSetting('node_pool');
     if (v === '0' || v === '1') POOL.setEnabled(v === '1');
   } catch { /* 忽略 */ }
+  /* 模型目录：拉上游列表 + models.dev 元数据（共 2 个请求，很轻） */
+  const syncCatalog = async () => {
+    try {
+      const cr = await CATALOG.refresh();
+      if (cr.ok) {
+        console.log(`[模型目录] ${cr.count} 个模型（${new Date(cr.at).toLocaleString('zh-CN')}）`);
+        /* 自动把 opencode 渠道的模型列表同步成当前在线的 free 模型 */
+        if (String(DB.getSetting('auto_sync_models') ?? '1') === '1') {
+          const free = CATALOG.freeModelIds();
+          if (free.length) {
+            for (const ch of DB.listChannels()) {
+              if (ch.type !== 'opencode') continue;
+              const same = Array.isArray(ch.models) && ch.models.length === free.length && ch.models.every((x, i) => x === free[i]);
+              if (!same) {
+                DB.updateChannel(ch.id, { models: free });
+                console.log(`[模型目录] 渠道「${ch.name}」模型已同步为 ${free.length} 个`);
+              }
+            }
+          }
+        }
+      } else {
+        console.log(`[模型目录] 刷新失败: ${cr.error}`);
+      }
+    } catch (e) { console.log('[模型目录] 异常: ' + String(e.message || e)); }
+  };
+  syncCatalog();
+  /* 每 6 小时刷一次（2 个请求，不会触发滥用判定） */
+  setInterval(syncCatalog, 6 * 3600 * 1000).unref();
+
   const r = SESS.autoImportIfEmpty();
   if (r.imported) console.log(`[会话池] 已从本机导入 ${r.imported} 个 OpenCode 会话，当前使用 ${r.active}`);
   else if (!SESS.current()) console.log(`[会话池] 没有可用会话（${r.reason}）—— 免费层渠道会 403，请到面板「系统设置」里添加`);
@@ -926,6 +956,14 @@ async function handle(req, res) {
 
     const auth = tokenAuth(req);
     if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
+
+    /* 有模型目录就直接用它 —— 带 context_length / max_output_tokens /
+     * supports_reasoning / reasoning_efforts / supports_tools / supports_vision，
+     * 客户端不用再猜每个模型能干什么。 */
+    const cat = CATALOG.openAiList();
+    if (cat.length && req.url.indexOf('raw=1') < 0) {
+      return json(res, 200, { object: 'list', data: cat, catalog_at: CATALOG.list().at, source: 'catalog' });
+    }
     /* ══════════ /v1/models ══════════
      * 两条来源，优先级不同：
      *   1. **用户在自己渠道里显式配置的模型** —— 必须永远列出来。
