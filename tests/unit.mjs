@@ -288,5 +288,44 @@ eq('withOutputText 容忍空对象', B.withOutputText({}).output_text, '');
 eq('withOutputText 容忍 null', B.withOutputText(null), null);
 eq('withOutputText 跳过非 output_text 类型', B.withOutputText({ output: [{ content: [{ type: 'reasoning', text: 'no' }, { type: 'text', text: 'yes' }] }] }).output_text, 'yes');
 
+/* ══════════════════════════════════════════════ 13) base_url 归一化 */
+console.log('\n── 13) URL 归一化 ──');
+const UPm = await import(pathToFileURL(path.join(ROOT, '01-管理面板', 'upstream.mjs')).href);
+const chOf = (b) => ({ base_url: b, type: 'openai', api_key: 'k' });
+
+// 核心回归：填了完整路径就不能再拼一次后缀
+// （曾导致 .../chat/completions/chat/completions，上游回 404 HTML，
+//   报错看起来像上游挂了，完全看不出是路径重复）
+eq('完整 chat 地址不再重复',
+  UPm.buildOpenAIRequest(chOf('https://a.com/v1/chat/completions'), { model: 'm', messages: [], stream: false }).url,
+  'https://a.com/v1/chat/completions');
+eq('responses 地址切回 chat',
+  UPm.buildOpenAIRequest(chOf('https://a.com/v1/responses'), { model: 'm', messages: [], stream: false }).url,
+  'https://a.com/v1/chat/completions');
+eq('目录形式补全 chat',
+  UPm.buildOpenAIRequest(chOf('https://a.com/v1'), { model: 'm', messages: [], stream: false }).url,
+  'https://a.com/v1/chat/completions');
+eq('目录带尾斜杠',
+  UPm.buildOpenAIRequest(chOf('https://a.com/v1/'), { model: 'm', messages: [], stream: false }).url,
+  'https://a.com/v1/chat/completions');
+eq('只有主机',
+  UPm.buildOpenAIRequest(chOf('https://a.com'), { model: 'm', messages: [], stream: false }).url,
+  'https://a.com/chat/completions');
+eq('空 base 走默认',
+  UPm.buildOpenAIRequest(chOf(''), { model: 'm', messages: [], stream: false }).url,
+  'https://api.openai.com/v1/chat/completions');
+eq('buildResponsesRequest 归一 responses',
+  UPm.buildResponsesRequest(chOf('https://a.com/v1/chat/completions'), { model: 'm', stream: false }).url,
+  'https://a.com/v1/responses');
+eq('桥接 chat 目标不重复',
+  UPm.buildBridgedRequest(chOf('https://a.com/v1/chat/completions'), { model: 'm' }, 'chat').url,
+  'https://a.com/v1/chat/completions');
+eq('桥接 responses 目标不重复',
+  UPm.buildBridgedRequest(chOf('https://a.com/v1/responses'), { model: 'm' }, 'responses').url,
+  'https://a.com/v1/responses');
+eq('baseUrlOf 去尾斜杠', UPm.baseUrlOf({ base_url: 'https://a.com/v1/' }), 'https://a.com/v1');
+eq('endpointUrl 空渠道退回默认', UPm.endpointUrl({ base_url: '' }, 'chat', 'https://def/x'), 'https://def/x/chat/completions');
+eq('completions（非 chat/completions）也剥离', UPm.baseUrlOf({ base_url: 'https://a.com/v1/completions' }), 'https://a.com/v1');
+
 console.log(`\n单元测试: ${pass} 通过, ${fail} 失败`);
 process.exit(fail ? 1 : 0);

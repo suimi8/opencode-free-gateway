@@ -444,8 +444,35 @@ export function buildOpenCodeResponsesRequest(channel, req) {
 }
 
 
+/**
+ * 把渠道里填的 base_url 归一成「目录形式」，再拼目标端点。
+ *
+ * 为什么需要：面板输入框提示用户填**完整地址**（`.../v1/chat/completions`），
+ * 但早期代码是无条件 `${base}/chat/completions`，于是拼成
+ * `.../v1/chat/completions/chat/completions` —— 上游回 404/HTML，
+ * 而且报错看起来像上游挂了，完全看不出是路径重复（实测踩过，查了很久）。
+ *
+ * 现在两种填法都接受：
+ *   https://api.x.com/v1/chat/completions  -> 目录 https://api.x.com/v1
+ *   https://api.x.com/v1/responses         -> 目录 https://api.x.com/v1
+ *   https://api.x.com/v1                   -> 目录 https://api.x.com/v1
+ *   https://api.x.com                      -> 目录 https://api.x.com
+ */
+const ENDPOINT_SUFFIX = /\/+(chat\/completions|responses|completions)\/?$/i;
+export function baseUrlOf(channel) {
+  const raw = String((channel && channel.base_url) || '').trim().replace(/\/+$/, '');
+  if (!raw) return '';
+  return raw.replace(ENDPOINT_SUFFIX, '');
+}
+
+/** 拼出目标端点：target = 'chat' | 'responses'；已经是对应端点则原样保留 */
+export function endpointUrl(channel, target, fallback) {
+  const base = baseUrlOf(channel) || fallback;
+  if (!base) return '';
+  return base + '/' + (target === 'responses' ? 'responses' : 'chat/completions');
+}
+
 export function buildOpenAIRequest(channel, req) {
-  const base = (channel.base_url || 'https://api.openai.com/v1').replace(/\/+$/, '');
   const body = {
     model: req.model,
     messages: req.messages || [],
@@ -458,7 +485,7 @@ export function buildOpenAIRequest(channel, req) {
   const headers = { 'content-type': 'application/json' };
   if (channel.api_key) headers.authorization = `Bearer ${channel.api_key}`;
   if (channel.extra && channel.extra.headers) Object.assign(headers, channel.extra.headers);
-  return { url: `${base}/chat/completions`, headers, body };
+  return { url: endpointUrl(channel, 'chat', 'https://api.openai.com/v1'), headers, body };
 }
 
 export function buildRequest(channel, req) {
@@ -468,12 +495,11 @@ export function buildRequest(channel, req) {
 /** Responses 协议的渠道路由：openai 渠道走原生 /responses，opencode 渠道注入 agent 结构 */
 export function buildResponsesRequest(channel, req) {
   if (channel.type === 'openai') {
-    const base = (channel.base_url || 'https://api.openai.com/v1').replace(/\/+$/, '');
     const body = { ...req, model: req.model, stream: true, store: false };
     const headers = { 'content-type': 'application/json' };
     if (channel.api_key) headers.authorization = `Bearer ${channel.api_key}`;
     if (channel.extra && channel.extra.headers) Object.assign(headers, channel.extra.headers);
-    return { url: `${base}/responses`, headers, body };
+    return { url: endpointUrl(channel, 'responses', 'https://api.openai.com/v1'), headers, body };
   }
   return buildOpenCodeResponsesRequest(channel, req);
 }
@@ -489,14 +515,14 @@ export function buildResponsesRequest(channel, req) {
 export function buildBridgedRequest(channel, req, target) {
   if (channel.type !== 'opencode') {
     // 通用 OpenAI 兼容渠道：直接换成目标端点，不做 opencode 特化
-    const base = (channel.base_url || 'https://api.openai.com/v1').replace(/\/+$/, '');
     const headers = { 'content-type': 'application/json' };
     if (channel.api_key) headers.authorization = `Bearer ${channel.api_key}`;
     if (channel.extra && channel.extra.headers) Object.assign(headers, channel.extra.headers);
+    const url = endpointUrl(channel, target, 'https://api.openai.com/v1');
     if (target === 'responses') {
-      return { url: `${base}/responses`, headers, body: { ...bridge.chatToResponses(req), stream: true, store: false } };
+      return { url, headers, body: { ...bridge.chatToResponses(req), stream: true, store: false } };
     }
-    return { url: `${base}/chat/completions`, headers, body: { ...bridge.responsesToChat(req), stream: true } };
+    return { url, headers, body: { ...bridge.responsesToChat(req), stream: true } };
   }
 
   if (target === 'responses') {

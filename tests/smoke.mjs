@@ -372,6 +372,34 @@ await check('Clash 导入：真写入并渲染配置', async () => {
   return 'added=' + r.json.addedProxies;
 });
 
+await check('填完整 chat 地址的渠道也能正确路由（曾有重复后缀 bug）', async () => {
+  // 起一个本地回显上游，只验网关拼出的路径对不对
+  const http2 = await import('node:http');
+  const echo = http2.createServer((req, res) => {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ id: 'e', object: 'chat.completion', created: 1, model: 'echo',
+      choices: [{ index: 0, message: { role: 'assistant', content: 'ECHO' }, finish_reason: 'stop' }],
+      usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 } }));
+  });
+  await new Promise((r) => echo.listen(18797, '127.0.0.1', r));
+  try {
+    const ch = await fetch(BASE + '/api/channels', { method: 'POST', headers: { cookie, 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'urlfix', type: 'openai', base_url: 'http://127.0.0.1:18797/v1/chat/completions', api_key: 'x', models: ['echo-m'], priority: 1, status: 1 }) });
+    const { id } = await ch.json();
+    const tk = await fetch(BASE + '/api/tokens', { method: 'POST', headers: { cookie, 'content-type': 'application/json' }, body: JSON.stringify({ name: 'u', unlimited: true }) });
+    const { key } = await tk.json();
+    const r = await fetch(BASE + '/v1/chat/completions', { method: 'POST', headers: { authorization: 'Bearer ' + key, 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'echo-m', messages: [{ role: 'user', content: 'hi' }] }) });
+    const j = await r.json().catch(() => ({}));
+    if (r.status !== 200) throw new Error('HTTP ' + r.status + ' ' + JSON.stringify(j).slice(0, 200));
+    if (j.choices?.[0]?.message?.content !== 'ECHO') throw new Error('内容不对: ' + JSON.stringify(j).slice(0, 200));
+    await fetch(BASE + '/api/channels/' + id, { method: 'DELETE', headers: { cookie } });
+    return '路径正确 + 响应回传正常';
+  } finally {
+    await new Promise((r) => echo.close(r));
+  }
+});
+
 cleanup();
 await new Promise((r) => setTimeout(r, 400));
 
