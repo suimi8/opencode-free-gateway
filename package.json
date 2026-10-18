@@ -1,6 +1,6 @@
 {
   "name": "opencode-free-gateway",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "description": "把 OpenCode 免费层整理成本地 OpenAI / Responses 兼容网关：协议互转、模型动态发现、代理节点池、可部署管理面板、跨平台桌面应用",
   "type": "module",
   "license": "MIT",

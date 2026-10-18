@@ -616,45 +616,80 @@ export function buildBridgedRequest(channel, req, target) {
  *   其余排队；排队超时（PANEL_QUEUE_TIMEOUT_MS，默认 120s）明确拒绝，
  *   而不是无脑并发把上游打死。
  */
-const MAX_CONCURRENCY = Math.max(1, Number(process.env.PANEL_MAX_CONCURRENCY || 2));
+/**
+ * 每个渠道独立的并发上限。
+ *   opencode 免费层：默认 2（上游对并发极敏感，10 并发就全 403）
+ *   其它渠道（tokenharhur / workbuddy 等有配额的上游）：默认 32，可调
+ * 渠道可以用 extra.max_concurrency 单独指定，0 表示不限。
+ */
+function limitFor(channel) {
+  const extra = (channel && channel.extra) || {};
+  if (extra.max_concurrency !== undefined && extra.max_concurrency !== null && extra.max_concurrency !== '') {
+    const v = Number(extra.max_concurrency);
+    if (Number.isFinite(v) && v >= 0) return v;          // 0 = 不限
+  }
+  const isFree = channel && channel.type === 'opencode';
+  const envKey = isFree ? 'PANEL_MAX_CONCURRENCY_FREE' : 'PANEL_MAX_CONCURRENCY';
+  const fallback = isFree ? 2 : 32;
+  const v = Number(process.env[envKey] || fallback);
+  return Number.isFinite(v) && v >= 0 ? v : fallback;
+}
+
 const QUEUE_TIMEOUT_MS = Math.max(1000, Number(process.env.PANEL_QUEUE_TIMEOUT_MS || 120000));
 
-let ACTIVE = 0;
-const WAITERS = [];
-export const gateStats = () => ({ active: ACTIVE, queued: WAITERS.length, max: MAX_CONCURRENCY });
+/* 每个渠道一个闸门：key = 渠道 id，没有 id 就用 type */
+const GATES = new Map();
+function gateOf(key, limit) {
+  let g = GATES.get(key);
+  if (!g || g.limit !== limit) {
+    g = { limit, active: 0, waiters: [] };
+    GATES.set(key, g);
+  }
+  return g;
+}
 
-function acquireSlot() {
-  if (ACTIVE < MAX_CONCURRENCY) {
-    ACTIVE++;
-    return Promise.resolve(releaseSlot);
+export function gateStats() {
+  const out = {};
+  for (const [k, g] of GATES) out[k] = { active: g.active, queued: g.waiters.length, max: g.limit };
+  return out;
+}
+
+function acquireSlot(g) {
+  if (g.limit === 0) return Promise.resolve(() => {});          // 0 = 不限
+  if (g.active < g.limit) {
+    g.active++;
+    return Promise.resolve(() => releaseSlot(g));
   }
   return new Promise((resolve, reject) => {
     const w = { resolve, reject, timer: null };
     w.timer = setTimeout(() => {
-      const i = WAITERS.indexOf(w);
-      if (i >= 0) WAITERS.splice(i, 1);
-      const e = new Error('并发已满（上限 ' + MAX_CONCURRENCY + '），排队 ' + Math.round(QUEUE_TIMEOUT_MS / 1000) + 's 仍无空位。请降低并发或稍后重试。');
+      const i = g.waiters.indexOf(w);
+      if (i >= 0) g.waiters.splice(i, 1);
+      const e = new Error('该渠道并发已满（上限 ' + g.limit + '），排队 ' + Math.round(QUEUE_TIMEOUT_MS / 1000) + 's 仍无空位。请降低并发或稍后重试。');
       e.code = 'QUEUE_TIMEOUT';
       reject(e);
     }, QUEUE_TIMEOUT_MS);
     if (typeof w.timer.unref === 'function') w.timer.unref();
-    WAITERS.push(w);
+    g.waiters.push(w);
   });
 }
 
-function releaseSlot() {
-  const w = WAITERS.shift();
+function releaseSlot(g) {
+  const w = g.waiters.shift();
   if (w) {
     clearTimeout(w.timer);
-    w.resolve(releaseSlot);          // 名额直接转交，ACTIVE 不变
+    w.resolve(() => releaseSlot(g));      // 名额直接转交
   } else {
-    ACTIVE = Math.max(0, ACTIVE - 1);
+    g.active = Math.max(0, g.active - 1);
   }
 }
 
 /* 对外仍是 request()，内部先排队拿名额 */
 export async function request(opts) {
-  const release = await acquireSlot();
+  const ch = opts && opts.channel;
+  const key = ch ? (ch.id != null ? 'ch:' + ch.id : 'type:' + ch.type) : 'default';
+  const g = gateOf(key, limitFor(ch));
+  const release = await acquireSlot(g);
   try {
     return await requestInner(opts);
   } finally {

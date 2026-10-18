@@ -417,7 +417,7 @@ async function handleChat(req, res, body, auth) {
 
     let resp;
     try {
-      resp = await UP.request({ url: built.url, headers: built.headers, body: built.body, proxy: proxyOf(ch), timeout: 300000 });
+      resp = await UP.request({ url: built.url, headers: built.headers, body: built.body, proxy: proxyOf(ch), timeout: 300000, channel: ch });
     } catch (e) {
       last = { status: 502, body: `上游连接失败: ${e.message}` };
       DB.addLog({ token_id: auth.token?.id, token_name: auth.token?.name, channel_id: ch.id, channel_name: ch.name, model: logModel, upstream_model: model, status: 502, ok: 0, stream: isStream, error: last.body, latency_ms: Date.now() - t0, client_ip: clientIp(req) });
@@ -682,7 +682,7 @@ async function handleResponses(req, res, body, auth) {
     try {
       resp = await UP.request({
         url: built.url, headers: built.headers, body: built.body,
-        proxy: proxyOf(ch), timeout: 300000,
+        proxy: proxyOf(ch), timeout: 300000, channel: ch,
       });
     } catch (e) {
       last = { status: 502, body: `上游连接失败: ${e.message}` };
