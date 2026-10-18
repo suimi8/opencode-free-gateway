@@ -826,6 +826,52 @@ async function handle(req, res) {
       } catch (e) { return err(res, 502, String(e.message).slice(0, 300), 'fetch_error'); }
     }
 
+    /* ── 文件类工具（全部限制在 PANEL_TOOL_ROOT 之内）── */
+    if (p === '/v1/tools/read' && req.method === 'POST') {
+      const auth = tokenAuth(req);
+      if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
+      try {
+        const b = await readJson(req);
+        return json(res, 200, TOOLS.readFile(b && (b.path || b.filePath), { offset: b && b.offset, limit: b && b.limit }));
+      } catch (e) { return err(res, 400, String(e.message).slice(0, 300), 'read_error'); }
+    }
+    if (p === '/v1/tools/write' && req.method === 'POST') {
+      const auth = tokenAuth(req);
+      if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
+      try {
+        const b = await readJson(req);
+        return json(res, 200, TOOLS.writeFile(b && (b.path || b.filePath), b && b.content));
+      } catch (e) { return err(res, 400, String(e.message).slice(0, 300), 'write_error'); }
+    }
+    if (p === '/v1/tools/edit' && req.method === 'POST') {
+      const auth = tokenAuth(req);
+      if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
+      try {
+        const b = await readJson(req);
+        return json(res, 200, TOOLS.editFile(b && (b.path || b.filePath), {
+          oldString: b && b.oldString, newString: b && b.newString, replaceAll: !!(b && b.replaceAll),
+        }));
+      } catch (e) { return err(res, 400, String(e.message).slice(0, 300), 'edit_error'); }
+    }
+    if (p === '/v1/tools/glob' && req.method === 'POST') {
+      const auth = tokenAuth(req);
+      if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
+      try {
+        const b = await readJson(req);
+        return json(res, 200, TOOLS.globFiles(b && (b.pattern || b.glob), { dir: b && (b.path || b.dir) }));
+      } catch (e) { return err(res, 400, String(e.message).slice(0, 300), 'glob_error'); }
+    }
+    if (p === '/v1/tools/grep' && req.method === 'POST') {
+      const auth = tokenAuth(req);
+      if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
+      try {
+        const b = await readJson(req);
+        return json(res, 200, TOOLS.grepFiles(b && (b.pattern || b.query), {
+          dir: b && (b.path || b.dir), include: b && b.include, maxResults: b && b.maxResults,
+        }));
+      } catch (e) { return err(res, 400, String(e.message).slice(0, 300), 'grep_error'); }
+    }
+
     if (p === '/v1/tools/websearch' && req.method === 'POST') {
       const auth = tokenAuth(req);
       if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
@@ -845,6 +891,7 @@ async function handle(req, res) {
     if (p === '/v1/tools' && req.method === 'GET') {
       return json(res, 200, {
         object: 'list',
+        workspace: TOOLS.workspaceRoot(),
         data: [
           { type: 'function', name: 'webfetch', endpoint: '/v1/tools/webfetch',
             description: '抓取网页并转成文本/markdown。网关用 DoH 解析真实 IP，不受本地 fake-ip 影响。',
@@ -852,6 +899,11 @@ async function handle(req, res) {
           { type: 'function', name: 'websearch', endpoint: '/v1/tools/websearch',
             description: '网页搜索。没配 DEEPSEEK_API_KEY 时退回 DuckDuckGo（免 key）。',
             parameters: { type: 'object', properties: { query: { type: 'string' }, numResults: { type: 'number' }, provider: { type: 'string', enum: ['ddg', 'deepseek'] } }, required: ['query'] } },
+          { type: 'function', name: 'read', endpoint: '/v1/tools/read', description: '读文件或列目录（限制在工作目录内）。', parameters: { type: 'object', properties: { path: { type: 'string' }, offset: { type: 'number' }, limit: { type: 'number' } }, required: ['path'] } },
+          { type: 'function', name: 'write', endpoint: '/v1/tools/write', description: '写文件（覆盖，自动建目录）。', parameters: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'] } },
+          { type: 'function', name: 'edit', endpoint: '/v1/tools/edit', description: '精确字符串替换。', parameters: { type: 'object', properties: { path: { type: 'string' }, oldString: { type: 'string' }, newString: { type: 'string' }, replaceAll: { type: 'boolean' } }, required: ['path', 'oldString', 'newString'] } },
+          { type: 'function', name: 'glob', endpoint: '/v1/tools/glob', description: '按模式找文件（支持 * 与 **）。', parameters: { type: 'object', properties: { pattern: { type: 'string' }, path: { type: 'string' } }, required: ['pattern'] } },
+          { type: 'function', name: 'grep', endpoint: '/v1/tools/grep', description: '按正则搜文件内容。', parameters: { type: 'object', properties: { pattern: { type: 'string' }, path: { type: 'string' }, include: { type: 'string' }, maxResults: { type: 'number' } }, required: ['pattern'] } },
         ],
       });
     }

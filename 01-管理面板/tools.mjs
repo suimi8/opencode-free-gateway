@@ -357,3 +357,153 @@ async function fetchViaConnect(targetUrl, { proxy, timeout = 30000, maxBytes = 8
     content: truncated ? content.slice(0, MAX) : content, ms: Date.now() - t0, viaProxy: proxy,
   };
 }
+/* ══════════════════════════════════════════════════ 文件类工具
+ * 全部限制在**一个工作目录**内（PANEL_TOOL_ROOT，默认 <panel.db 同目录>/workspace）。
+ * 任何越界路径直接拒绝 —— 这几个工具能给客户端「文件访问能力」，
+ * 但绝不能变成任意路径读写。
+ */
+import path from 'node:path';
+import fs from 'node:fs';
+
+export function workspaceRoot() {
+  const root = process.env.PANEL_TOOL_ROOT
+    || path.join(path.dirname(process.env.PANEL_DB || path.join(import.meta.dirname, 'panel.db')), 'workspace');
+  try { fs.mkdirSync(root, { recursive: true }); } catch { /* 忽略 */ }
+  return path.resolve(root);
+}
+
+/** 把用户给的路径解析到工作目录内；越界抛错 */
+export function resolveInWorkspace(p) {
+  const root = workspaceRoot();
+  const rel = String(p == null ? '' : p).trim();
+  const abs = path.resolve(root, rel);
+  if (abs !== root && !abs.startsWith(root + path.sep)) {
+    throw new Error(`路径越界：只允许访问 ${root} 之下的文件`);
+  }
+  return abs;
+}
+
+/** 读文件（带行号可选） */
+export function readFile(p, { offset = 0, limit = 2000 } = {}) {
+  const abs = resolveInWorkspace(p);
+  const st = fs.statSync(abs);
+  if (st.isDirectory()) {
+    const entries = fs.readdirSync(abs, { withFileTypes: true })
+      .map((e) => (e.isDirectory() ? e.name + '/' : e.name)).sort();
+    return { ok: true, path: abs, type: 'directory', count: entries.length, entries: entries.slice(0, 500) };
+  }
+  if (st.size > Number(process.env.PANEL_TOOL_MAX_FILE || 4 * 1024 * 1024)) throw new Error('文件过大（>4MB）');
+  const text = fs.readFileSync(abs, 'utf8');
+  const all = text.split(/\r?\n/);
+  const from = Math.max(0, Number(offset) || 0);
+  const n = Math.max(1, Math.min(5000, Number(limit) || 2000));
+  const slice = all.slice(from, from + n);
+  return {
+    ok: true, path: abs, type: 'file',
+    totalLines: all.length, offset: from, returned: slice.length,
+    truncated: from + slice.length < all.length,
+    content: slice.join('\n'),
+  };
+}
+
+/** 写文件（自动建目录，覆盖写） */
+export function writeFile(p, content) {
+  const abs = resolveInWorkspace(p);
+  if (abs === workspaceRoot()) throw new Error('不能写工作目录本身');
+  fs.mkdirSync(path.dirname(abs), { recursive: true });
+  const body = String(content == null ? '' : content);
+  fs.writeFileSync(abs, body, 'utf8');
+  return { ok: true, path: abs, bytes: Buffer.byteLength(body, 'utf8') };
+}
+
+/** 精确替换 */
+export function editFile(p, { oldString, newString, replaceAll = false } = {}) {
+  const abs = resolveInWorkspace(p);
+  const text = fs.readFileSync(abs, 'utf8');
+  if (!oldString) throw new Error('缺少 oldString');
+  const count = text.split(oldString).length - 1;
+  if (count === 0) throw new Error('没找到要替换的内容（oldString 不匹配）');
+  if (count > 1 && !replaceAll) throw new Error(`匹配到 ${count} 处，请用 replaceAll:true 或提供更长的上下文`);
+  const next = replaceAll ? text.split(oldString).join(String(newString ?? '')) : text.replace(oldString, () => String(newString ?? ''));
+  fs.writeFileSync(abs, next, 'utf8');
+  return { ok: true, path: abs, replaced: replaceAll ? count : 1, bytes: Buffer.byteLength(next, 'utf8') };
+}
+
+/** glob → 正则 */
+function globToRegExp(g) {
+  let re = '';
+  for (let i = 0; i < g.length; i++) {
+    const c = g[i];
+    if (c === '*') {
+      if (g[i + 1] === '*') { re += '.*'; i++; if (g[i + 1] === '/') i++; }
+      else re += '[^/]*';
+    } else if (c === '?') re += '[^/]';
+    else if ('\\^$.|+()[]{}'.includes(c)) re += '\\' + c;
+    else re += c === '/' ? '/' : c;
+  }
+  return new RegExp('^' + re + '$', 'i');
+}
+
+/** 按模式找文件 */
+export function globFiles(pattern, { dir = '' } = {}) {
+  const base = resolveInWorkspace(dir || '.');
+  const rx = globToRegExp(String(pattern || '*').replace(/\\/g, '/'));
+  const root = workspaceRoot();
+  const out = [];
+  const MAX = Number(process.env.PANEL_TOOL_MAX_RESULTS || 200);
+  const SKIP = new Set(['node_modules', '.git', 'dist', 'dist-desktop', '.next', '__pycache__']);
+
+  (function walk(d, depth) {
+    if (out.length >= MAX || depth > 12) return;
+    let es = [];
+    try { es = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of es) {
+      if (out.length >= MAX) return;
+      const abs = path.join(d, e.name);
+      if (e.isDirectory()) { if (!SKIP.has(e.name)) walk(abs, depth + 1); continue; }
+      const rel = path.relative(root, abs).replace(/\\/g, '/');
+      if (rx.test(rel) || rx.test(e.name)) {
+        let size = 0;
+        try { size = fs.statSync(abs).size; } catch { /* 忽略 */ }
+        out.push({ path: abs, rel, size });
+      }
+    }
+  })(base, 0);
+
+  return { ok: true, pattern, base, count: out.length, truncated: out.length >= MAX, files: out };
+}
+
+/** 按正则搜文件内容 */
+export function grepFiles(pattern, { dir = '', include = '', maxResults = 100 } = {}) {
+  const base = resolveInWorkspace(dir || '.');
+  let rx;
+  try { rx = new RegExp(String(pattern || ''), 'i'); } catch { throw new Error(`正则不合法: ${pattern}`); }
+  const incRx = include ? globToRegExp(String(include).replace(/\\/g, '/')) : null;
+  const root = workspaceRoot();
+  const MAX = Math.min(500, Number(maxResults) || 100);
+  const SKIP = new Set(['node_modules', '.git', 'dist', 'dist-desktop', '.next', '__pycache__']);
+  const matches = [];
+
+  (function walk(d, depth) {
+    if (matches.length >= MAX || depth > 12) return;
+    let es = [];
+    try { es = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of es) {
+      if (matches.length >= MAX) return;
+      const abs = path.join(d, e.name);
+      if (e.isDirectory()) { if (!SKIP.has(e.name)) walk(abs, depth + 1); continue; }
+      const rel = path.relative(root, abs).replace(/\\/g, '/');
+      if (incRx && !incRx.test(rel) && !incRx.test(e.name)) continue;
+      let st; try { st = fs.statSync(abs); } catch { continue; }
+      if (st.size > 2 * 1024 * 1024) continue;           // 跳过超大文件
+      let text; try { text = fs.readFileSync(abs, 'utf8'); } catch { continue; }
+      if (text.includes('\u0000')) continue;             // 跳过二进制
+      const lines = text.split(/\r?\n/);
+      for (let i = 0; i < lines.length && matches.length < MAX; i++) {
+        if (rx.test(lines[i])) matches.push({ path: abs, rel, line: i + 1, text: lines[i].slice(0, 300) });
+      }
+    }
+  })(base, 0);
+
+  return { ok: true, pattern, base, include: include || null, count: matches.length, truncated: matches.length >= MAX, matches };
+}
