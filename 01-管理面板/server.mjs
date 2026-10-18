@@ -429,7 +429,7 @@ async function handleChat(req, res, body, auth) {
 
     if (status !== 200) {
       const text = await new Promise((r) => { let b = ''; up.setEncoding('utf8'); up.on('data', (c) => (b += c)); up.on('end', () => r(b)); up.on('error', () => r(b)); });
-      last = { status, body: text };
+      last = { status, body: text, ch: ch.name, model };
       if (status === 429) {
         const ra = Number(up.headers['retry-after']);
         const ms = Number.isFinite(ra) && ra > 0 ? Math.min(ra * 1000, 24 * 3600e3) : 3600e3;
@@ -608,7 +608,13 @@ async function handleChat(req, res, body, auth) {
   }
 
   const msg = (() => { try { return JSON.parse(last.body)?.error?.message || last.body; } catch { return last.body; } })();
-  return err(res, last.status === 429 ? 429 : last.status >= 400 ? last.status : 502, `所有候选渠道均失败：${String(msg).slice(0, 400)}`, last.status === 429 ? 'rate_limit_error' : 'upstream_error');
+  /* 上游返回空响应体时，原文案会变成「所有候选渠道均失败：」后面什么都没有，
+   * 完全没法排查。这里补上状态码、渠道、模型，并给出可能原因。 */
+  const rawMsg = String(msg == null ? '' : msg).trim();
+  const detail = rawMsg
+    || `上游返回空响应（HTTP ${last.status}）${last.ch ? ` [渠道 ${last.ch} / ${last.model}]` : ''}。
+       常见原因：上游限流/额度耗尽、代理节点断连、或 max_tokens 过大导致生成超时。`;
+  return err(res, last.status === 429 ? 429 : last.status >= 400 ? last.status : 502, `所有候选渠道均失败：${String(detail).slice(0, 400)}`, last.status === 429 ? 'rate_limit_error' : 'upstream_error');
 }
 
 /* ══════════════════════════════════════════════════ /v1/responses
@@ -818,8 +824,11 @@ async function handleResponses(req, res, body, auth) {
   }
 
   const msg = (() => { try { return JSON.parse(last.body)?.error?.message || last.body; } catch { return last.body; } })();
+  const rawMsg = String(msg == null ? '' : msg).trim();
+  const detail = rawMsg
+    || `上游返回空响应（HTTP ${last.status}）${last.ch ? ` [渠道 ${last.ch} / ${last.model}]` : ''}。常见原因：上游限流/额度耗尽、代理节点断连、或 max_tokens 过大导致生成超时。`;
   return err(res, last.status === 429 ? 429 : last.status >= 400 ? last.status : 502,
-    `所有候选渠道均失败：${String(msg).slice(0, 400)}`,
+    `所有候选渠道均失败：${String(detail).slice(0, 400)}`,
     last.status === 429 ? 'rate_limit_error' : 'upstream_error');
 }
 
