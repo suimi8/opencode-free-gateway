@@ -195,13 +195,25 @@ export async function webFetch(url, opts = {}) {
   let u;
   try { u = new URL(url); } catch { throw new Error(`不是合法 URL: ${url}`); }
   if (!/^https?:$/.test(u.protocol)) throw new Error('只支持 http/https');
-  if (/^(localhost|127\.|10\.|192\.168\.|169\.254\.|0\.)/i.test(u.hostname)) {
+  if (!opts.noLocalBind && /^(localhost|127\.|10\.|192\.168\.|169\.254\.|0\.)/i.test(u.hostname)) {
     throw new Error('拒绝访问内网地址');
   }
 
-  const ip = await resolveReal(u.hostname);
-  if (!ip) throw new Error(`域名解析失败: ${u.hostname}`);
-  if (!isPublicIp(ip)) throw new Error(`解析到非公网 IP: ${u.hostname} -> ${ip}`);
+  /* 两种连法：
+   *   默认（绑物理网卡，直连）：必须用 DoH 解出**真实 IP**，
+   *     因为本地 DNS 给的是 fake-ip，直连 fake-ip 走不通。
+   *   noLocalBind（走 TUN）：反过来**不能**用真实 IP ——
+   *     那样会绕过 mihomo 的域名分流规则，直接被墙。
+   *     必须用域名让 mihomo 自己解析并按规则出站。
+   */
+  let ip;
+  if (opts.noLocalBind) {
+    ip = u.hostname;                    // 交给系统 DNS（mihomo fake-ip）+ TUN
+  } else {
+    ip = await resolveReal(u.hostname);
+    if (!ip) throw new Error(`域名解析失败: ${u.hostname}`);
+    if (!isPublicIp(ip)) throw new Error(`解析到非公网 IP: ${u.hostname} -> ${ip}`);
+  }
 
   /* viaProxy：走本地 HTTP 代理的 CONNECT 隧道（用来抓被墙站点，比如 DDG） */
   if (opts.viaProxy) {
@@ -267,16 +279,18 @@ export async function webFetch(url, opts = {}) {
 export async function webSearch(query, { numResults = 8, provider = null } = {}) {
   const q = String(query || '').trim();
   if (!q) throw new Error('query 不能为空');
-  const prov = provider || process.env.PANEL_SEARCH_PROVIDER || 'ddg';
+  const prov = String(provider || process.env.PANEL_SEARCH_PROVIDER || 'ddg').toLowerCase();
   const t0 = Date.now();
+  const n = Math.max(1, Math.min(30, Number(numResults) || 8));
 
+  /* ── deepseek：需要 DEEPSEEK_API_KEY ── */
   if (prov === 'deepseek') {
     const key = process.env.DEEPSEEK_API_KEY;
     if (!key) throw new Error('没有 DEEPSEEK_API_KEY，无法用 deepseek 搜索');
     const r = await fetch('https://api.deepseek.com/v1/search', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
-      body: JSON.stringify({ query: q, max_results: numResults }),
+      body: JSON.stringify({ query: q, max_results: n }),
       signal: AbortSignal.timeout(30000),
     });
     const j = await r.json().catch(() => ({}));
@@ -284,226 +298,79 @@ export async function webSearch(query, { numResults = 8, provider = null } = {})
     return { ok: true, provider: 'deepseek', query: q, results: j.results || j.data || [], ms: Date.now() - t0 };
   }
 
-  /* DuckDuckGo 在国内直连被墙，必须走本地代理（Clash Verge / 节点池）。
-   * 先试直连，失败再走代理。 */  /* DuckDuckGo HTML 版：免 key，抓完解析结果块 */
-  const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}`;
-  const res = await webFetch(url, { format: 'html', timeout: 25000, noLocalBind: true });
-  const html = res.content;
+  /* ── Bing（默认）：国内可直连、免 key ──
+   * cn.bing.com 有时会返回不含结果块的轻量页，所以两个域名都试一遍。 */
+  if (prov === 'bing' || prov === 'ddg') {
+    const engines = prov === 'ddg'
+      ? [`https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}`]
+      : [
+          `https://www.bing.com/search?q=${encodeURIComponent(q)}&count=${n + 4}&setlang=zh-CN`,
+          `https://cn.bing.com/search?q=${encodeURIComponent(q)}&count=${n + 4}`,
+        ];
 
-  const results = [];
+    let lastErr = null;
+    for (const url of engines) {
+      try {
+        const res = await webFetch(url, { format: 'html', timeout: 25000, noLocalBind: prov === 'ddg' });
+        const html = res.content;
+        const results = prov === 'ddg' ? parseDdg(html, n) : parseBing(html, n);
+        if (results.length) {
+          return { ok: true, provider: prov, query: q, results, ms: Date.now() - t0, engine: url.split('/')[2] };
+        }
+        lastErr = new Error(`${url.split('/')[2]} 没解析到结果`);
+      } catch (e) { lastErr = e; }
+    }
+    return { ok: true, provider: prov, query: q, results: [], ms: Date.now() - t0, note: String(lastErr && lastErr.message || '没有结果').slice(0, 200) };
+  }
+
+  throw new Error(`未知搜索源: ${prov}（支持 bing / ddg / deepseek）`);
+}
+
+/* ── Bing 结果解析 ── */
+function parseBing(html, n) {
+  const out = [];
+  const seen = new Set();
+  const blocks = String(html).split(/<li[^>]*class="[^"]*b_algo[^"]*"[^>]*>/i).slice(1);
+  for (const b of blocks) {
+    if (out.length >= n) break;
+    const m = /<a[^>]+href="(https?:\/\/[^"]+)"[^>]*>([\s\S]{0,400}?)<\/a>/i.exec(b);
+    if (!m) continue;
+    let url = m[1].replace(/&amp;/g, '&');
+    /* Bing 的结果链接是 ck/a 跳转，真实地址在 u=a1<base64url> 里 */
+    const uParam = /[?&]u=a1([A-Za-z0-9_-]+)/.exec(url);
+    if (uParam) {
+      try {
+        let b = uParam[1].replace(/-/g, '+').replace(/_/g, '/');
+        while (b.length % 4) b += '=';
+        url = Buffer.from(b, 'base64').toString('utf8');
+      } catch { /* 解码失败就跳过 */ }
+    }
+    if (!/^https?:\/\//i.test(url)) continue;
+    if (/^https?:\/\/([a-z0-9-]+\.)?bing\.com|bing\.net|microsoft\.com|msn\.com|go\.microsoft/i.test(url)) continue;
+    if (seen.has(url)) continue;
+    const title = htmlToText(m[2]).slice(0, 200);
+    if (!title) continue;
+    // 摘要：b_caption 里的 <p>
+    const cap = /<p[^>]*>([\s\S]{0,600}?)<\/p>/i.exec(b);
+    const snippet = cap ? htmlToText(cap[1]).slice(0, 300) : '';
+    seen.add(url);
+    out.push({ title, url, snippet });
+  }
+  return out;
+}
+
+/* ── DuckDuckGo 结果解析 ── */
+function parseDdg(html, n) {
+  const out = [];
   const re = /<a[^>]+class="[^"]*result__a[^"]*"[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
   let m;
-  while ((m = re.exec(html)) && results.length < numResults) {
+  while ((m = re.exec(String(html))) && out.length < n) {
     let link = m[1];
-    // DDG 的跳转链接里带着真实地址
     const uddg = /[?&]uddg=([^&]+)/.exec(link);
     if (uddg) { try { link = decodeURIComponent(uddg[1]); } catch { /* 忽略 */ } }
     if (link.startsWith('//')) link = 'https:' + link;
     const title = htmlToText(m[2]).slice(0, 200);
-    if (title && link.startsWith('http')) results.push({ title, url: link });
+    if (title && link.startsWith('http')) out.push({ title, url: link, snippet: '' });
   }
-
-  return { ok: true, provider: 'ddg', query: q, results, ms: Date.now() - t0, note: results.length ? undefined : '没解析到结果（DDG 页面结构可能变了）' };
-}
-
-/* ══════════════════════════════════════════════════ 走本地代理抓取
- * 用于访问被墙站点（DuckDuckGo 等）。用 HTTP CONNECT 建隧道后
- * 在隧道上做 TLS，SNI 仍是目标域名。
- */
-async function fetchViaConnect(targetUrl, { proxy, timeout = 30000, maxBytes = 8 * 1024 * 1024, format = 'markdown', t0 = Date.now() }) {
-  const u = new URL(targetUrl);
-  const [ph, pp] = String(proxy).replace(/^https?:\/\//, '').split(':');
-  const port = Number(pp) || 7897;
-
-  const raw = await new Promise((resolve, reject) => {
-    const req = http.request({ host: ph, port, method: 'CONNECT', path: `${u.hostname}:443`, timeout }, (res) => {
-      if (res.statusCode !== 200) { reject(new Error(`代理 CONNECT 失败 HTTP ${res.statusCode}`)); return; }
-      resolve(res.socket);
-    });
-    req.on('connect', (r, socket) => { if (r.statusCode === 200) resolve(socket); else reject(new Error(`代理 CONNECT ${r.statusCode}`)); });
-    req.on('error', reject);
-    req.on('timeout', () => req.destroy(new Error('代理连接超时')));
-    req.end();
-  });
-
-  const body = await new Promise((resolve, reject) => {
-    const req = https.request({
-      host: u.hostname, servername: u.hostname, method: 'GET',
-      path: u.pathname + u.search,
-      headers: { host: u.hostname, 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36', accept: 'text/html,*/*', 'accept-encoding': 'identity' },
-      createConnection: () => tls.connect({ socket: raw, servername: u.hostname }),
-      timeout,
-    }, (res) => {
-      const cs = []; let n = 0;
-      res.on('data', (c) => { n += c.length; if (n > maxBytes) { req.destroy(new Error('响应过大')); return; } cs.push(c); });
-      res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: Buffer.concat(cs) }));
-      res.on('error', reject);
-    });
-    req.on('error', reject);
-    req.on('timeout', () => req.destroy(new Error('超时')));
-    req.end();
-  });
-
-  const ct = String(body.headers['content-type'] || '');
-  const txt = body.body.toString('utf8');
-  const isHtml = /html|xml/i.test(ct) || /^\s*<(!doctype|html)/i.test(txt.slice(0, 200));
-  let content = (format === 'html' || !isHtml) ? txt : htmlToText(txt);
-  const MAX = Number(process.env.PANEL_FETCH_MAX_CHARS || 60000);
-  const truncated = content.length > MAX;
-  return {
-    ok: body.status >= 200 && body.status < 300, status: body.status, url: targetUrl, finalUrl: targetUrl,
-    ip: '(via proxy)', contentType: ct, title: isHtml ? htmlTitle(txt) : '',
-    bytes: body.body.length, chars: content.length, truncated,
-    content: truncated ? content.slice(0, MAX) : content, ms: Date.now() - t0, viaProxy: proxy,
-  };
-}
-/* ══════════════════════════════════════════════════ 文件类工具
- * 全部限制在**一个工作目录**内（PANEL_TOOL_ROOT，默认 <panel.db 同目录>/workspace）。
- * 任何越界路径直接拒绝 —— 这几个工具能给客户端「文件访问能力」，
- * 但绝不能变成任意路径读写。
- */
-import path from 'node:path';
-import fs from 'node:fs';
-
-export function workspaceRoot() {
-  const root = process.env.PANEL_TOOL_ROOT
-    || path.join(path.dirname(process.env.PANEL_DB || path.join(import.meta.dirname, 'panel.db')), 'workspace');
-  try { fs.mkdirSync(root, { recursive: true }); } catch { /* 忽略 */ }
-  return path.resolve(root);
-}
-
-/** 把用户给的路径解析到工作目录内；越界抛错 */
-export function resolveInWorkspace(p) {
-  const root = workspaceRoot();
-  const rel = String(p == null ? '' : p).trim();
-  const abs = path.resolve(root, rel);
-  if (abs !== root && !abs.startsWith(root + path.sep)) {
-    throw new Error(`路径越界：只允许访问 ${root} 之下的文件`);
-  }
-  return abs;
-}
-
-/** 读文件（带行号可选） */
-export function readFile(p, { offset = 0, limit = 2000 } = {}) {
-  const abs = resolveInWorkspace(p);
-  const st = fs.statSync(abs);
-  if (st.isDirectory()) {
-    const entries = fs.readdirSync(abs, { withFileTypes: true })
-      .map((e) => (e.isDirectory() ? e.name + '/' : e.name)).sort();
-    return { ok: true, path: abs, type: 'directory', count: entries.length, entries: entries.slice(0, 500) };
-  }
-  if (st.size > Number(process.env.PANEL_TOOL_MAX_FILE || 4 * 1024 * 1024)) throw new Error('文件过大（>4MB）');
-  const text = fs.readFileSync(abs, 'utf8');
-  const all = text.split(/\r?\n/);
-  const from = Math.max(0, Number(offset) || 0);
-  const n = Math.max(1, Math.min(5000, Number(limit) || 2000));
-  const slice = all.slice(from, from + n);
-  return {
-    ok: true, path: abs, type: 'file',
-    totalLines: all.length, offset: from, returned: slice.length,
-    truncated: from + slice.length < all.length,
-    content: slice.join('\n'),
-  };
-}
-
-/** 写文件（自动建目录，覆盖写） */
-export function writeFile(p, content) {
-  const abs = resolveInWorkspace(p);
-  if (abs === workspaceRoot()) throw new Error('不能写工作目录本身');
-  fs.mkdirSync(path.dirname(abs), { recursive: true });
-  const body = String(content == null ? '' : content);
-  fs.writeFileSync(abs, body, 'utf8');
-  return { ok: true, path: abs, bytes: Buffer.byteLength(body, 'utf8') };
-}
-
-/** 精确替换 */
-export function editFile(p, { oldString, newString, replaceAll = false } = {}) {
-  const abs = resolveInWorkspace(p);
-  const text = fs.readFileSync(abs, 'utf8');
-  if (!oldString) throw new Error('缺少 oldString');
-  const count = text.split(oldString).length - 1;
-  if (count === 0) throw new Error('没找到要替换的内容（oldString 不匹配）');
-  if (count > 1 && !replaceAll) throw new Error(`匹配到 ${count} 处，请用 replaceAll:true 或提供更长的上下文`);
-  const next = replaceAll ? text.split(oldString).join(String(newString ?? '')) : text.replace(oldString, () => String(newString ?? ''));
-  fs.writeFileSync(abs, next, 'utf8');
-  return { ok: true, path: abs, replaced: replaceAll ? count : 1, bytes: Buffer.byteLength(next, 'utf8') };
-}
-
-/** glob → 正则 */
-function globToRegExp(g) {
-  let re = '';
-  for (let i = 0; i < g.length; i++) {
-    const c = g[i];
-    if (c === '*') {
-      if (g[i + 1] === '*') { re += '.*'; i++; if (g[i + 1] === '/') i++; }
-      else re += '[^/]*';
-    } else if (c === '?') re += '[^/]';
-    else if ('\\^$.|+()[]{}'.includes(c)) re += '\\' + c;
-    else re += c === '/' ? '/' : c;
-  }
-  return new RegExp('^' + re + '$', 'i');
-}
-
-/** 按模式找文件 */
-export function globFiles(pattern, { dir = '' } = {}) {
-  const base = resolveInWorkspace(dir || '.');
-  const rx = globToRegExp(String(pattern || '*').replace(/\\/g, '/'));
-  const root = workspaceRoot();
-  const out = [];
-  const MAX = Number(process.env.PANEL_TOOL_MAX_RESULTS || 200);
-  const SKIP = new Set(['node_modules', '.git', 'dist', 'dist-desktop', '.next', '__pycache__']);
-
-  (function walk(d, depth) {
-    if (out.length >= MAX || depth > 12) return;
-    let es = [];
-    try { es = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
-    for (const e of es) {
-      if (out.length >= MAX) return;
-      const abs = path.join(d, e.name);
-      if (e.isDirectory()) { if (!SKIP.has(e.name)) walk(abs, depth + 1); continue; }
-      const rel = path.relative(root, abs).replace(/\\/g, '/');
-      if (rx.test(rel) || rx.test(e.name)) {
-        let size = 0;
-        try { size = fs.statSync(abs).size; } catch { /* 忽略 */ }
-        out.push({ path: abs, rel, size });
-      }
-    }
-  })(base, 0);
-
-  return { ok: true, pattern, base, count: out.length, truncated: out.length >= MAX, files: out };
-}
-
-/** 按正则搜文件内容 */
-export function grepFiles(pattern, { dir = '', include = '', maxResults = 100 } = {}) {
-  const base = resolveInWorkspace(dir || '.');
-  let rx;
-  try { rx = new RegExp(String(pattern || ''), 'i'); } catch { throw new Error(`正则不合法: ${pattern}`); }
-  const incRx = include ? globToRegExp(String(include).replace(/\\/g, '/')) : null;
-  const root = workspaceRoot();
-  const MAX = Math.min(500, Number(maxResults) || 100);
-  const SKIP = new Set(['node_modules', '.git', 'dist', 'dist-desktop', '.next', '__pycache__']);
-  const matches = [];
-
-  (function walk(d, depth) {
-    if (matches.length >= MAX || depth > 12) return;
-    let es = [];
-    try { es = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
-    for (const e of es) {
-      if (matches.length >= MAX) return;
-      const abs = path.join(d, e.name);
-      if (e.isDirectory()) { if (!SKIP.has(e.name)) walk(abs, depth + 1); continue; }
-      const rel = path.relative(root, abs).replace(/\\/g, '/');
-      if (incRx && !incRx.test(rel) && !incRx.test(e.name)) continue;
-      let st; try { st = fs.statSync(abs); } catch { continue; }
-      if (st.size > 2 * 1024 * 1024) continue;           // 跳过超大文件
-      let text; try { text = fs.readFileSync(abs, 'utf8'); } catch { continue; }
-      if (text.includes('\u0000')) continue;             // 跳过二进制
-      const lines = text.split(/\r?\n/);
-      for (let i = 0; i < lines.length && matches.length < MAX; i++) {
-        if (rx.test(lines[i])) matches.push({ path: abs, rel, line: i + 1, text: lines[i].slice(0, 300) });
-      }
-    }
-  })(base, 0);
-
-  return { ok: true, pattern, base, include: include || null, count: matches.length, truncated: matches.length >= MAX, matches };
+  return out;
 }
