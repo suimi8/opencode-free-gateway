@@ -166,6 +166,26 @@ function bridgeTarget(model, client) {
 }
 
 /** 按行读上游 SSE，便于做协议转换 */
+/**
+ * SSE 心跳：上游模型「思考」时可能几十秒到几分钟不吐任何字节，
+ * 客户端会因为「长时间无数据」判超时断开
+ * （实测 pi-ai: stream idle timeout after 300000ms）。
+ *
+ * 定期写一个 SSE **注释行**（以冒号开头，客户端会忽略内容）只为保活连接。
+ * 挂到 res 的 close/finish 上自动停，调用方不用管生命周期。
+ */
+function startSseHeartbeat(res, ms = Number(process.env.PANEL_SSE_HEARTBEAT_MS || 15000)) {
+  if (!(ms > 0)) return () => {};
+  const t = setInterval(() => {
+    try { if (!res.writableEnded) res.write(': keepalive\n\n'); } catch { /* 已断开 */ }
+  }, ms);
+  if (typeof t.unref === 'function') t.unref();
+  const stop = () => { try { clearInterval(t); } catch { /* 忽略 */ } };
+  res.on('close', stop);
+  res.on('finish', stop);
+  return stop;
+}
+
 function forEachSseLine(up, onLine, onEnd, onError) {
   let buf = '';
   up.setEncoding('utf8');
@@ -417,6 +437,7 @@ async function handleChat(req, res, body, auth) {
           connection: 'keep-alive',
           'x-accel-buffering': 'no',
         });
+        startSseHeartbeat(res);
         let lastUsage = null;
         forEachSseLine(up,
           (line) => {
@@ -491,6 +512,7 @@ async function handleChat(req, res, body, auth) {
       connection: 'keep-alive',
       'x-accel-buffering': 'no',
     });
+    startSseHeartbeat(res);
     let buf = '', usage = null, firstByte = null, outTokens = 0;
     up.setEncoding('utf8');
     up.on('data', (chunk) => {
@@ -678,6 +700,7 @@ async function handleResponses(req, res, body, auth) {
           connection: 'keep-alive',
           'x-accel-buffering': 'no',
         });
+        startSseHeartbeat(res);
       }
       forEachSseLine(up,
         (line) => {
@@ -700,6 +723,7 @@ async function handleResponses(req, res, body, auth) {
         connection: 'keep-alive',
         'x-accel-buffering': 'no',
       });
+      startSseHeartbeat(res);
     }
     up.on('data', (chunk) => {
       if (firstByte === null) firstByte = Date.now();

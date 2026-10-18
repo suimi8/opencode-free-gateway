@@ -40,7 +40,8 @@ const child = spawn(process.execPath, [path.join(PANEL, 'server.mjs')], {
     PANEL_PASSWORD: 'smoke-pass',
     PANEL_NODE_POOL: '0',            // CI 里不起代理池
     PANEL_MODEL_DISCOVERY: '0',      // CI 里不连上游
-    MIHOMO_RUNTIME: path.join(WORK, 'mihomo'),  // 订阅/内核数据也放临时目录，别写进仓库
+    MIHOMO_RUNTIME: path.join(WORK, 'mihomo'),
+    PANEL_SSE_HEARTBEAT_MS: '300',   // 心跳间隔调短，好在测试里观察到  // 订阅/内核数据也放临时目录，别写进仓库
   },
 });
 
