@@ -1,3 +1,17 @@
+> ## ⚠️ 重要：节点池会让免费层判定为滥用
+>
+> **实测结论（2026-10-18）**：开启代理节点池后，模型请求经机场节点 IP 出去，
+> 上游会返回 `OpenCode's free models aren't available from your current network
+> because we've detected abusive traffic`（地区/滥用双重判定），**所有节点都失败**。
+>
+> 关掉节点池、让网关直连（走本机 Clash Verge 出口）后：**3/3 成功，1.2–2.6 秒**。
+>
+> ```bash
+> PANEL_NODE_POOL=0 PANEL_MODEL_DISCOVERY=0 node 01-管理面板/server.mjs
+> ```
+>
+> `PANEL_MODEL_DISCOVERY` 也必须关：它每 30 分钟把上游 85 个模型全探一遍，
+> 会被判为异常流量。
 # OpenCode 免费层网关
 
 [![CI](https://github.com/suimi8/opencode-free-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/suimi8/opencode-free-gateway/actions/workflows/ci.yml)
