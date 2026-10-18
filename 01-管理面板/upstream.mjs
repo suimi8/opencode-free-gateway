@@ -628,11 +628,17 @@ function limitFor(channel) {
     const v = Number(extra.max_concurrency);
     if (Number.isFinite(v) && v >= 0) return v;          // 0 = 不限
   }
+  /* 默认**不限制并发**（0 = 不限）。需要限流时显式设置：
+   *   PANEL_MAX_CONCURRENCY_FREE  免费层上限
+   *   PANEL_MAX_CONCURRENCY       其它渠道上限
+   * 或渠道 extra.max_concurrency
+   * 注意：免费层上游对并发极敏感，不限制时高并发会大量 403，
+   * 但网关会按下面「自动换 free 模型」的逻辑继续兜底。 */
   const isFree = channel && channel.type === 'opencode';
   const envKey = isFree ? 'PANEL_MAX_CONCURRENCY_FREE' : 'PANEL_MAX_CONCURRENCY';
-  const fallback = isFree ? 2 : 32;
-  const v = Number(process.env[envKey] || fallback);
-  return Number.isFinite(v) && v >= 0 ? v : fallback;
+  const raw = process.env[envKey];
+  const v = raw === undefined || raw === '' ? 0 : Number(raw);
+  return Number.isFinite(v) && v >= 0 ? v : 0;
 }
 
 const QUEUE_TIMEOUT_MS = Math.max(1000, Number(process.env.PANEL_QUEUE_TIMEOUT_MS || 120000));

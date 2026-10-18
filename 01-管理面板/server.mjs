@@ -387,6 +387,21 @@ async function handleChat(req, res, body, auth) {
     }
   }
   const cands = candidates(requested, auth.token ? JSON.parse(auth.token.models || '[]') : [], 'chat');
+
+  /* 自动兜底：请求的 free 模型全部失败后，依次试**其它 free 模型**。
+   * 免费层经常个别模型临时不可用（下架/限流），换一个就能通。
+   * 可用 PANEL_AUTO_FALLBACK=0 关闭。 */
+  const tokenModelsFb = auth.token ? JSON.parse(auth.token.models || '[]') : [];
+  if (String(process.env.PANEL_AUTO_FALLBACK ?? '1') !== '0' && /free$/i.test(String(requested))) {
+    const seenFb = new Set(cands.map((c) => c.ch.id + ':' + c.model));
+    for (const m of CATALOG.freeModelIds()) {
+      if (m === requested) continue;
+      for (const c of candidates(m, tokenModelsFb, 'chat')) {
+        const k = c.ch.id + ':' + c.model;
+        if (!seenFb.has(k)) { seenFb.add(k); cands.push(c); }
+      }
+    }
+  }
   if (!cands.length) return err(res, 503, '没有可用渠道，请先在管理面板添加并启用渠道', 'service_unavailable');
 
   /* 额度耗尽也切换代理节点：换出口 IP 再试同一个候选。上限由 QUOTA_ROTATE_LIMIT 控制。 */
@@ -395,7 +410,7 @@ async function handleChat(req, res, body, auth) {
   /* 门禁 403 是**会话**的问题，不是渠道的问题：换 session 重试同一个候选 */
   const SESSION_ROTATE_LIMIT = Number(process.env.SESSION_ROTATE_LIMIT || 3);
   let sessionRotations = 0;
-  const maxAttempts = Math.min(cands.length, Number(body.__max_attempts || 4));
+  const maxAttempts = Math.min(cands.length, Number(body.__max_attempts || process.env.PANEL_MAX_ATTEMPTS || 6));
   let last = { status: 503, body: 'no channel tried' };
 
   for (let i = 0; i < maxAttempts; i++) {
@@ -654,6 +669,19 @@ async function handleResponses(req, res, body, auth) {
     }
   }
   const cands = candidates(requested, auth.token ? JSON.parse(auth.token.models || '[]') : [], 'responses');
+
+  /* 自动兜底：同 chat 路径 */
+  const tokenModelsFbR = auth.token ? JSON.parse(auth.token.models || '[]') : [];
+  if (String(process.env.PANEL_AUTO_FALLBACK ?? '1') !== '0' && /free$/i.test(String(requested))) {
+    const seenFbR = new Set(cands.map((c) => c.ch.id + ':' + c.model));
+    for (const m of CATALOG.freeModelIds()) {
+      if (m === requested) continue;
+      for (const c of candidates(m, tokenModelsFbR, 'responses')) {
+        const k = c.ch.id + ':' + c.model;
+        if (!seenFbR.has(k)) { seenFbR.add(k); cands.push(c); }
+      }
+    }
+  }
   if (!cands.length) return err(res, 503, '没有可用渠道，请先在管理面板添加并启用渠道', 'service_unavailable');
 
   /* 额度耗尽也切换代理节点：换出口 IP 再试同一个候选。上限由 QUOTA_ROTATE_LIMIT 控制。 */
@@ -662,7 +690,7 @@ async function handleResponses(req, res, body, auth) {
   /* 门禁 403 是**会话**的问题，不是渠道的问题：换 session 重试同一个候选 */
   const SESSION_ROTATE_LIMIT = Number(process.env.SESSION_ROTATE_LIMIT || 3);
   let sessionRotations = 0;
-  const maxAttempts = Math.min(cands.length, Number(body.__max_attempts || 4));
+  const maxAttempts = Math.min(cands.length, Number(body.__max_attempts || process.env.PANEL_MAX_ATTEMPTS || 6));
   let last = { status: 503, body: 'no channel tried' };
 
   for (let i = 0; i < maxAttempts; i++) {
