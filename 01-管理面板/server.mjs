@@ -317,9 +317,18 @@ function aggregateSSE(up, requested, actualModel) {
   });
 }
 
+/**
+ * 模型名兼容：tokenharhur 等反代用 `xxx:free` 后缀，OpenCode 用 `xxx-free`。
+ * 客户端从别的反代切过来时模型名没改，会 400 "Model is unavailable"。
+ * 这里把冒号形式归一成短横线形式。 */
+function normalizeModelName(m) {
+  if (typeof m !== 'string') return m;
+  return m.replace(/:free$/i, '-free');
+}
+
 async function handleChat(req, res, body, auth) {
   const t0 = Date.now();
-  const requested = body.model || 'auto';
+  const requested = normalizeModelName(body.model || 'auto');
   const isStream = !!body.stream;
 
   if (!body.messages || !Array.isArray(body.messages)) return err(res, 400, 'messages 必须是非空数组');
@@ -579,8 +588,8 @@ async function handleChat(req, res, body, auth) {
  */
 async function handleResponses(req, res, body, auth) {
   const t0 = Date.now();
-  const requested = body.model || 'auto';
-  const wantStream = body.stream !== false;   // 默认流式
+  const requested = normalizeModelName(body.model || 'auto');
+  const wantStream = body.stream !== false;   // 默认流式   // 默认流式
 
   if (!body.input && !body.messages) return err(res, 400, 'input 或 messages 必须有其一');
 
