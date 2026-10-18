@@ -15,6 +15,7 @@ import * as BR from './bridge.mjs';
 import * as POOL from './proxy-pool.mjs';
 import * as CFG from './config-io.mjs';
 import * as SESS from './sessions.mjs';
+import * as TOOLS from './tools.mjs';
 import * as REG from './model-registry.mjs';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -803,7 +804,60 @@ async function handle(req, res) {
   if (p === '/api/me') return json(res, 200, { admin, site_name: DB.getSetting('site_name') });
 
   /* ── OpenAI 兼容（令牌鉴权） ── */
+    /* ══════════ 网关侧工具执行 ══════════
+     * websearch / webfetch 本来是客户端执行的，走反代时客户端常常缺 key
+     * 或被本地 DNS（Clash fake-ip）拦住。这里下沉到网关：
+     *   · 自己用 DoH 解析真实 IP → 不受 fake-ip 影响，所有站点都能抓
+     *   · 搜索没配 key 时退回 DuckDuckGo（免 key）
+     * 客户端只要 POST 一下就能拿到结果，不用自己配环境。
+     */
+    if (p === '/v1/tools/webfetch' && req.method === 'POST') {
+    const auth = tokenAuth(req);
+      if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
+      try {
+        const b = await readJson(req);
+        const url = String((b && (b.url || b.uri)) || '').trim();
+        if (!url) return err(res, 400, '缺少 url');
+        const r = await TOOLS.webFetch(url, {
+          format: (b && b.format) || 'markdown',
+          timeout: Number(b && b.timeout) ? Number(b.timeout) * 1000 : 30000,
+        });
+        return json(res, 200, r);
+      } catch (e) { return err(res, 502, String(e.message).slice(0, 300), 'fetch_error'); }
+    }
+
+    if (p === '/v1/tools/websearch' && req.method === 'POST') {
+      const auth = tokenAuth(req);
+      if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
+      try {
+        const b = await readJson(req);
+        const q = String((b && (b.query || b.q)) || '').trim();
+        if (!q) return err(res, 400, '缺少 query');
+        const r = await TOOLS.webSearch(q, {
+          numResults: Number(b && (b.numResults || b.limit)) || 8,
+          provider: (b && b.provider) || null,
+        });
+        return json(res, 200, r);
+      } catch (e) { return err(res, 502, String(e.message).slice(0, 300), 'search_error'); }
+    }
+
+    /* 工具能力自述，方便客户端发现 */
+    if (p === '/v1/tools' && req.method === 'GET') {
+      return json(res, 200, {
+        object: 'list',
+        data: [
+          { type: 'function', name: 'webfetch', endpoint: '/v1/tools/webfetch',
+            description: '抓取网页并转成文本/markdown。网关用 DoH 解析真实 IP，不受本地 fake-ip 影响。',
+            parameters: { type: 'object', properties: { url: { type: 'string' }, format: { type: 'string', enum: ['markdown', 'text', 'html'] }, timeout: { type: 'number', description: '秒' } }, required: ['url'] } },
+          { type: 'function', name: 'websearch', endpoint: '/v1/tools/websearch',
+            description: '网页搜索。没配 DEEPSEEK_API_KEY 时退回 DuckDuckGo（免 key）。',
+            parameters: { type: 'object', properties: { query: { type: 'string' }, numResults: { type: 'number' }, provider: { type: 'string', enum: ['ddg', 'deepseek'] } }, required: ['query'] } },
+        ],
+      });
+    }
+
   if (p === '/v1/models' || p === '/v1/models/') {
+
     const auth = tokenAuth(req);
     if (auth.error) return err(res, auth.code, auth.error, 'auth_error');
     /* ══════════ /v1/models ══════════
