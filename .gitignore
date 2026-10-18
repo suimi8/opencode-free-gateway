@@ -54,3 +54,6 @@ build/icon-64.png
 .hbtest/
 .sess-test/
 .itest-run/
+
+# 工具工作目录（运行时数据）
+01-管理面板/workspace/
