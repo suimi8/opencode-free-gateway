@@ -27,6 +27,11 @@ DB.ensureDefaults();
 /* 会话池：首次运行自动从本机 OpenCode 存储导入真实会话。
  * 上游现在要求 x-opencode-session 是真实存在过的会话，随机生成一律 403。 */
 {
+  /* 节点池开关：DB 里有值就以它为准，否则用环境变量默认 */
+  try {
+    const v = DB.getSetting('node_pool');
+    if (v === '0' || v === '1') POOL.setEnabled(v === '1');
+  } catch { /* 忽略 */ }
   const r = SESS.autoImportIfEmpty();
   if (r.imported) console.log(`[会话池] 已从本机导入 ${r.imported} 个 OpenCode 会话，当前使用 ${r.active}`);
   else if (!SESS.current()) console.log(`[会话池] 没有可用会话（${r.reason}）—— 免费层渠道会 403，请到面板「系统设置」里添加`);
@@ -1259,6 +1264,15 @@ async function handle(req, res) {
       delayTiers: POOL.P.delayTiers,
       activeTier: st.active ? POOL.P.tierOf(st.active.delay) : null,
     });
+    }
+    /* 节点池开关（面板里可切） */
+    if (p === '/api/proxy-pool/toggle' && req.method === 'POST') {
+      let on = null;
+      try { const b = await readJson(req); if (b && b.on !== undefined) on = !!b.on; } catch { /* 允许空 body */ }
+      if (on === null) on = !POOL.enabled();
+      DB.setSetting('node_pool', on ? '1' : '0');
+      POOL.setEnabled(on);
+      return json(res, 200, { ok: true, enabled: on });
     }
     if (p === '/api/proxy-pool/nodes') {
       const all = u.searchParams.get('all') === '1';

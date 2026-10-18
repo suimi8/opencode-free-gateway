@@ -609,7 +609,7 @@ async function viewProxy() {
 
   <div class="panel" style="padding:14px 16px;margin:14px 0">
     <div style="display:flex;gap:22px;flex-wrap:wrap;align-items:center">
-      <div><div class="sub" style="margin:0">节点池</div><b class="${st.enabled ? 'ok' : 'dim'}">${st.enabled ? '已启用' : '已关闭'}</b></div>
+      <div><div class="sub" style="margin:0">节点池</div><b class="${st.enabled ? 'ok' : 'dim'}">${st.enabled ? '已启用' : '已关闭'}</b> <button class="sm" style="margin-left:6px" onclick="togglePool()">${st.enabled ? '关闭' : '启用'}</button></div>
       <div><div class="sub" style="margin:0">出口代理</div><code class="mono">${esc(st.proxy || '-')}</code></div>
       <div><div class="sub" style="margin:0">mihomo 内核</div><b>${inst.pid ? 'PID ' + inst.pid : '未运行'}</b>${inst.interfaceName ? ` <span class="sub">网卡 ${esc(inst.interfaceName)}</span>` : ''}</div>
       <div><div class="sub" style="margin:0">节点</div><b>有效 ${c.valid ?? 0}/${c.total ?? 0}</b> <span class="sub">可用 ${c.available ?? 0} · 租用 ${c.inUse ?? 0} · 失效 ${c.dead ?? 0} · 剔除 ${POOL.excluded.length}</span></div>
@@ -785,6 +785,15 @@ async function testProvider(name) {
   } catch (e) { toast(e.message, 'bad'); }
 }
 
+/** 节点池开关（面板里可切，写进 DB，重启保持） */
+async function togglePool() {
+  const on = !(POOL.st && POOL.st.enabled);
+  try {
+    await api('/api/proxy-pool/toggle', { method: 'POST', body: { on } });
+    toast(on ? '节点池已启用（模型请求将走机场节点）' : '节点池已关闭（模型请求直连）', 'ok');
+    viewProxy();
+  } catch (e) { toast(e.message, 'bad'); }
+}
 async function applyPoolConfig() {
   toast('正在应用（重渲染配置 + 重载内核）…');
   try {

@@ -17,7 +17,15 @@ export { CORE };
 /** 内核与订阅数据所在的运行时目录（桌面版/Docker 里是可写的数据目录） */
 export const runtimeDir = () => M.RUNTIME;
 
-export const enabled = () => String(process.env.PANEL_NODE_POOL ?? '1') !== '0';
+/* 节点池开关：面板里可以随时切换，优先级高于环境变量。
+ * 环境变量 PANEL_NODE_POOL 只是**初始默认值**；
+ * 用户在面板里点过之后以 DB 里的设置为准（server.mjs 启动时注入）。 */
+let OVERRIDE = null;                     // null = 还没人设过，走环境变量
+export function setEnabled(on) { OVERRIDE = !!on; return OVERRIDE; }
+export function enabled() {
+  if (OVERRIDE !== null) return OVERRIDE;
+  return String(process.env.PANEL_NODE_POOL ?? '1') !== '0';
+}
 /** 池子实例的代理地址（HTTP 代理，mixed-port 同时支持 HTTP 与 SOCKS5） */
 export const proxyUrl = () => process.env.PANEL_NODE_POOL_PROXY || `http://127.0.0.1:${M.params().mixedPort}`;
 
