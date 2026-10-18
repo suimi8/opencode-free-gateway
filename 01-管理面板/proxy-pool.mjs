@@ -24,7 +24,8 @@ let OVERRIDE = null;                     // null = 还没人设过，走环境�
 export function setEnabled(on) { OVERRIDE = !!on; return OVERRIDE; }
 export function enabled() {
   if (OVERRIDE !== null) return OVERRIDE;
-  return String(process.env.PANEL_NODE_POOL ?? '1') !== '0';
+  /* 默认**关闭**：开着时模型请求走机场节点，上游会判 abusive/地区限制。\n   * 想用就在面板「代理订阅」里点开关，或设 PANEL_NODE_POOL=1。 */
+  return String(process.env.PANEL_NODE_POOL ?? '0') === '1';
 }
 /** 池子实例的代理地址（HTTP 代理，mixed-port 同时支持 HTTP 与 SOCKS5） */
 export const proxyUrl = () => process.env.PANEL_NODE_POOL_PROXY || `http://127.0.0.1:${M.params().mixedPort}`;
