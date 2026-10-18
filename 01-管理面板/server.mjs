@@ -17,6 +17,7 @@ import * as CFG from './config-io.mjs';
 import * as SESS from './sessions.mjs';
 import * as TOOLS from './tools.mjs';
 import * as CATALOG from './model-catalog.mjs';
+import * as NET from './public-net.mjs';
 import * as REG from './model-registry.mjs';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -58,6 +59,11 @@ DB.ensureDefaults();
       }
     } catch (e) { console.log('[模型目录] 异常: ' + String(e.message || e)); }
   };
+  /* 公网 IP：启动时探一次，失败不影响启动 */
+  NET.detectPublicIp().then((d) => {
+    if (d.ip) console.log(`[公网] 对外 IP ${d.ip}${d.source ? '（' + d.source + '）' : ''}`);
+    else console.log('[公网] 探测失败: ' + (d.error || '未知'));
+  }).catch(() => {});
   syncCatalog();
   /* 每 6 小时刷一次（2 个请求，不会触发滥用判定） */
   setInterval(syncCatalog, 6 * 3600 * 1000).unref();
@@ -840,7 +846,7 @@ async function handle(req, res) {
       await new Promise((r) => setTimeout(r, 400));
       return err(res, 401, '密码错误', 'auth_error');
     }
-    return json(res, 200, { ok: true }, { 'set-cookie': `ocp_session=${makeSession()}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800` });
+    return json(res, 200, { ok: true }, { 'set-cookie': `ocp_session=${makeSession()}; ${NET.cookieAttrs(req)}` });
   }
   if (p === '/api/logout' && req.method === 'POST') {
     return json(res, 200, { ok: true }, { 'set-cookie': 'ocp_session=; Path=/; Max-Age=0' });
@@ -1148,7 +1154,15 @@ async function handle(req, res) {
      * 只影响模型请求的出口；系统代理 / TUN / 浏览器完全不受影响。
      */
     /* ── 上游 free 模型的动态发现 ── */
-    if (p === '/api/models/catalog') {
+    /* ── 网络信息（公网 IP / 反代识别 / 对外地址）── */
+  if (p === '/api/net') {
+    return json(res, 200, await NET.info(req, PORT));
+  }
+  if (p === '/api/net/refresh' && req.method === 'POST') {
+    const d = await NET.detectPublicIp({ force: true });
+    return json(res, 200, { ip: d.ip, at: d.at, source: d.source, error: d.error, url: await NET.publicUrlOf(req, PORT) });
+  }
+  if (p === '/api/models/catalog') {
       const st = REG.catalogState();
       return json(res, 200, st);
     }
