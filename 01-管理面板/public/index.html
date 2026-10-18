@@ -659,6 +659,12 @@ async function viewProxy() {
     <button onclick="poolTestAll()">全池测速</button>
     <button onclick="poolRotate()">立即轮换</button>
   </div>
+  <div class="sub" style="margin:-2px 0 8px;font-size:11px">
+    延迟分档：<span style="color:#34d399">≤300ms 优先</span> →
+    <span style="color:#a3e635">≤400ms</span> →
+    <span style="color:#fbbf24">≤500ms</span> →
+    <span style="color:#f87171">&gt;500ms（仅当上面都不够用时才选）</span>
+  </div>
   <div id="nodeBox"></div>`;
 
   const exclArea = POOL.excluded.length ? `
@@ -701,7 +707,7 @@ function renderNodeTable() {
         <td class="sub">${esc(r.provider || '-')}</td>
         <td><span class="b dim">${esc(r.type || '?')}</span></td>
         <td class="mono" style="font-size:11px">${esc((r.server || '-') + ':' + (r.port || '-'))}</td>
-        <td>${r.delay_ms != null ? r.delay_ms + 'ms' : '-'}</td>
+        <td>${r.delay_ms != null ? `<span style="color:${r.tier === 0 ? '#34d399' : r.tier === 1 ? '#a3e635' : r.tier === 2 ? '#fbbf24' : '#f87171'}">${r.delay_ms}ms</span>` : '-'}</td>
         <td>${nodeStatus(r)}</td>
         <td>
           ${r.valid

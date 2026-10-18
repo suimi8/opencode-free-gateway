@@ -1123,7 +1123,12 @@ async function handle(req, res) {
     if (p === '/api/proxy-pool' || p === '/api/proxy-pool/') {
       await POOL.resync().catch(() => {});
       const st = await POOL.state();
-      return json(res, 200, { enabled: POOL.enabled(), proxy: POOL.proxyUrl(), instance: POOL.instance(), ...st });
+      return json(res, 200, {
+      enabled: POOL.enabled(), proxy: POOL.proxyUrl(), instance: POOL.instance(), ...st,
+      /* 延迟分档：优先 300ms 内，不够放宽到 400、500 */
+      delayTiers: POOL.P.delayTiers,
+      activeTier: st.active ? POOL.P.tierOf(st.active.delay) : null,
+    });
     }
     if (p === '/api/proxy-pool/nodes') {
       const all = u.searchParams.get('all') === '1';
@@ -1144,6 +1149,7 @@ async function handle(req, res) {
           excluded: !!d.excluded,
           status: st.status || (d.valid ? 'available' : 'excluded'),
           delay_ms: st.delay_ms ?? null,
+          tier: POOL.P.tierOf(st.delay_ms),
         };
       });
       if (!all) rows = rows.filter((r) => r.valid);

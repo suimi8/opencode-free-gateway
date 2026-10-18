@@ -85,6 +85,33 @@ export async function syncNodes() {
   return { total: nodes.length, valid: nodes.filter((n) => n.valid).length, now };
 }
 
+/* ── 延迟分档 ──
+ * 优先用 300ms 以内的节点；如果这类节点不够用（都死了/都在租约里），
+ * 才放宽到 400ms，再不够到 500ms，最后才用更慢的。
+ * 档位可配：NODE_DELAY_TIERS=300,400,500
+ */
+const TIERS = String(process.env.NODE_DELAY_TIERS || '300,400,500')
+  .split(',').map((x) => Number(x.trim()))
+  .filter((x) => Number.isFinite(x) && x > 0)
+  .sort((a, b) => a - b);
+export const delayTiers = TIERS;
+
+/**
+ * 延迟落在第几档（0 = 最快那一档）。
+ * 未知延迟（没测过 / null）排到最后一档 —— 不能因为没数据就优先用。
+ */
+export function tierOf(delay) {
+  const v = Number(delay);
+  if (!Number.isFinite(v) || v <= 0) return TIERS.length;
+  for (let i = 0; i < TIERS.length; i++) if (v <= TIERS[i]) return i;
+  return TIERS.length;
+}
+
+/* 当前出口比最慢一档还慢、而池子里有更快档位时，主动升级（默认开） */
+const SLOW_UPGRADE = String(process.env.NODE_SLOW_UPGRADE ?? '1') !== '0';
+const SLOW_UPGRADE_COOLDOWN_MS = Number(process.env.NODE_SLOW_UPGRADE_COOLDOWN_MS || 10 * 60e3);
+let LAST_UPGRADE_AT = 0;
+
 /* ── 可用池 ── */
 export function availableNodes(now = Date.now()) {
   return all().filter((r) => {
@@ -93,12 +120,15 @@ export function availableNodes(now = Date.now()) {
     if (r.status === 'dead') return r.dead_until <= now;            // 冷却结束才复活
     return true;
   }).sort((a, b) => {
-    // 优先：没撞过额度 429 → 延迟低 → 用得少
-    const qa = (now - (a.quota_fail_at || 0)) < QUOTA_COOLDOWN_MS ? 100000 : 0;
-    const qb = (now - (b.quota_fail_at || 0)) < QUOTA_COOLDOWN_MS ? 100000 : 0;
-    const sa = qa + (a.delay_ms ?? 9999) + a.use_count * 50;
-    const sb = qb + (b.delay_ms ?? 9999) + b.use_count * 50;
-    return sa - sb;
+    // ① 撞过额度 429 的排最后（换了出口也可能没用）
+    const qa = (now - (a.quota_fail_at || 0)) < QUOTA_COOLDOWN_MS ? 1 : 0;
+    const qb = (now - (b.quota_fail_at || 0)) < QUOTA_COOLDOWN_MS ? 1 : 0;
+    if (qa !== qb) return qa - qb;
+    // ② 延迟档位：<=300 的整批排在 <=400 前面，依此类推
+    const ta = tierOf(a.delay_ms), tb = tierOf(b.delay_ms);
+    if (ta !== tb) return ta - tb;
+    // ③ 同档内：延迟低的优先，其次用得少的
+    return ((a.delay_ms ?? 99999) + a.use_count * 50) - ((b.delay_ms ?? 99999) + b.use_count * 50);
   });
 }
 
@@ -194,6 +224,23 @@ export async function ensureActive({ force = false, avoid = [] } = {}) {
   releaseExpired(now);
 
   let cur = activeNode();
+
+  /* ⓪ 当前出口比最慢一档（默认 500ms）还慢，而池子里有更快档位的节点
+   *    → 主动升级，别一直挂在 1300ms 的节点上。
+   *    有冷却时间，避免在两档之间反复横跳。 */
+  if (cur && !force && SLOW_UPGRADE && now - LAST_UPGRADE_AT > SLOW_UPGRADE_COOLDOWN_MS) {
+    const curTier = tierOf(cur.delay_ms);
+    if (curTier >= TIERS.length) {
+      const better = availableNodes(now)
+        .filter((n) => n.name !== cur.name && !avoid.includes(n.name) && tierOf(n.delay_ms) < curTier);
+      if (better.length) {
+        LAST_UPGRADE_AT = now;
+        ev('upgrade', cur.name,
+          `当前出口 ${cur.delay_ms ?? '?'}ms 超出最慢档 ${TIERS[TIERS.length - 1] ?? '?'}ms，升级到 ${better[0].name}（${better[0].delay_ms}ms）`);
+        force = true;                       // 走下面的「挑新节点」流程
+      }
+    }
+  }
 
   // ① 节点还在租约内：验证（带缓存）后直接用
   if (cur && !force) {

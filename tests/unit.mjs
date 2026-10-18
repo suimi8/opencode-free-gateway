@@ -382,5 +382,21 @@ eq('扫描返回结构正确', Array.isArray(scan.found) && Array.isArray(scan.s
 eq('扫描结果都合法', scan.found.every((x) => SESS.isValidSession(x)), true);
 try { fsx.rmSync(SESSTMP, { recursive: true, force: true }); } catch { /* 忽略 */ }
 
+/* ══════════════════════════════════════════════ 15) 延迟分档 */
+console.log('\n── 15) 延迟分档 ──');
+const POOLm = await import(pathToFileURL(path.join(ROOT, '10-代理节点管理', 'pool.mjs')).href);
+eq('默认档位 300/400/500', JSON.stringify(POOLm.delayTiers), JSON.stringify([300, 400, 500]));
+eq('100ms 在第 0 档', POOLm.tierOf(100), 0);
+eq('300ms 仍在第 0 档（含边界）', POOLm.tierOf(300), 0);
+eq('301ms 落到第 1 档', POOLm.tierOf(301), 1);
+eq('400ms 在第 1 档', POOLm.tierOf(400), 1);
+eq('401ms 落到第 2 档', POOLm.tierOf(401), 2);
+eq('500ms 在第 2 档', POOLm.tierOf(500), 2);
+eq('501ms 落到第 3 档', POOLm.tierOf(501), 3);
+eq('1333ms 在第 3 档', POOLm.tierOf(1333), 3);
+eq('未知延迟（null）排最后', POOLm.tierOf(null), 3);
+eq('未知延迟（0）排最后', POOLm.tierOf(0), 3);
+eq('负数延迟排最后', POOLm.tierOf(-1), 3);
+
 console.log(`\n单元测试: ${pass} 通过, ${fail} 失败`);
 process.exit(fail ? 1 : 0);
