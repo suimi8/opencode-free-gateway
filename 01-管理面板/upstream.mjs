@@ -466,9 +466,23 @@ export function buildOpenCodeResponsesRequest(channel, req) {
     description: x.description || x.function.description || '',
     parameters: x.parameters || x.function.parameters,
   }));
-  const baseTools = minimal ? [] : (t.tools || []);
+  /* tools 组装：和 chat 路径用同一套 toolMode 规则。
+   * 旧行为（无条件合并模板 12 个工具）会让非 OpenCode 客户端拿到一堆
+   * 它不认识的工具，模型去调 read/bash 就失败。 */
+  const tm = toolMode(channel);
+  const tmplTools = minimal ? [] : (t.tools || []);
+  let baseTools, addTools;
+  if (tm === 'template') {
+    baseTools = tmplTools; addTools = [];
+  } else if (tm === 'merge') {
+    baseTools = tmplTools; addTools = extraTools;
+  } else {
+    // client：客户端给了就只用客户端的，没给才退回模板
+    baseTools = extraTools.length ? [] : tmplTools;
+    addTools = extraTools;
+  }
   // 强制保证有 read（门禁硬要求，区分大小写），并按名字去重（上游对重名工具会 400）
-  body.tools = ensureReadToolResponses(mergeTools(baseTools, extraTools, true));
+  body.tools = ensureReadToolResponses(mergeTools(baseTools, addTools, true));
 
   body.tool_choice = req.tool_choice || 'auto';
   body.stream = true;            // 门禁要求；Responses 也必须流式

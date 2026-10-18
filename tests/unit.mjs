@@ -441,5 +441,34 @@ eq('客户端自带 read 时不重复', namesOf(br).filter((x) => x === 'read').
 // 非法模式回退到 client
 eq('非法模式回退 client', UPt.toolMode(mkCh('bogus')), 'client');
 
+/* ── 16b) responses 原生路径的工具模式（和 chat 路径同一套规则）── */
+const CLIENT_R = [{ type: 'function', function: { name: 'get_weather', description: 'w', parameters: { type: 'object', properties: { location: { type: 'string' } }, required: ['location'] } } }];
+const rNames = (b) => (b.body.tools || []).map((t) => t.name || (t.function && t.function.name));
+
+const brc = UPt.buildResponsesRequest(mkCh(), { model: 'm', input: 'hi', tools: CLIENT_R, stream: false });
+eq('responses/client 只发客户端工具 + read', rNames(brc).join(','), 'get_weather,read');
+eq('responses/client 不注入 bash', rNames(brc).includes('bash'), false);
+eq('responses/client 不注入 edit', rNames(brc).includes('edit'), false);
+
+const brn = UPt.buildResponsesRequest(mkCh(), { model: 'm', input: 'hi', stream: false });
+eq('responses 客户端不给 tools 时退回模板', rNames(brn).length >= 12, true);
+eq('responses 退回模板时含 read', rNames(brn).includes('read'), true);
+
+const brm = UPt.buildResponsesRequest(mkCh('merge'), { model: 'm', input: 'hi', tools: CLIENT_R, stream: false });
+eq('responses/merge 合并成 13 个', rNames(brm).length, 13);
+
+const brt = UPt.buildResponsesRequest(mkCh('template'), { model: 'm', input: 'hi', tools: CLIENT_R, stream: false });
+eq('responses/template 不含客户端工具', rNames(brt).includes('get_weather'), false);
+
+for (const mode of ['client', 'merge', 'template']) {
+  const b = UPt.buildResponsesRequest(mkCh(mode), { model: 'm', input: 'hi', tools: CLIENT_R, stream: false });
+  eq(`responses/${mode} 都保证有 read`, rNames(b).includes('read'), true);
+}
+
+// 桥接路径本来就不注入模板工具，这里加断言防止以后改坏
+const bbr = UPt.buildBridgedRequest(mkCh(), { model: 'm', messages: [{ role: 'user', content: 'hi' }], tools: CLIENT_R }, 'responses');
+eq('桥接路径只用客户端工具 + read', rNames(bbr).join(','), 'get_weather,read');
+eq('桥接路径不注入 bash', rNames(bbr).includes('bash'), false);
+
 console.log(`\n单元测试: ${pass} 通过, ${fail} 失败`);
 process.exit(fail ? 1 : 0);
