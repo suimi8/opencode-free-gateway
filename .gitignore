@@ -49,3 +49,8 @@ _sanitize.mjs
 dist-desktop/
 build/icon-256.png
 build/icon-64.png
+# 临时测试目录
+.hb*/
+.hbtest/
+.sess-test/
+.itest-run/
