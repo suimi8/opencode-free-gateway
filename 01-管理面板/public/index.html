@@ -508,6 +508,7 @@ async function clearLogs() { if (!confirm('确定清空全部日志？')) return
 
 /* ══════════════════════════════════════════════ 设置 */
 async function viewSettings() {
+  setTimeout(() => loadSessions(), 0);
   M('<h2>系统设置</h2><div class="sub">加载中…</div>');
   const [s, px] = await Promise.all([api('/api/settings'), api('/api/proxies')]);
   M(`
@@ -519,6 +520,8 @@ async function viewSettings() {
     <input id="s_proxy" class="mono" value="${esc(s.default_proxy || '')}" placeholder="http://127.0.0.1:7897,socks5://127.0.0.1:7897">
     <div style="margin-top:14px"><button class="primary" onclick="saveSettings()">保存</button></div>
   </div></div>
+
+  <div id="sessBox" style="margin-bottom:14px"></div>
 
   <div class="panel"><h3>配置备份 / 恢复</h3><div class="body">
     <div class="sub">导出包含渠道（含 API Key）、代理订阅（含链接里的 token）、站点设置。<b>不含</b>管理密码与 session 密钥。</div>
@@ -1042,6 +1045,113 @@ async function importClash(dryRun) {
     if (box) box.innerHTML = `<span class="b bad">${esc(e.message)}</span>`;
     toast(e.message, 'bad');
   }
+}
+
+
+/* ══════════════════════════════════════════════ OpenCode 会话池
+ *
+ * 上游要求 x-opencode-session 是**真实存在过的会话**，随机生成的格式再对也 403。
+ * 这里管理一个池子（存配置文件），支持自动扫描本机 + 手动添加 + 指定当前使用。
+ */
+let SESS_STATE = { rows: [], active: '', configPath: '' };
+
+async function loadSessions() {
+  const box = $('#sessBox');
+  if (!box) return;
+  try {
+    const r = await api('/api/sessions');
+    SESS_STATE = r;
+    renderSessions();
+  } catch (e) {
+    box.innerHTML = `<div class="panel" style="padding:14px 16px"><b>会话池</b> <span class="b bad">读取失败：${esc(e.message)}</span></div>`;
+  }
+}
+
+function renderSessions() {
+  const box = $('#sessBox');
+  if (!box) return;
+  const rows = SESS_STATE.rows || [];
+  const active = SESS_STATE.active || '';
+  const okCount = rows.filter((r) => r.lastOkAt > (r.lastFailAt || 0)).length;
+
+  box.innerHTML = `<div class="panel"><h3>OpenCode 会话池
+      <span class="sub" style="font-weight:400">${rows.length} 个 · 当前 <code class="mono">${esc(active || '无')}</code></span>
+    </h3><div class="body">
+    <div class="sub" style="font-size:12px">
+      上游要求 <code class="mono">x-opencode-session</code> 是**真实存在过的会话** ——
+      格式正确但从未出现过的 id 一律 403。池子里的会话可长期复用，不分新旧。
+    </div>
+    <div class="sub" style="font-size:11px;margin-top:6px">配置文件：<code class="mono">${esc(SESS_STATE.configPath || '')}</code></div>
+    <div class="toolbar" style="margin-top:10px">
+      <button class="primary" onclick="addSession()">＋ 手动添加</button>
+      <button onclick="scanSessions()">扫描本机</button>
+      <button onclick="testSessions()">测试全部</button>
+      <button onclick="loadSessions()">刷新</button>
+    </div>
+    <div id="sessResult" class="sub" style="font-size:12px;margin-top:6px"></div>
+    <div class="tbl-wrap" style="margin-top:10px"><table>
+      <thead><tr><th>session</th><th>来源</th><th>最近结果</th><th style="width:200px">操作</th></tr></thead>
+      <tbody>${rows.length ? rows.map((r, i) => `<tr>
+        <td class="mono" style="font-size:11px">${esc(r.id)}${r.id === active ? ' <span class="b ok">当前</span>' : ''}</td>
+        <td><span class="b dim">${esc(r.source || 'manual')}</span>${r.note ? ' <span class="sub">' + esc(r.note) + '</span>' : ''}</td>
+        <td>${r.lastOkAt && r.lastOkAt >= (r.lastFailAt || 0) ? '<span class="b ok">可用</span>' : (r.lastFailAt ? '<span class="b bad">失败 ' + (r.failCount || 1) + ' 次</span>' : '<span class="b dim">未测试</span>')}</td>
+        <td>
+          ${r.id === active ? '' : `<button class="sm" onclick="setActiveSession(${i})">设为当前</button>`}
+          <button class="sm" onclick="testSessions(${i})">测试</button>
+          <button class="sm danger" onclick="delSession(${i})">删除</button>
+        </td>
+      </tr>`).join('') : '<tr><td colspan="4" class="empty">池子是空的 —— 点「扫描本机」从 OpenCode 存储里导入</td></tr>'}</tbody>
+    </table></div>
+  </div></div>`;
+}
+
+function addSession() {
+  const id = prompt('粘贴一个 OpenCode 会话 id\n格式：ses_ + 12 位 hex + 14 位字母数字\n\n可以从 ~/.local/share/opencode/storage/ 里找');
+  if (!id) return;
+  api('/api/sessions', { method: 'POST', body: { id: id.trim(), note: '手动添加' } })
+    .then((r) => { toast(r.added ? '已添加' : '已存在', r.added ? 'ok' : ''); loadSessions(); })
+    .catch((e) => toast(e.message, 'bad'));
+}
+
+async function scanSessions() {
+  const out = $('#sessResult');
+  if (out) out.textContent = '正在扫描本机 OpenCode 存储…';
+  try {
+    const r = await api('/api/sessions/scan', { method: 'POST', body: {} });
+    if (out) out.innerHTML = `<span class="b ok">扫描完成</span> 找到 ${r.found} 个，新增 ${r.added} 个，池子共 ${r.total} 个`;
+    toast(`新增 ${r.added} 个会话`, 'ok');
+    loadSessions();
+  } catch (e) { toast(e.message, 'bad'); if (out) out.textContent = e.message; }
+}
+
+async function testSessions(idx) {
+  const out = $('#sessResult');
+  const one = typeof idx === 'number' ? SESS_STATE.rows[idx] : null;
+  if (out) out.textContent = one ? `正在测试 ${one.id}…` : '正在逐个测试（每个都要打一次上游，慢一点）…';
+  try {
+    const r = await api('/api/sessions/test', { method: 'POST', body: one ? { id: one.id } : {} });
+    const bad = (r.results || []).filter((x) => !x.ok);
+    if (out) {
+      out.innerHTML = `<span class="b ${r.okCount ? 'ok' : 'bad'}">${r.okCount}/${r.total} 可用</span>`
+        + (bad.length ? '<div class="mono" style="font-size:11px;margin-top:4px">失败：' + bad.map((x) => esc(x.id.slice(0, 22)) + ' (' + esc(x.error || x.status) + ')').join('<br>') + '</div>' : '');
+    }
+    toast(`${r.okCount}/${r.total} 个会话可用`, r.okCount ? 'ok' : 'bad');
+    loadSessions();
+  } catch (e) { toast(e.message, 'bad'); if (out) out.textContent = e.message; }
+}
+
+async function setActiveSession(idx) {
+  const r = SESS_STATE.rows[idx];
+  if (!r) return;
+  try { await api('/api/sessions/active', { method: 'POST', body: { id: r.id } }); toast('已切换', 'ok'); loadSessions(); }
+  catch (e) { toast(e.message, 'bad'); }
+}
+
+async function delSession(idx) {
+  const r = SESS_STATE.rows[idx];
+  if (!r || !confirm('从池子里删除这个会话？\n' + r.id)) return;
+  try { await api('/api/sessions?id=' + encodeURIComponent(r.id), { method: 'DELETE' }); toast('已删除', 'ok'); loadSessions(); }
+  catch (e) { toast(e.message, 'bad'); }
 }
 
 

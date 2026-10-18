@@ -5,6 +5,7 @@
  * 渠道：opencode（免费层形状请求） / openai（通用 OpenAI 兼容）
  */
 import http from 'node:http';
+import * as SESS from './sessions.mjs';
 import https from 'node:https';
 import net from 'node:net';
 import tls from 'node:tls';
@@ -313,7 +314,10 @@ const _uaWarned = new Set();
 
 /* opencode 渠道的公共请求头（chat/completions 与 responses 共用） */
 export function openCodeHeaders(channel) {
-  const sid = makeSessionId();
+  /* session 来源：优先用会话池里配好的真实会话（配置文件 + 面板管理），
+   * 池子空才退回随机生成 —— 随机的一定过不了门禁（实测 403），
+   * 所以会在启动时自动从本机 OpenCode 导入，见 sessions.mjs。 */
+  const sid = SESS.current() || makeSessionId();
   const ua = (channel.extra && channel.extra.ua) || UA_OPENCODE;
   const uaProblem = checkOpenCodeUa(ua);
   if (uaProblem && !_uaWarned.has(ua)) {

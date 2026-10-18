@@ -14,6 +14,7 @@ import * as UP from './upstream.mjs';
 import * as BR from './bridge.mjs';
 import * as POOL from './proxy-pool.mjs';
 import * as CFG from './config-io.mjs';
+import * as SESS from './sessions.mjs';
 import * as REG from './model-registry.mjs';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -21,6 +22,14 @@ const PORT = Number(process.env.PANEL_PORT || 8790);
 const HOST = process.env.PANEL_HOST || '127.0.0.1';
 
 DB.ensureDefaults();
+
+/* 会话池：首次运行自动从本机 OpenCode 存储导入真实会话。
+ * 上游现在要求 x-opencode-session 是真实存在过的会话，随机生成一律 403。 */
+{
+  const r = SESS.autoImportIfEmpty();
+  if (r.imported) console.log(`[会话池] 已从本机导入 ${r.imported} 个 OpenCode 会话，当前使用 ${r.active}`);
+  else if (!SESS.current()) console.log(`[会话池] 没有可用会话（${r.reason}）—— 免费层渠道会 403，请到面板「系统设置」里添加`);
+}
 
 /* ══════════════════════════════════════════════════ 模型冷却（内存态） */
 const COOLDOWN = new Map();   // `${channelId}:${model}` -> untilMs
@@ -312,6 +321,9 @@ async function handleChat(req, res, body, auth) {
   /* 额度耗尽也切换代理节点：换出口 IP 再试同一个候选。上限由 QUOTA_ROTATE_LIMIT 控制。 */
   const QUOTA_ROTATE_LIMIT = Number(process.env.QUOTA_ROTATE_LIMIT || 3);
   let quotaRotations = 0;
+  /* 门禁 403 是**会话**的问题，不是渠道的问题：换 session 重试同一个候选 */
+  const SESSION_ROTATE_LIMIT = Number(process.env.SESSION_ROTATE_LIMIT || 3);
+  let sessionRotations = 0;
   const maxAttempts = Math.min(cands.length, Number(body.__max_attempts || 4));
   let last = { status: 503, body: 'no channel tried' };
 
@@ -360,6 +372,17 @@ async function handleChat(req, res, body, auth) {
         }
         DB.addLog({ token_id: auth.token?.id, token_name: auth.token?.name, channel_id: ch.id, channel_name: ch.name, model: logModel, upstream_model: model, proxy: resp.proxy, status, ok: 0, stream: isStream, error: 'quota 429 (retry-after ' + (ra || '?') + 's)', latency_ms: Date.now() - t0, client_ip: clientIp(req) });
       } else if (status === 403 || status === 400) {
+        /* 403 FreeTierError 通常是**会话失效**，不是渠道坏了。
+         * 换一个 session 重试同一个候选（i-- 让 for 的 i++ 抵消），
+         * 只有真的换不动了才给渠道上冷却。 */
+        if (status === 403 && /FreeTierError/i.test(text) && sessionRotations < SESSION_ROTATE_LIMIT) {
+          sessionRotations++;
+          const cur = SESS.current();
+          SESS.markFail(cur);
+          const next = SESS.rotate(cur);
+          DB.addLog({ token_id: auth.token?.id, token_name: auth.token?.name, channel_id: ch.id, channel_name: ch.name, model: logModel, upstream_model: model, proxy: resp.proxy, status, ok: 0, stream: isStream, error: `门禁403 -> 换 session 到 ${next || '(池空)'}（第 ${sessionRotations} 次）`, latency_ms: Date.now() - t0, client_ip: clientIp(req) });
+          if (next && next !== cur) { i--; continue; }
+        }
         setCooldown(ch.id, model, 600e3);
         DB.addLog({ token_id: auth.token?.id, token_name: auth.token?.name, channel_id: ch.id, channel_name: ch.name, model: logModel, upstream_model: model, proxy: resp.proxy, status, ok: 0, stream: isStream, error: text.slice(0, 300), latency_ms: Date.now() - t0, client_ip: clientIp(req) });
       } else {
@@ -557,6 +580,9 @@ async function handleResponses(req, res, body, auth) {
   /* 额度耗尽也切换代理节点：换出口 IP 再试同一个候选。上限由 QUOTA_ROTATE_LIMIT 控制。 */
   const QUOTA_ROTATE_LIMIT = Number(process.env.QUOTA_ROTATE_LIMIT || 3);
   let quotaRotations = 0;
+  /* 门禁 403 是**会话**的问题，不是渠道的问题：换 session 重试同一个候选 */
+  const SESSION_ROTATE_LIMIT = Number(process.env.SESSION_ROTATE_LIMIT || 3);
+  let sessionRotations = 0;
   const maxAttempts = Math.min(cands.length, Number(body.__max_attempts || 4));
   let last = { status: 503, body: 'no channel tried' };
 
@@ -601,6 +627,14 @@ async function handleResponses(req, res, body, auth) {
           if (rot.ok) { i--; continue; }
         }
       } else if (status === 403 || status === 400) {
+        if (status === 403 && /FreeTierError/i.test(text) && sessionRotations < SESSION_ROTATE_LIMIT) {
+          sessionRotations++;
+          const cur = SESS.current();
+          SESS.markFail(cur);
+          const next = SESS.rotate(cur);
+          DB.addLog({ token_id: auth.token?.id, token_name: auth.token?.name, channel_id: ch.id, channel_name: ch.name, model: logModel, upstream_model: model, proxy: resp.proxy, status, ok: 0, stream: 1, error: `门禁403 -> 换 session 到 ${next || '(池空)'}（第 ${sessionRotations} 次）`, latency_ms: Date.now() - t0, client_ip: clientIp(req) });
+          if (next && next !== cur) { i--; continue; }
+        }
         setCooldown(ch.id, model, 600e3);
       }
       DB.addLog({ token_id: auth.token?.id, token_name: auth.token?.name, channel_id: ch.id, channel_name: ch.name, model: logModel, upstream_model: model, proxy: resp.proxy, status, ok: 0, stream: 1, error: text.slice(0, 300), latency_ms: Date.now() - t0, client_ip: clientIp(req) });
@@ -1210,6 +1244,86 @@ async function handle(req, res) {
      * 导出内容含渠道 API Key 与订阅 token，界面上有明确警告。
      * 默认**不导出**令牌与任何密码哈希。
      */
+    /* ══════════ OpenCode 会话池 ══════════
+     * 上游要求 x-opencode-session 是真实存在过的会话。这里管理一个池子，
+     * 存在配置文件里，支持自动扫描本机 + 手动添加 + 指定当前使用。
+     */
+    if (p === '/api/sessions' && req.method === 'GET') {
+      return json(res, 200, {
+        rows: SESS.list(),
+        active: SESS.current(),
+        configPath: SESS.configPath(),
+      });
+    }
+    if (p === '/api/sessions' && req.method === 'POST') {
+      try {
+        const b = await readJson(req);
+        const r = SESS.add(b && b.id, { note: (b && b.note) || '', source: 'manual' });
+        return json(res, 200, { ok: true, ...r, active: SESS.current() });
+      } catch (e) { return err(res, 400, String(e.message).slice(0, 200)); }
+    }
+    if (p === '/api/sessions' && req.method === 'DELETE') {
+      const id = u.searchParams.get('id');
+      if (!id) return err(res, 400, '缺少 id');
+      return json(res, 200, { ok: true, ...SESS.remove(id), active: SESS.current() });
+    }
+    if (p === '/api/sessions/active' && req.method === 'POST') {
+      try {
+        const b = await readJson(req);
+        return json(res, 200, { ok: true, ...SESS.setActive(String((b && b.id) || '')) });
+      } catch (e) { return err(res, 400, String(e.message).slice(0, 200)); }
+    }
+    /* 扫本机 OpenCode 存储，把找到的会话都加进池子 */
+    if (p === '/api/sessions/scan' && req.method === 'POST') {
+      try {
+        const b = await readJson(req).catch(() => ({}));
+        return json(res, 200, { ok: true, ...SESS.importFromLocal({ max: Number(b && b.max) || 40 }), active: SESS.current() });
+      } catch (e) { return err(res, 500, String(e.message).slice(0, 200)); }
+    }
+    /* 实测哪些会话还能过门禁：直接打上游一次（用最小请求体） */
+    if (p === '/api/sessions/test' && req.method === 'POST') {
+      const b = await readJson(req).catch(() => ({}));
+      const only = b && b.id ? String(b.id) : '';
+      const rows = SESS.list().filter((r) => !only || r.id === only);
+      if (!rows.length) return err(res, 400, '池子里没有会话');
+      const out = [];
+      for (const r of rows.slice(0, 30)) {
+        const t0 = Date.now();
+        try {
+          const resp = await UP.request({
+            url: 'https://opencode.ai/inference/v1/chat/completions',
+            headers: {
+              'content-type': 'application/json',
+              authorization: 'Bearer public',
+              'user-agent': 'opencode/1.19.3',
+              'x-opencode-client': 'desktop',
+              'x-opencode-project': 'global',
+              'x-opencode-session': r.id,
+            },
+            body: JSON.stringify({
+              model: 'deepseek-v4.1-flash-free', stream: true,
+              messages: [{ role: 'user', content: 'hi' }],
+              tools: [{ type: 'function', function: { name: 'read', description: 'r', parameters: { type: 'object', properties: {} } } }],
+            }),
+            timeout: 30000,
+          });
+          const status = resp.res.statusCode;
+          const text = await new Promise((resolve) => { let buf = ''; resp.res.setEncoding('utf8'); resp.res.on('data', (c) => (buf += c)); resp.res.on('end', () => resolve(buf)); });
+          const ok = status === 200;
+          if (ok) SESS.markOk(r.id); else SESS.markFail(r.id);
+          out.push({ id: r.id, ok, status, ms: Date.now() - t0, error: ok ? null : (/FreeTierError/i.test(text) ? 'FreeTierError（会话无效）' : text.slice(0, 160)) });
+        } catch (e) {
+          out.push({ id: r.id, ok: false, status: 0, ms: Date.now() - t0, error: String(e.message).slice(0, 160) });
+        }
+      }
+      const okCount = out.filter((x) => x.ok).length;
+      // 有可用的就自动切过去
+      if (okCount && !out.find((x) => x.id === SESS.current() && x.ok)) {
+        SESS.setActive(out.find((x) => x.ok).id);
+      }
+      return json(res, 200, { ok: true, results: out, okCount, total: out.length, active: SESS.current() });
+    }
+
     if (p === '/api/config/export' && req.method === 'GET') {
       const includeTokens = u.searchParams.get('tokens') === '1';
       const withPool = u.searchParams.get('pool') !== '0';

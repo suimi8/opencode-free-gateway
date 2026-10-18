@@ -327,5 +327,60 @@ eq('baseUrlOf 去尾斜杠', UPm.baseUrlOf({ base_url: 'https://a.com/v1/' }), '
 eq('endpointUrl 空渠道退回默认', UPm.endpointUrl({ base_url: '' }, 'chat', 'https://def/x'), 'https://def/x/chat/completions');
 eq('completions（非 chat/completions）也剥离', UPm.baseUrlOf({ base_url: 'https://a.com/v1/completions' }), 'https://a.com/v1');
 
+/* ══════════════════════════════════════════════ 14) OpenCode 会话池 */
+console.log('\n── 14) 会话池 ──');
+const SESSTMP = fsx.mkdtempSync(path.join(os.tmpdir(), 'ocgw-sesstest-'));
+process.env.PANEL_DB = path.join(SESSTMP, 'panel.db');
+const SESS = await import(pathToFileURL(path.join(ROOT, '01-管理面板', 'sessions.mjs')).href);
+
+// 格式校验：ses_ + 12hex(低12位∈[0xfc0,0xfff]) + 14base62
+eq('合法会话通过校验', SESS.isValidSession('ses_f60367c3affeasQdbdIYyP7kCs'), true);
+eq('低12位越界被拒', SESS.isValidSession('ses_f60367c3a000asQdbdIYyP7kCs'), false);
+eq('长度不对被拒', SESS.isValidSession('ses_abc'), false);
+eq('非 ses_ 前缀被拒', SESS.isValidSession('xxx_f60367c3affeasQdbdIYyP7kCs'), false);
+eq('describe 给出低12位', SESS.describe('ses_f60367c3affeasQdbdIYyP7kCs').low12, 0xffe);
+eq('describe 拒绝坏格式', SESS.describe('nope').valid, false);
+
+// 配置路径跟着 PANEL_DB 走（保证在可写的数据目录）
+eq('配置文件与 panel.db 同目录', path.dirname(SESS.configPath()), SESSTMP);
+eq('配置文件名为 opencode-sessions.json', path.basename(SESS.configPath()), 'opencode-sessions.json');
+
+// 增删改查
+eq('初始池子为空', SESS.list().length, 0);
+eq('初始 current 为空', SESS.current(), '');
+SESS.add('ses_f60367c3affeasQdbdIYyP7kCs', { note: 'a' });
+SESS.add('ses_f5bbdbce3ffeX1jo8ZyHwkVev3', { note: 'b' });
+eq('加两个', SESS.list().length, 2);
+eq('第一个自动成为 active', SESS.current(), 'ses_f60367c3affeasQdbdIYyP7kCs');
+eq('重复添加不重复入池', SESS.add('ses_f60367c3affeasQdbdIYyP7kCs').duplicate, true);
+eq('重复后仍为 2 个', SESS.list().length, 2);
+eq('拒绝非法 id', (() => { try { SESS.add('bad'); return false; } catch { return true; } })(), true);
+
+SESS.setActive('ses_f5bbdbce3ffeX1jo8ZyHwkVev3');
+eq('切换 active', SESS.current(), 'ses_f5bbdbce3ffeX1jo8ZyHwkVev3');
+
+// 失败计数 + 轮换
+SESS.markFail('ses_f5bbdbce3ffeX1jo8ZyHwkVev3');
+const rotated = SESS.rotate('ses_f5bbdbce3ffeX1jo8ZyHwkVev3');
+eq('轮换避开刚失败的', rotated, 'ses_f60367c3affeasQdbdIYyP7kCs');
+SESS.markOk('ses_f60367c3affeasQdbdIYyP7kCs');
+eq('markOk 后 failCount 归零', SESS.list().find((x) => x.id === 'ses_f60367c3affeasQdbdIYyP7kCs').failCount, 0);
+
+// 持久化：重开文件还在
+const onDisk = JSON.parse(fsx.readFileSync(SESS.configPath(), 'utf8'));
+eq('已写盘', Array.isArray(onDisk.sessions) && onDisk.sessions.length === 2, true);
+eq('盘上记录了 active', onDisk.active, 'ses_f60367c3affeasQdbdIYyP7kCs');
+
+// 删除
+eq('删除一个', SESS.remove('ses_f5bbdbce3ffeX1jo8ZyHwkVev3').removed, 1);
+eq('删除后剩 1 个', SESS.list().length, 1);
+eq('删掉 active 会自动选下一个', (() => { SESS.remove('ses_f60367c3affeasQdbdIYyP7kCs'); return SESS.current(); })(), '');
+
+// 扫描本机：只验证不崩、返回结构对（结果多少取决于这台机器）
+const scan = SESS.scanLocalSessions({ max: 5 });
+eq('扫描返回结构正确', Array.isArray(scan.found) && Array.isArray(scan.scanned), true);
+eq('扫描结果都合法', scan.found.every((x) => SESS.isValidSession(x)), true);
+try { fsx.rmSync(SESSTMP, { recursive: true, force: true }); } catch { /* 忽略 */ }
+
 console.log(`\n单元测试: ${pass} 通过, ${fail} 失败`);
 process.exit(fail ? 1 : 0);
