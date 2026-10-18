@@ -398,5 +398,48 @@ eq('未知延迟（null）排最后', POOLm.tierOf(null), 3);
 eq('未知延迟（0）排最后', POOLm.tierOf(0), 3);
 eq('负数延迟排最后', POOLm.tierOf(-1), 3);
 
+/* ══════════════════════════════════════════════ 16) 工具注入模式 */
+console.log('\n── 16) 工具注入模式 ──');
+const UPt = await import(pathToFileURL(path.join(ROOT, '01-管理面板', 'upstream.mjs')).href);
+const CLIENT_T = [{ type: 'function', function: { name: 'get_weather', description: 'w', parameters: { type: 'object', properties: { location: { type: 'string' } }, required: ['location'] } } }];
+const mkCh = (mode) => ({ base_url: 'https://opencode.ai/inference/v1/chat/completions', type: 'opencode', api_key: 'public', extra: mode ? { tool_mode: mode } : {} });
+const namesOf = (b) => b.body.tools.map((t) => t.function.name);
+
+// 默认是 client 模式：客户端给什么就用什么，只额外补一个 read 满足门禁
+eq('默认模式是 client', UPt.toolMode(mkCh()), 'client');
+const bc = UPt.buildRequest(mkCh(), { model: 'm', messages: [{ role: 'user', content: 'hi' }], tools: CLIENT_T, stream: false });
+eq('client 模式只发客户端的工具 + read', namesOf(bc).join(','), 'get_weather,read');
+eq('client 模式不会注入 bash', namesOf(bc).includes('bash'), false);
+eq('client 模式不会注入 edit', namesOf(bc).includes('edit'), false);
+
+// 客户端不给 tools → 退回模板（否则门禁过不了）
+const bn = UPt.buildRequest(mkCh(), { model: 'm', messages: [{ role: 'user', content: 'hi' }], stream: false });
+eq('客户端不给 tools 时退回模板', namesOf(bn).length >= 12, true);
+eq('退回模板时含 read', namesOf(bn).includes('read'), true);
+
+// merge 模式 = 旧行为（模板 + 客户端）
+const bm = UPt.buildRequest(mkCh('merge'), { model: 'm', messages: [{ role: 'user', content: 'hi' }], tools: CLIENT_T, stream: false });
+eq('merge 模式会合并成 13 个', namesOf(bm).length, 13);
+eq('merge 模式含 bash', namesOf(bm).includes('bash'), true);
+
+// template 模式 = 只用模板
+const bt = UPt.buildRequest(mkCh('template'), { model: 'm', messages: [{ role: 'user', content: 'hi' }], tools: CLIENT_T, stream: false });
+eq('template 模式只有模板工具', namesOf(bt).includes('get_weather'), false);
+eq('template 模式含 read', namesOf(bt).includes('read'), true);
+
+// 无论哪种模式，read 都必须在（门禁硬要求）
+for (const mode of ['client', 'merge', 'template']) {
+  const b = UPt.buildRequest(mkCh(mode), { model: 'm', messages: [{ role: 'user', content: 'hi' }], tools: CLIENT_T, stream: false });
+  eq(`${mode} 模式都保证有 read`, namesOf(b).includes('read'), true);
+}
+
+// 客户端自己就带 read 时不能重复（上游对重名工具会 400）
+const withRead = [...CLIENT_T, { type: 'function', function: { name: 'read', description: 'r', parameters: { type: 'object', properties: {} } } }];
+const br = UPt.buildRequest(mkCh(), { model: 'm', messages: [{ role: 'user', content: 'hi' }], tools: withRead, stream: false });
+eq('客户端自带 read 时不重复', namesOf(br).filter((x) => x === 'read').length, 1);
+
+// 非法模式回退到 client
+eq('非法模式回退 client', UPt.toolMode(mkCh('bogus')), 'client');
+
 console.log(`\n单元测试: ${pass} 通过, ${fail} 失败`);
 process.exit(fail ? 1 : 0);

@@ -273,6 +273,29 @@ export function bodyMode(channel) {
   return m === 'minimal' ? 'minimal' : 'full';
 }
 
+/**
+ * 工具注入模式。**这个直接决定「客户端能不能用工具」。**
+ *
+ * 背景：opencode 渠道的请求体模板里带着 OpenCode 自己的 12 个工具
+ * （bash / edit / glob / grep / question / read / skill / task /
+ *   todowrite / webfetch / websearch / write）。
+ * 如果无条件把它们和客户端自己的工具合并，模型会看到 12 + N 个工具，
+ * 于是很可能去调 read / bash / edit —— 而**客户端如果不是 OpenCode，
+ * 根本不认识这些工具**，工具调用就失败（或客户端报「未知工具」）。
+ *
+ * 三种模式：
+ *   client   （默认）客户端给了 tools 就**只用客户端的**（再补一个 read 满足门禁）；
+ *            客户端没给才用模板的 → 非 OpenCode 客户端也能正常调工具
+ *   merge    模板 + 客户端合并（旧行为，只有客户端就是 OpenCode 时才合适）
+ *   template 只用模板的（调试用）
+ *
+ * 可用 PANEL_TOOL_MODE 或渠道 extra.tool_mode 覆盖。
+ */
+export function toolMode(channel) {
+  const m = (channel && channel.extra && channel.extra.tool_mode) || process.env.PANEL_TOOL_MODE || 'client';
+  return ['client', 'merge', 'template'].includes(m) ? m : 'client';
+}
+
 /* ══════════════════════════════════════════════════ 请求构造 */
 export const UA_OPENCODE = 'opencode/1.19.2 ai-sdk/provider-utils/4.0.23 runtime/node.js/24';
 
@@ -349,10 +372,21 @@ export function buildOpenCodeRequest(channel, req) {
   body.max_tokens = req.max_tokens || t.max_tokens || 32000;
   // minimal 模式不注入 opencode 的 system prompt，只保留调用方自己的
   body.messages = minimal ? [...clientSys, ...rest] : [...sys, ...clientSys, ...rest];
-  // 无论哪种模式，都保证 tools 里有 read（门禁硬要求），并按名字去重（上游对重名工具会 400）
-  body.tools = ensureReadTool(minimal
-    ? mergeTools([], req.tools)
-    : mergeTools(t.tools || [], req.tools));
+  /* tools 组装：按 toolMode 决定注入多少。
+   * 门禁硬要求 tools 里必须有 function.name === "read"，所以最后总要 ensureReadTool。
+   * 上游对重名工具会 400，所以按名字去重。 */
+  const tm = toolMode(channel);
+  const clientTools = Array.isArray(req.tools) ? req.tools : [];
+  let toolList;
+  if (tm === 'template') {
+    toolList = mergeTools(t.tools || [], []);
+  } else if (tm === 'merge') {
+    toolList = mergeTools(minimal ? [] : (t.tools || []), clientTools);
+  } else {
+    // client：客户端给了就只用客户端的；没给才退回模板
+    toolList = clientTools.length ? mergeTools([], clientTools) : mergeTools(minimal ? [] : (t.tools || []), []);
+  }
+  body.tools = ensureReadTool(toolList);
   body.tool_choice = req.tool_choice || 'auto';
   body.stream = !!req.stream;
   if (req.stream) body.stream_options = { include_usage: true };

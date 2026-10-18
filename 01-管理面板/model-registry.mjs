@@ -28,7 +28,11 @@ const UA = 'opencode/1.19.2';
  * 直接灌进 /v1/models。那等于换个地方内置模型清单，和「一切由用户自己配」冲突。
  */
 export function enabled() {
-  if (String(process.env.PANEL_MODEL_DISCOVERY ?? '1') === '0') return false;
+  /* ⚠️ 默认**关闭**（opt-in）：探测会周期性把上游全部模型打一遍（实测 85 个/轮，
+   * 每 30 分钟一次），上游的滥用检测会把这当成异常流量并返回
+   * "Forbidden, OpenCode Free Model Gateway Detect Abuse Traffic"。
+   * 需要时显式开：PANEL_MODEL_DISCOVERY=1 */
+  if (String(process.env.PANEL_MODEL_DISCOVERY ?? '0') !== '1') return false;
   try {
     const row = DB.db.prepare("SELECT COUNT(*) AS n FROM channels WHERE status = 1 AND type = 'opencode'").get();
     return (row?.n || 0) > 0;
