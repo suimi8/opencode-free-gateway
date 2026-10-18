@@ -605,7 +605,64 @@ export function buildBridgedRequest(channel, req, target) {
 }
 
 /* ══════════════════════════════════════════════════ 发起请求 */
-export function request({ url, headers, body, proxy, timeout = 300000, method = 'POST' }) {
+/* ══════════════════════════════════════════════════ 并发闸门
+ * 为什么需要：
+ *   免费层上游对并发极其敏感 —— 实测 10 并发就全部 403
+ *   （OpenCode's free models aren't available ... abusive traffic）。
+ *   50 并发直接打崩：既触发上游封禁，又把网关自己的连接/内存打满。
+ *
+ * 做法：
+ *   同时最多放行 PANEL_MAX_CONCURRENCY 个上游请求（默认 2），
+ *   其余排队；排队超时（PANEL_QUEUE_TIMEOUT_MS，默认 120s）明确拒绝，
+ *   而不是无脑并发把上游打死。
+ */
+const MAX_CONCURRENCY = Math.max(1, Number(process.env.PANEL_MAX_CONCURRENCY || 2));
+const QUEUE_TIMEOUT_MS = Math.max(1000, Number(process.env.PANEL_QUEUE_TIMEOUT_MS || 120000));
+
+let ACTIVE = 0;
+const WAITERS = [];
+export const gateStats = () => ({ active: ACTIVE, queued: WAITERS.length, max: MAX_CONCURRENCY });
+
+function acquireSlot() {
+  if (ACTIVE < MAX_CONCURRENCY) {
+    ACTIVE++;
+    return Promise.resolve(releaseSlot);
+  }
+  return new Promise((resolve, reject) => {
+    const w = { resolve, reject, timer: null };
+    w.timer = setTimeout(() => {
+      const i = WAITERS.indexOf(w);
+      if (i >= 0) WAITERS.splice(i, 1);
+      const e = new Error('并发已满（上限 ' + MAX_CONCURRENCY + '），排队 ' + Math.round(QUEUE_TIMEOUT_MS / 1000) + 's 仍无空位。请降低并发或稍后重试。');
+      e.code = 'QUEUE_TIMEOUT';
+      reject(e);
+    }, QUEUE_TIMEOUT_MS);
+    if (typeof w.timer.unref === 'function') w.timer.unref();
+    WAITERS.push(w);
+  });
+}
+
+function releaseSlot() {
+  const w = WAITERS.shift();
+  if (w) {
+    clearTimeout(w.timer);
+    w.resolve(releaseSlot);          // 名额直接转交，ACTIVE 不变
+  } else {
+    ACTIVE = Math.max(0, ACTIVE - 1);
+  }
+}
+
+/* 对外仍是 request()，内部先排队拿名额 */
+export async function request(opts) {
+  const release = await acquireSlot();
+  try {
+    return await requestInner(opts);
+  } finally {
+    release();
+  }
+}
+
+function requestInner({ url, headers, body, proxy, timeout = 300000, method = 'POST' }) {
   const u = new URL(url);
   const isHttps = u.protocol === 'https:';
   const { raw, stat } = pickProxy(proxy);
