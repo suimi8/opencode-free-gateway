@@ -248,7 +248,7 @@ export async function webFetch(url, opts = {}) {
   const MAX = Number(process.env.PANEL_FETCH_MAX_CHARS || 60000);
   const truncated = content.length > MAX;
 
-  return {
+  const out = {
     ok: cur.status >= 200 && cur.status < 300,
     status: cur.status,
     url,
@@ -262,6 +262,18 @@ export async function webFetch(url, opts = {}) {
     content: truncated ? content.slice(0, MAX) : content,
     ms: Date.now() - t0,
   };
+
+  /* saveTo：把抓到的内容写进工作目录，客户端之后可以用 /v1/tools/read 读。
+   * 之前模型以为 webfetch 会自己落盘，结果去读一个不存在的文件。 */
+  if (opts.saveTo) {
+    try {
+      const abs = resolveInWorkspace(String(opts.saveTo));
+      fs.mkdirSync(path.dirname(abs), { recursive: true });
+      fs.writeFileSync(abs, content, 'utf8');
+      out.saved = { path: abs, bytes: Buffer.byteLength(content, 'utf8') };
+    } catch (e) { out.saveError = String(e.message || e); }
+  }
+  return out;
 }
 
 /* ══════════════════════════════════════════════════ 搜索 */

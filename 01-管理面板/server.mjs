@@ -871,6 +871,7 @@ async function handle(req, res) {
         const r = await TOOLS.webFetch(url, {
           format: (b && b.format) || 'markdown',
           timeout: Number(b && b.timeout) ? Number(b.timeout) * 1000 : 30000,
+          saveTo: b && (b.saveTo || b.save),
         });
         return json(res, 200, r);
       } catch (e) { return err(res, 502, String(e.message).slice(0, 300), 'fetch_error'); }
